@@ -1,7 +1,7 @@
-# Ngi-sync
-Is to help sync code to the server continuously
+# Remote Pipeline
+Is to help ssh remote pipline to the server
 
-More info check [documentation](https://donny-rollproject.gitbook.io/ngi-sync/)
+Still on development
 
 ### License
 ```
