@@ -1,4 +1,4 @@
-import BaseController from "base/BaseController";
+import BaseController from "@root/base/BaseController"
 
 export interface UserControllerInterface extends BaseControllerInterface {
   addUser: { (req: any, res: any): void }
@@ -16,6 +16,7 @@ export default BaseController.extend<UserControllerInterface>({
     // email: string
     // is_active: string
     // password: string
+    res.send("Empty");
   },
   updateUser(req, res) {
     // id: int
@@ -24,6 +25,7 @@ export default BaseController.extend<UserControllerInterface>({
     // email: string
     // is_active: string
     // password: string
+    res.send("Empty");
   },
   updateCurrentUser(req, res) {
     // id: int => Session only
@@ -32,16 +34,20 @@ export default BaseController.extend<UserControllerInterface>({
     // email: string
     // is_active: string
     // password: string
+    res.send("Empty");
   },
   deleteUser(req, res) {
     // ids: JSON []
+    res.send("Empty");
   },
   getUser(req, res) {
     // id: int
+    res.send("Empty");
   },
   getUsers(req, res) {
     // where_by string
     // page: int
     // limit: int
+    res.send("Empty");
   },
 });

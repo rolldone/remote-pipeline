@@ -1,5 +1,6 @@
 import { AsyncJs } from "../tool";
 import StartConfig from "./StartConfig";
+import StartExpress from "./StartExpress";
 import StartMasterData from "./StartMasterData";
 import StartPubSub from "./StartPubSub";
 import StartRecordOpenFolder from "./StartRecordOpenFolder";
@@ -12,6 +13,7 @@ const task: Array<any> = [
   StartPubSub,
   StartMasterData,
   StartConfig,
+  StartExpress,
   StartRecordOpenFolder,
   StartRedis,
 ];

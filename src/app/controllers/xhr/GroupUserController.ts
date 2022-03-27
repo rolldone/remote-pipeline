@@ -1,4 +1,4 @@
-import BaseController from "base/BaseController";
+import BaseController from "@root/base/BaseController"
 
 export interface GroupUserControllerInterface extends BaseControllerInterface {
   addGroupUser: { (req: any, res: any): void }

@@ -66,7 +66,7 @@ module.exports = {
       // "zlib",
     ]
   })],
-  devtool: false,
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -79,7 +79,10 @@ module.exports = {
   resolve: {
     extensions: ['.ts', ".js"],
     alias: {
-      "@root": path.resolve(__dirname, 'src')
+      "base": path.resolve(__dirname, "src/base"),
+      "config": path.resolve(__dirname, "src/config"),
+      "tool": path.resolve(__dirname, "src/tool"),
+      "@root": path.resolve(__dirname, 'src'),
     },
     modules: ["node_modules", "bower_components"],
   },

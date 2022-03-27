@@ -1,4 +1,4 @@
-import BaseController from "base/BaseController";
+import BaseController from "@root/base/BaseController"
 
 export interface PipelineControllerInterface extends BaseControllerInterface {
   addPipeline: { (req: any, res: any): void }

@@ -1,6 +1,5 @@
-import { ConfigInterface } from "@root/app/init/compute/Config";
-import StaticType from "@root/base/StaticType";
 const pty = require('node-pty');
+import staticType from '@root/base/StaticType';
 import os from 'os';
 import ansiRegex from "./ansi-regex/AnsiRegex";
 var size = require('window-size');
@@ -12,7 +11,7 @@ const generatePersistentJobId = function (url: string) {
 }
 
 const generateImagePersistentJobId = function (url: string, size: number) {
-  StaticType(size, [Number]);
+  staticType(size, [Number]);
   return md5(url + size);
 }
 
@@ -51,7 +50,7 @@ const executeData: {
 const executeDataDone: {
   [key: string]: boolean
 } = {};
-export const executeLocalCommand = (key: string, config: ConfigInterface, command: string, callback: Function) => {
+export const executeLocalCommand = (key: string, config: any, command: string, callback: Function) => {
   let isDone = false;
   var shell = os.platform() === 'win32' ? "C:\\Program Files\\Git\\bin\\bash.exe" : 'bash';
   if (executeData[key] == null) {
