@@ -106,6 +106,7 @@
     "./src/**/*","/src/global.d.ts"
   ],
   "exclude": [
-    "./dist"
+    "./dist",
+    "./src/public/js/dashboard"
   ]
 }

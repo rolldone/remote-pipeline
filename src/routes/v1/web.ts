@@ -1,3 +1,5 @@
+import DashboardController from "@root/app/controllers/DashboardController";
+import HomeController from "@root/app/controllers/HomeController";
 import AuthController from "@root/app/controllers/xhr/AuthController";
 import ConfigurationController from "@root/app/controllers/xhr/ConfigurationController";
 import ExecutionController from "@root/app/controllers/xhr/ExecutionController";
@@ -7,7 +9,6 @@ import PipelineController from "@root/app/controllers/xhr/PipelineController";
 import PipelineItemController from "@root/app/controllers/xhr/PipelineItemController";
 import ProjectController from "@root/app/controllers/xhr/ProjectController";
 import UserController from "@root/app/controllers/xhr/UserController";
-import HomeController from "@root/app/HomeController";
 import BaseRoute from "../../base/BaseRoute";
 
 export default BaseRoute.extend<BaseRouteInterface>({
@@ -16,6 +17,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     let self = this;
     self.use('/', [], function (route: BaseRouteInterface) {
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
+      route.get("/dashboard*", "front.dashboard", [], DashboardController.binding().displayView);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.get("/login", "xhr.auth.login", [], AuthController.binding().login);

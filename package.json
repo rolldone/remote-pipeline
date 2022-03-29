@@ -12,8 +12,8 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx webpack --watch",
-    "build": "npx webpack --config webpack.config.prod.js"
+    "dev": "npx tsc -w",
+    "build": "npx webpack --config webpack.config.js"
   },
   "author": "",
   "license": "ISC",
@@ -76,6 +76,7 @@
     "node-multithread": "^1.0.4",
     "node-notifier": "^10.0.0",
     "node-pty": "^0.10.1",
+    "nunjucks": "^3.2.3",
     "object-scan": "^17.0.0",
     "observatory": "^1.0.0",
     "parse-gitignore": "^1.0.1",
