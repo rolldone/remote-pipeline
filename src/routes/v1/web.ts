@@ -8,6 +8,7 @@ import GroupUserController from "@root/app/controllers/xhr/GroupUserController";
 import PipelineController from "@root/app/controllers/xhr/PipelineController";
 import PipelineItemController from "@root/app/controllers/xhr/PipelineItemController";
 import ProjectController from "@root/app/controllers/xhr/ProjectController";
+import SqlQueryController from "@root/app/controllers/xhr/SqlQueryController";
 import UserController from "@root/app/controllers/xhr/UserController";
 import BaseRoute from "../../base/BaseRoute";
 
@@ -18,6 +19,15 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use('/', [], function (route: BaseRouteInterface) {
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
       route.get("/dashboard*", "front.dashboard", [], DashboardController.binding().displayView);
+      route.get("/route", "display.route", [], route.displayRoute.bind(self));
+    });
+
+    self.use('/xhr/sql', [], function (route: BaseRouteInterface) {
+      route.get("/select-one", "xhr.sql.getOne", [], SqlQueryController.binding().selectOne);
+      route.get("/select", "xhr.sql.get", [], SqlQueryController.binding().select);
+      route.post("/insert", "xhr.sql.insert", [], SqlQueryController.binding().insert);
+      route.post("/update", "xhr.sql.update", [], SqlQueryController.binding().update);
+      route.post("/delete", "xhr.sql.delete", [], SqlQueryController.binding().delete);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.get("/login", "xhr.auth.login", [], AuthController.binding().login);

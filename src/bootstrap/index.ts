@@ -6,6 +6,7 @@ import StartPubSub from "./StartPubSub";
 import StartRecordOpenFolder from "./StartRecordOpenFolder";
 import StartRedis from "./StartRedis";
 import StartSerializeError from "./StartSerializeError";
+import StartSqlite3 from "./StartSqlite3";
 
 const task: Array<any> = [
   /* Main Bootstrap */
@@ -16,6 +17,7 @@ const task: Array<any> = [
   StartExpress,
   StartRecordOpenFolder,
   StartRedis,
+  StartSqlite3
 ];
 
 export default function (asyncDone: Function) {
