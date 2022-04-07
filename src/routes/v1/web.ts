@@ -3,6 +3,7 @@ import HomeController from "@root/app/controllers/HomeController";
 import AuthController from "@root/app/controllers/xhr/AuthController";
 import ConfigurationController from "@root/app/controllers/xhr/ConfigurationController";
 import ExecutionController from "@root/app/controllers/xhr/ExecutionController";
+import FileController from "@root/app/controllers/xhr/FileController";
 import GroupController from "@root/app/controllers/xhr/GroupController";
 import GroupUserController from "@root/app/controllers/xhr/GroupUserController";
 import PipelineController from "@root/app/controllers/xhr/PipelineController";
@@ -22,6 +23,10 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
 
+    self.use('/xhr/file', [], function (route: BaseRouteInterface) {
+      route.get("/add", "xhr.file.add", [], FileController.binding().addFile);
+      route.get("/delete", "xhr.file.delete", [], FileController.binding().removeFile);
+    });
     self.use('/xhr/sql', [], function (route: BaseRouteInterface) {
       route.get("/select-one", "xhr.sql.getOne", [], SqlQueryController.binding().selectOne);
       route.get("/select", "xhr.sql.get", [], SqlQueryController.binding().select);

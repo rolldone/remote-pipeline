@@ -1,9 +1,14 @@
 
 import Sqlite3 from '@root/config/Sqlite3';
-import sqlite from 'sqlite3';
+import { knex } from 'knex';
 
 export default function (next: Function) {
-  var db = new sqlite.Database('db/' + Sqlite3.DB_NAME);
-  global.db = db;
+  const dbknex = knex({
+    client: 'better-sqlite3', // or 'better-sqlite3'
+    connection: {
+      filename: 'db/' + Sqlite3.DB_NAME
+    }
+  });
+  global.db = dbknex;
   next();
 }
