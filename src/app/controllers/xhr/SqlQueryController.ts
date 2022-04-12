@@ -22,7 +22,7 @@ export default BaseController.extend<SqlQueryControllerInterface>({
       }
       res.send(resData);
     } catch (ex) {
-      res.send(ex);
+      res.send(ex).status(400);
     }
   },
   async select(req, res) {
@@ -31,7 +31,7 @@ export default BaseController.extend<SqlQueryControllerInterface>({
       let resData = await db.raw(req.query.sql);
       res.send(resData);
     } catch (ex) {
-      res.send(ex);
+      res.status(400).send(ex);
     }
   },
   async insert(req, res) {
@@ -39,7 +39,7 @@ export default BaseController.extend<SqlQueryControllerInterface>({
       let resData = await db.raw(req.body.sql);
       res.send(resData.lastInsertRowid+"");
     } catch (ex) {
-      res.send(ex);
+      res.status(400).send(ex);
     }
   },
   async update(req, res) {
@@ -47,7 +47,7 @@ export default BaseController.extend<SqlQueryControllerInterface>({
       let resData = await db.raw(req.body.sql);
       res.send(resData.lastInsertRowid+"");
     } catch (ex) {
-      res.send(ex);
+      res.status(400).send(ex);
     }
   },
   async delete(req, res) {
@@ -55,7 +55,7 @@ export default BaseController.extend<SqlQueryControllerInterface>({
       let resData = await db.raw(req.body.sql);
       res.send(resData);
     } catch (ex) {
-      res.send(ex);
+      res.status(400).send(ex);
     }
   }
 })
