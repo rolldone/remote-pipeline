@@ -6,3 +6,4 @@ sync-config.yaml
 .sync_ignore
 docker-compose.yaml
 .env
+storage/

@@ -43,6 +43,7 @@
     "@types/jsonwebtoken": "^8.5.1",
     "@types/lodash": "^4.14.168",
     "@types/minimist": "^1.2.1",
+    "@types/multer": "^1.4.7",
     "@types/node-redis-pubsub": "^3.0.0",
     "@types/restore-cursor": "^3.1.0",
     "@types/ssh2": "^0.5.48",

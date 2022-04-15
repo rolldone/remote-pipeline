@@ -13,6 +13,24 @@ import SqlQueryController from "@root/app/controllers/xhr/SqlQueryController";
 import UserController from "@root/app/controllers/xhr/UserController";
 import BaseRoute from "../../base/BaseRoute";
 
+import multer from 'multer';
+
+const storageTemp = multer.diskStorage({
+  destination: function (req, file, cb) {
+    console.log('aaaaaaaaaaaaaaaaaaaaaa :: ', file)
+    cb(null, './storage/temp')
+  },
+  filename: function (req, file, cb) {
+    console.log('bbbbbbbbbbbbbbbbbbbbbb :: ', file)
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, uniqueSuffix + '-' + file.originalname)
+  }
+})
+
+const upload = multer({
+  storage: storageTemp
+});
+
 export default BaseRoute.extend<BaseRouteInterface>({
   baseRoute: '',
   onready() {
@@ -24,8 +42,21 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
 
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
-      route.get("/add", "xhr.file.add", [], FileController.binding().addFile);
-      route.get("/delete", "xhr.file.delete", [], FileController.binding().removeFile);
+      route.post("/add", "xhr.file.add", [function (req, res, next) {
+        console.log("before-multer-res.body", req.body);
+        console.log("before-multer-req.file", req.files)
+        let _middleware = upload.any()
+        return _middleware(req, res, () => {
+          // Remember, the middleware will call it's next function
+          // so we can inject our controller manually as the next()
+          console.log("res.body", req.body);
+          console.log("req.file", req.files)
+          if (!req.files) return res.json({ error: "invalid" })
+          next()
+        });
+      }], FileController.binding().addFile);
+      route.post("/delete", "xhr.file.delete", [], FileController.binding().removeFile);
+      route.post("/move", "xhr.file.move", [], FileController.binding().moveFile)
     });
     self.use('/xhr/sql', [], function (route: BaseRouteInterface) {
       route.get("/select-one", "xhr.sql.getOne", [], SqlQueryController.binding().selectOne);

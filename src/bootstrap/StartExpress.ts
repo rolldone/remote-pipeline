@@ -16,13 +16,11 @@ export default function (next: Function) {
     app.use(cors());
     app.use(BodyParser.json());
     /* application-x-www-form-urlencoded */
-    app.use(BodyParser.urlencoded({
-      extended: true
-    }));
+    app.use(BodyParser.urlencoded());
     app.use("/public", Express.static('dist/public'));
     app.use("/public/dashboard", Express.static('dashboard/dist'));
     /* Multipart/form-data */
-    app.use(upload.any());
+    // app.use(upload.any());
     global.app = app;
     /* Note / Catatan */
     /* Perbedaan antara  global.Server.listen dan global.app.Listen
