@@ -55,8 +55,14 @@ export default BaseRoute.extend<BaseRouteInterface>({
           next()
         });
       }], FileController.binding().addFile);
-      route.post("/delete", "xhr.file.delete", [], FileController.binding().removeFile);
-      route.post("/move", "xhr.file.move", [], FileController.binding().moveFile)
+      route.post("/delete", "xhr.file.delete", [upload.any()], FileController.binding().removeFile);
+      route.post("/move", "xhr.file.move", [function (req, res, next) {
+        let _middleware = upload.any()
+        console.log(req.body);
+        _middleware(req, res, () => {
+          next();
+        })
+      }], FileController.binding().moveFile)
     });
     self.use('/xhr/sql', [], function (route: BaseRouteInterface) {
       route.get("/select-one", "xhr.sql.getOne", [], SqlQueryController.binding().selectOne);
