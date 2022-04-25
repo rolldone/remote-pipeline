@@ -1,4 +1,5 @@
 import { AsyncJs } from "../tool";
+import StartBullMQ from "./StartBullMQ";
 import StartConfig from "./StartConfig";
 import StartExpress from "./StartExpress";
 import StartMasterData from "./StartMasterData";
@@ -17,7 +18,8 @@ const task: Array<any> = [
   StartExpress,
   StartRecordOpenFolder,
   StartRedis,
-  StartSqlite3
+  StartSqlite3,
+  StartBullMQ
 ];
 
 export default function (asyncDone: Function) {

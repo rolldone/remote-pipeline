@@ -14,6 +14,7 @@ import UserController from "@root/app/controllers/xhr/UserController";
 import BaseRoute from "../../base/BaseRoute";
 
 import multer from 'multer';
+import QueueController from "@root/app/controllers/xhr/QueueController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -70,6 +71,15 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/insert", "xhr.sql.insert", [], SqlQueryController.binding().insert);
       route.post("/update", "xhr.sql.update", [], SqlQueryController.binding().update);
       route.post("/delete", "xhr.sql.delete", [], SqlQueryController.binding().delete);
+    });
+    self.use('/xhr/queue', [], function (route: BaseRouteInterface) {
+      route.post("/delete-item", "xhr.queue.delete_item", [upload.any()], QueueController.binding().deleteQueueItem);
+      route.post("/create-item", "xhr.queue.create_item", [upload.any()], QueueController.binding().createQueueItem);
+      route.post("/create", "xhr.queue.create", [upload.any()], QueueController.binding().createQueue);
+      route.post("/update", "xhr.queue.update", [upload.any()], QueueController.binding().updateQueue);
+      route.post("/delete", "xhr.queue.delete", [upload.any()], QueueController.binding().deleteQueue);
+      route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
+      route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.get("/login", "xhr.auth.login", [], AuthController.binding().login);

@@ -30,9 +30,15 @@ BaseStart({
     function (callback: Function) {
       /* You can Define route here */
       Web.create(global.app);
+      Cli.create(global.app);
       // Api.create(global.app);
       // Socket.create(global.app);
       // Redis.create(global.app);
+      callback(null);
+    },
+    /* Listen the message request */
+    function (callback: Function) {
+
       callback(null);
     }
   ],
