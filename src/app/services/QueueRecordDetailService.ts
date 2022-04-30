@@ -32,6 +32,7 @@ export default {
         'qrec.execution_id as qrec_execution_id',
         'qrec.status as qrec_status',
         'qrec.data as qrec_data',
+        'qrec.type as qrec_type',
         'exe.id as exe_id',
         'exe.name as exe_name',
         'exe.process_mode as exe_process_mode',

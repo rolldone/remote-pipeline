@@ -10,12 +10,19 @@ export const QueueRecordStatus = {
   DELAYED: 4
 }
 
+export const QueueRecordType = {
+  SCHEDULE: 'schedule',
+  INSTANT: 'instant'
+}
+
 export default {
   STATUS: QueueRecordStatus,
+  TYPE: QueueRecordType,
   async getQueueRecord(props) {
     try {
       sqlbricks.aliasExpansions({
         'qrec': "queue_records",
+        'qrec_sch': "queue_schedules",
         'exe': "executions",
       });
 
@@ -25,6 +32,12 @@ export default {
         'qrec.execution_id as execution_id',
         'qrec.status as status',
         'qrec.data as data',
+        'qrec.type as type',
+        'qrec_sch.id as qrec_sch_id',
+        'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
+        'qrec_sch.execution_id as qrec_sch_execution_id',
+        'qrec_sch.schedule_type as qrec_sch_schedule_type',
+        'qrec_sch.data as qrec_sch_data',
         'exe.id as exe_id',
         'exe.name as exe_name',
         'exe.process_mode as exe_process_mode',
@@ -38,7 +51,9 @@ export default {
         'exe.host_ids as exe_host_ids',
         'exe.description as exe_description',
       ).from("qrec");
-
+      query = query.leftJoin('qrec_sch').on({
+        "qrec_sch.queue_record_id": "qrec.id"
+      });
       query = query.leftJoin('exe').on({
         "qrec.execution_id": "exe.id"
       });
@@ -53,6 +68,8 @@ export default {
       let resQueueRecord = await db.raw(_query);
       if (resQueueRecord == null) return null;
       resQueueRecord = resQueueRecord[0] || null;
+      resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
+      resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
       resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids);
       return resQueueRecord;
     } catch (ex) {
