@@ -10,6 +10,7 @@ import QueueRecordDetail from "@root/app/services/QueueRecordDetailService"
 import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService"
 import QueueRecordService from "@root/app/services/QueueRecordService"
 import HostService from "@root/app/services/HostService"
+import ProcessScheduleQueue from "@root/app/queues/ProcessScheduleQueue"
 
 export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueueItem?: { (req: any, res: any): void }
@@ -138,9 +139,19 @@ export default BaseController.extend<QueueControllerInterface>({
             return el;
           })
 
-          let _processQueue = ProcessQueue({
-            queue_name: queue_name
-          })
+          let _processQueue = null;
+          switch (resQueueRecord.type) {
+            case 'instant':
+              _processQueue = ProcessQueue({
+                queue_name: queue_name
+              })
+              break;
+            case 'schedule':
+              _processQueue = ProcessScheduleQueue({
+                queue_name: queue_name
+              });
+              break;
+          }
 
           let indexHostItem = 0;
           for (let a = 0; a < _hosts_datas.length; a++) {
