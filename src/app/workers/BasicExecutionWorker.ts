@@ -6,6 +6,7 @@ import { QueueRecordStatus } from "../services/QueueRecordService";
 import QueueRecordDetail from "../services/QueueRecordDetailService";
 import QueueSceduleService from "../services/QueueSceduleService";
 import { onActive, onComplete, onFailed } from "../functions/QueueEvent";
+import ConnectToHost from "../functions/ConnectToHost";
 
 declare let db: Knex;
 
@@ -13,6 +14,12 @@ export default function (props: any) {
   const queueEvents = new Worker(props.queue_name, async (job: Job) => {
     try {
       console.log("job ::: ", job.data);
+      let {
+        host_data,
+        host_id
+      } = job.data;
+      let resConnectData = await ConnectToHost({ host_data, host_id });
+      console.log("resConnectData :: ", resConnectData);
       var test = () => {
         return new Promise((resolve: Function) => {
           setTimeout(() => {

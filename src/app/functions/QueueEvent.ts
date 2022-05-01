@@ -50,7 +50,7 @@ export const onActive = (props: {
   let {
     job
   } = props;
-  // Use set timeout for waiting complete on conCOmplete event
+  // Use set timeout for waiting complete on conCOmplete event on repeatable queue
   setTimeout(async () => {
     let queryUpdate = sqlbricks.update("queue_record_details", {
       status: QueueRecordDetailService.STATUS.RUNNING
