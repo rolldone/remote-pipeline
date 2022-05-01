@@ -4,6 +4,7 @@ Moment.tz.setDefault('Africa/Abidjan');
 Moment.getLocalDate = function() {
   return Moment();
 }
+
 Moment.getDate = function() {
   return Moment(new Date());
 }

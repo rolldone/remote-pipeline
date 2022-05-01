@@ -6,13 +6,15 @@ import GroupQueue from "@root/app/queues/GroupQueue"
 import sqlbricks from "@root/tool/SqlBricks"
 import ProcessQueue from "@root/app/queues/ProcessQueue"
 import SqlBricks from "@root/tool/SqlBricks/sql-bricks"
-import QueueRecordDetail from "@root/app/services/QueueRecordDetailService"
 import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService"
 import QueueRecordService from "@root/app/services/QueueRecordService"
 import HostService from "@root/app/services/HostService"
 import ProcessScheduleQueue from "@root/app/queues/ProcessScheduleQueue"
 import QueueSceduleService from "@root/app/services/QueueSceduleService"
 import { Moment } from "@root/tool"
+import CreateQueue from "@root/app/functions/CreateQueue"
+import CreateQueueItem from "@root/app/functions/CreateQueueItem"
+import DeleteQueueItem from "@root/app/functions/DeleteQueueItem"
 
 export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueueItem?: { (req: any, res: any): void }
@@ -35,20 +37,8 @@ export default BaseController.extend<QueueControllerInterface>({
   async deleteQueueItem(req, res) {
     try {
       let queue_record_detail_id = req.body.id;
-      let res_data_record_detail = await QueueRecordDetailService.getQueueRecordDetail({
-        id: queue_record_detail_id
-      })
-      let _processQueue = ProcessQueue({
-        queue_name: res_data_record_detail.queue_name
-      })
-      _processQueue.remove(res_data_record_detail.job_id);
-      let resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
-        id: queue_record_detail_id,
-        queue_record_id: res_data_record_detail.qrec_id,
-        queue_name: res_data_record_detail.queue_name,
-        job_id: res_data_record_detail.job_id,
-        job_data: res_data_record_detail.data,
-        status: QueueRecordDetailService.STATUS.STOPPED
+      let res_data_record_detail = await DeleteQueueItem({
+        queue_record_detail_id
       });
       res.send(res_data_record_detail.queue_name + " with Job id : " + res_data_record_detail.job_id + " :: deleted!")
     } catch (ex) {
@@ -64,41 +54,12 @@ export default BaseController.extend<QueueControllerInterface>({
       })
       console.log('res_data_record_detail :: ', res_data_record_detail);
       let queue_name = "queue_" + res_data_record_detail.exe_process_mode + "_" + res_data_record_detail.qrec_id;
-
-      masterData.saveData(oberserverPath + res_data_record_detail.exe_process_mode, {
-        queue_name,
-        data: res_data_record_detail.qrec_data,
-        concurrency: res_data_record_detail.exe_process_limit,
-        callback: async (worker: Worker) => {
-          if (worker.isRunning() == false) {
-            worker.resume();
-          }
-
-          res.send(worker.name + " :: start running!")
-          let _processQueue = ProcessQueue({
-            queue_name: queue_name
-          })
-
-          let theJOb = await _processQueue.add("host_" + res_data_record_detail.data.ip_address, {
-            queue_record_id: res_data_record_detail.qrec_id,
-            host_id: res_data_record_detail.data.host_id,
-            index: 0,
-            total: 1,
-            host_data: res_data_record_detail.data.host_data
-          }, {
-            // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
-            timeout: 5000
-          });
-
-          let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
-            queue_record_id: res_data_record_detail.qrec_id,
-            queue_name: theJOb.queueName,
-            job_id: theJOb.id,
-            job_data: theJOb.data,
-            status: QueueRecordDetailService.STATUS.RUNNING
-          });
-        }
-      });
+      let resData = await CreateQueueItem({ queue_name, res_data_record_detail });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }
@@ -116,124 +77,12 @@ export default BaseController.extend<QueueControllerInterface>({
       let process_mode = req.body.process_mode;
       let process_limit = req.body.process_limit || 1;
       let queue_name = "queue_" + process_mode + "_" + id;
-      masterData.saveData(oberserverPath + process_mode, {
-        queue_name, data,
-        concurrency: process_limit,
-        callback: async (worker: Worker) => {
-          if (worker.isRunning() == false) {
-            worker.resume();
-          }
-          console.log("worker.isRunning() :: ", worker.isRunning());
-
-          // Get queue record by id
-          let resQueueRecord = await QueueRecordService.getQueueRecord({
-            id: id
-          });
-
-          res.send({
-            status: 'success',
-            status_code: 200,
-            return: resQueueRecord
-          })
-
-
-          // Get the host datas
-          let _hosts_datas: Array<any> = await HostService.getHosts({
-            ids: resQueueRecord.exe_host_ids
-          })
-
-          let _total_host_item = 0;
-          _hosts_datas.filter((el) => {
-            _total_host_item += el.data.length;
-            return el;
-          })
-
-          let _processQueue: Queue = null;
-          let indexHostItem = 0;
-          switch (resQueueRecord.type) {
-            case 'instant':
-              _processQueue = ProcessQueue({
-                queue_name: queue_name
-              })
-              for (let a = 0; a < _hosts_datas.length; a++) {
-                for (let b = 0; b < _hosts_datas[a].data.length; b++) {
-                  let hostDataItem = _hosts_datas[a].data[b];
-                  let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
-                    queue_record_id: id,
-                    host_id: _hosts_datas[a].id,
-                    index: indexHostItem,
-                    total: _total_host_item,
-                    host_data: hostDataItem
-                  }, {
-                    // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
-                    timeout: 5000
-                  });
-
-                  // Insert to queue record detail 
-                  let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
-                    queue_record_id: id,
-                    queue_name: theJOb.queueName,
-                    job_id: theJOb.id,
-                    job_data: theJOb.data,
-                    status: QueueRecordDetail.STATUS.RUNNING
-                  });
-
-                  indexHostItem += 1;
-                }
-              }
-              break;
-            case 'schedule':
-              _processQueue = ProcessScheduleQueue({
-                queue_name: queue_name
-              });
-              let qrec_sch_data = resQueueRecord.qrec_sch_data;
-              let _repeat = {};
-              let _timeout = 5000;
-              switch (qrec_sch_data.schedule_type) {
-                case QueueSceduleService.schedule_type.REPEATABLE:
-                  _repeat = {
-                    cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
-                  };
-                  break;
-                case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
-                  let _startDate = Moment();
-                  let _endDate = Moment(qrec_sch_data.date + " " + qrec_sch_data.time, "YYYY-MM-DD HH:mm:ss");
-                  _timeout = _endDate.diff(_startDate, "milliseconds");
-                  break;
-              }
-              console.log("resQueueRecord :: ", resQueueRecord);
-              for (let a = 0; a < _hosts_datas.length; a++) {
-                for (let b = 0; b < _hosts_datas[a].data.length; b++) {
-                  let hostDataItem = _hosts_datas[a].data[b];
-                  let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
-                    queue_record_id: id,
-                    host_id: _hosts_datas[a].id,
-                    index: indexHostItem,
-                    total: _total_host_item,
-                    host_data: hostDataItem
-                  }, {
-                    // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
-                    timeout: _timeout,
-                    repeat: _repeat
-                  });
-
-                  // Insert to queue record detail 
-                  let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
-                    queue_record_id: id,
-                    queue_name: theJOb.queueName,
-                    job_id: theJOb.id,
-                    job_data: theJOb.data,
-                    status: QueueRecordDetail.STATUS.RUNNING
-                  });
-
-                  indexHostItem += 1;
-                }
-              }
-              break;
-          }
-
-        }
-      });
+      let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resQueueRecord
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }
@@ -278,36 +127,14 @@ export default BaseController.extend<QueueControllerInterface>({
   async deleteQueue(req, res) {
     try {
       let id = req.body.id;
-      let _data_queue_record = await QueueRecordDetailService.getQueueRecordDetails({
-        queue_record_id: id
+      let resDaa
+      let _data_queue_record_details = await QueueRecordDetailService.getQueueRecordDetails({
+        queue_record_id: id,
+        status: QueueRecordDetailService.STATUS.RUNNING
       })
-      _data_queue_record.forEach(async (res_data_record_detail) => {
-        let _processQueue: Queue = null;
-        console.log("res_data_record_detail.qrec_type :: ", res_data_record_detail.qrec_type);
-        switch (res_data_record_detail.qrec_type) {
-          case QueueRecordService.TYPE.INSTANT:
-            _processQueue = ProcessQueue({
-              queue_name: res_data_record_detail.queue_name
-            })
-            _processQueue.remove(res_data_record_detail.job_id);
-            break;
-          case QueueRecordService.TYPE.SCHEDULE:
-            _processQueue = ProcessScheduleQueue({
-              queue_name: res_data_record_detail.queue_name
-            })
-            const jobs: JobInformation3[] = await _processQueue.getRepeatableJobs();
-            jobs.forEach((jobItem) => {
-              _processQueue.removeRepeatableByKey(jobItem.key);
-            })
-            break;
-        }
-        let resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
-          id: res_data_record_detail.id,
-          queue_record_id: res_data_record_detail.qrec_id,
-          queue_name: res_data_record_detail.queue_name,
-          job_id: res_data_record_detail.job_id,
-          job_data: res_data_record_detail.data,
-          status: QueueRecordDetailService.STATUS.STOPPED
+      _data_queue_record_details.forEach(async (res_data_record_detail) => {
+        await DeleteQueueItem({
+          queue_record_detail_id: res_data_record_detail.id
         });
       });
       res.send("Deleted!");

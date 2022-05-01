@@ -4,6 +4,7 @@ import StartConfig from "./StartConfig";
 import StartExpress from "./StartExpress";
 import StartMasterData from "./StartMasterData";
 import StartPubSub from "./StartPubSub";
+import StartQueueWorker from "./StartQueueWorker";
 import StartRecordOpenFolder from "./StartRecordOpenFolder";
 import StartRedis from "./StartRedis";
 import StartSerializeError from "./StartSerializeError";
@@ -19,7 +20,8 @@ const task: Array<any> = [
   StartRecordOpenFolder,
   StartRedis,
   StartSqlite3,
-  StartBullMQ
+  StartBullMQ,
+  StartQueueWorker
 ];
 
 export default function (asyncDone: Function) {

@@ -18,6 +18,7 @@ export default {
       sqlbricks.aliasExpansions({
         "qrec_detail": "queue_record_details",
         'qrec': "queue_records",
+        'qrec_sch': "queue_schedules",
         'exe': "executions",
       });
       let query_record_detail = sqlbricks.select(
@@ -33,6 +34,11 @@ export default {
         'qrec.status as qrec_status',
         'qrec.data as qrec_data',
         'qrec.type as qrec_type',
+        'qrec_sch.id as qrec_sch_id',
+        'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
+        'qrec_sch.execution_id as qrec_sch_execution_id',
+        'qrec_sch.schedule_type as qrec_sch_schedule_type',
+        'qrec_sch.data as qrec_sch_data',
         'exe.id as exe_id',
         'exe.name as exe_name',
         'exe.process_mode as exe_process_mode',
@@ -51,11 +57,17 @@ export default {
         .leftJoin("qrec").on({
           "qrec.id": "qrec_detail.queue_record_id"
         })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
         })
       if (props.queue_record_id != null) {
         query_record_detail.where("qrec.id", props.queue_record_id);
+      }
+      if (props.status != null) {
+        query_record_detail.where("qrec_detail.status", props.status);
       }
       // query_record_detail.limit(1);
       let queryString = query_record_detail.toString();
@@ -76,6 +88,7 @@ export default {
       sqlbricks.aliasExpansions({
         "qrec_detail": "queue_record_details",
         'qrec': "queue_records",
+        'qrec_sch': "queue_schedules",
         'exe': "executions",
       });
       let query_record_detail = sqlbricks.select(
@@ -90,6 +103,12 @@ export default {
         'qrec.execution_id as qrec_execution_id',
         'qrec.status as qrec_status',
         'qrec.data as qrec_data',
+        'qrec.type as qrec_type',
+        'qrec_sch.id as qrec_sch_id',
+        'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
+        'qrec_sch.execution_id as qrec_sch_execution_id',
+        'qrec_sch.schedule_type as qrec_sch_schedule_type',
+        'qrec_sch.data as qrec_sch_data',
         'exe.id as exe_id',
         'exe.name as exe_name',
         'exe.process_mode as exe_process_mode',
@@ -107,6 +126,9 @@ export default {
       query_record_detail
         .leftJoin("qrec").on({
           "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
         })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
