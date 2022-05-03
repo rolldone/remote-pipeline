@@ -7,6 +7,8 @@ import QueueRecordDetail from "../services/QueueRecordDetailService";
 import QueueSceduleService from "../services/QueueSceduleService";
 import { onActive, onComplete, onFailed } from "../functions/QueueEvent";
 import ConnectToHost from "../functions/ConnectToHost";
+import PipelineLoop from "../functions/PipelineLoop";
+import GetOsName from "../functions/GetOsName";
 
 declare let db: Knex;
 
@@ -16,10 +18,14 @@ export default function (props: any) {
       console.log("job ::: ", job.data);
       let {
         host_data,
-        host_id
+        host_id,
+        queue_record_id
       } = job.data;
-      let resConnectData = await ConnectToHost({ host_data, host_id });
-      console.log("resConnectData :: ", resConnectData);
+      // let resConnectData = await ConnectToHost({ host_data, host_id });
+      // console.log("resConnectData :: ", resConnectData);
+      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data });
+      // let osVersion = await GetOsName({ sshPromise: resConnectData });
+      
       var test = () => {
         return new Promise((resolve: Function) => {
           setTimeout(() => {
@@ -29,6 +35,7 @@ export default function (props: any) {
       }
       await test();
     } catch (ex) {
+      console.log(`${props.queue_name} - ex :: `, ex);
       return 'failed';
     }
     return 'done';
