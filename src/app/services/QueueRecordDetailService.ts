@@ -76,6 +76,7 @@ export default {
       res_data_record_detail.filter((el) => {
         el.data = JSON.parse(el.data || '{}');
         el.qrec_data = JSON.parse(el.qrec_data || '{}');
+        el.qrec_sch_data = JSON.parse(el.qrec_sch_data || '{}');
         return el;
       });
       return res_data_record_detail;
@@ -146,6 +147,7 @@ export default {
 
       res_data_record_detail.data = JSON.parse(res_data_record_detail.data || '{}');
       res_data_record_detail.qrec_data = JSON.parse(res_data_record_detail.qrec_data || '{}');
+      res_data_record_detail.qrec_sch_data = JSON.parse(res_data_record_detail.qrec_sch_data || '{}');
       return res_data_record_detail;
     } catch (ex) {
       throw ex;

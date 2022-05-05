@@ -113,6 +113,7 @@ export default function (props: any) {
               for (let a = 0; a < _hosts_datas.length; a++) {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
+                  let idJobSchedule = (Math.random() + 1).toString(36).substring(7);
                   let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
                     queue_record_id: id,
                     host_id: _hosts_datas[a].id,
@@ -122,17 +123,17 @@ export default function (props: any) {
                     schedule_type: qrec_sch_data.schedule_type
                   }, {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
+                    jobId: idJobSchedule,
                     delay: _timeout,
                     repeat: _repeat
                   });
-
                   // Insert to queue record detail 
                   let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
                     queue_record_id: id,
                     queue_name: theJOb.queueName,
-                    job_id: theJOb.id,
+                    job_id: idJobSchedule,
                     job_data: theJOb.data,
-                    status: QueueRecordDetailService.STATUS.RUNNING
+                    status: QueueRecordDetailService.STATUS.RUNNING,
                   });
 
                   indexHostItem += 1;

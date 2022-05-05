@@ -64,6 +64,7 @@ export default {
       resData = resData[0];
       if (resData == null) return;
       resData.data = JSON.parse(resData.data);
+      resData.parent_order_temp_ids = resData.parent_order_temp_ids == null ? [] : JSON.parse(resData.parent_order_temp_ids);
       return resData;
 
     } catch (ex) {
@@ -133,11 +134,11 @@ export default {
       }
 
       let gg = query.toString();
-      console.log("GGG", gg);
       let resDatas = await db.raw(gg);
 
       resDatas.filter((resData) => {
         resData.data = JSON.parse(resData.data);
+        resData.parent_order_temp_ids = resData.parent_order_temp_ids == null ? [] : JSON.parse(resData.parent_order_temp_ids);
         return resData;
       })
 

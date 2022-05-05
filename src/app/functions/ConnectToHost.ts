@@ -41,7 +41,7 @@ export default async function (props: {
           password: auth_value.password,
           passphrase: auth_value.passphrase
         }
-        console.log("resdHostData :: ", sshconfig);
+        // console.log("resdHostData :: ", sshconfig);
         break;
       case 'private_key':
         auth_value = host_data;
@@ -55,9 +55,8 @@ export default async function (props: {
     }
     var ssh = new ssh2Promise(sshconfig);
     await ssh.connect();
+    console.log("aaaaaaaaaaaaaaaaaaa :: ", ssh.config);
     console.log("Connection established");
-    let resData = await ssh.exec("whoami");
-    console.log("ResData :: ", resData);
     return ssh;
   } catch (ex) {
     throw ex;

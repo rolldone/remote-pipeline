@@ -1,38 +1,92 @@
 import SSH2Promise from "ssh2-promise";
 import mustache from 'mustache';
+import MergeVarScheme from "./MergeVarScheme";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 
-export default function (props: {
+declare let masterData: MasterDataInterface
+
+export default async function (props: {
   sshPromise: SSH2Promise,
   variable: any
   schema: any
   pipeline_task: any
+  socket: any
+  resolve: Function
+  rejected: Function
 }) {
   let {
     sshPromise,
     variable,
     schema,
-    pipeline_task
+    pipeline_task,
+    socket
   } = props;
-  let mergeVarScheme = ((variable, schema) => {
-    let jj = {};
-    for (var a = 0; a < schema.length; a++) {
-      if (variable[a].is_active == true) {
-        switch (schema[a].type) {
-          case 'input-asset':
-            jj[schema[a].name] = variable[a].attachment_datas;
-            break;
-          case 'input-script':
-            jj[schema[a].name] = variable[a].value;
-            break;
-          case 'input-text':
-            jj[schema[a].name] = variable[a].value;
-            break;
+
+  try {
+    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let _data = pipeline_task.data;
+    let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
+    let _condition_values = _data.condition_values;
+    let isPassed = [];
+    let evalString = "";
+    let command = mustache.render(_data.command.toString() + "\r", mergeVarScheme);
+
+    masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
+      for (var a = 0; a < _parent_order_temp_ids.length; a++) {
+        if (_parent_order_temp_ids[a] == props.parent) {
+          // console.log("Conditional command :: Called ");
+          for (var key in _condition_values) {
+            if (_condition_values[key].condition_logic == 'NONE') {
+              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                isPassed.push(true);
+                evalString += "true";
+              } else {
+                isPassed.push(false);
+                evalString += "false";
+              }
+            }
+
+            if (_condition_values[key].condition_logic == 'AND') {
+              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                isPassed.push(true);
+                evalString += " && true";
+              } else {
+                isPassed.push(false);
+                evalString += " && false";
+              }
+            }
+
+            if (_condition_values[key].condition_logic == 'OR') {
+              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                isPassed.push(true);
+                evalString += " || true";
+              } else {
+                isPassed.push(false);
+                evalString += " || false";
+              }
+            }
+          }
+          if(eval(evalString) == true){
+            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+              command: command,
+              parent: pipeline_task.temp_id
+            })
+          }else{
+            // throw it
+            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id+"_error", {
+              command: command,
+              parent: pipeline_task.temp_id
+            })
+          }
+          break;
         }
       }
+    })
+    return {
+      parent: pipeline_task.temp_id,
+      command: command
     }
-    return jj;
-  })(variable, schema)
-  //let rederJadi = mustache.render()  
-  // console.log("mergeVarScheme :: ", mergeVarScheme);
-  console.log("props conditional-command ::: ", props);
+  } catch (ex) {
+    throw ex;
+  }
 }

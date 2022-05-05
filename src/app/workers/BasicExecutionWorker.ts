@@ -26,14 +26,14 @@ export default function (props: any) {
       let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data });
       // let osVersion = await GetOsName({ sshPromise: resConnectData });
       
-      var test = () => {
-        return new Promise((resolve: Function) => {
-          setTimeout(() => {
-            resolve();
-          }, 2000 * parseInt(job.id));
-        })
-      }
-      await test();
+      // var test = () => {
+      //   return new Promise((resolve: Function) => {
+      //     setTimeout(() => {
+      //       resolve();
+      //     }, 2000 * parseInt(job.id));
+      //   })
+      // }
+      // await test();
     } catch (ex) {
       console.log(`${props.queue_name} - ex :: `, ex);
       return 'failed';

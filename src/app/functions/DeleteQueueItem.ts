@@ -15,10 +15,10 @@ export default async function (props: {
     let res_data_record_detail = await QueueRecordDetailService.getQueueRecordDetail({
       id: queue_record_detail_id
     })
-    let _processQueue : Queue = null;
+    let _processQueue: Queue = null;
     let resDataInsert = null;
-    console.log("res_data_record_detail.qrec_data :: ",res_data_record_detail.qrec_type)
-    switch(res_data_record_detail.qrec_type){
+    console.log("res_data_record_detail.qrec_data :: ", res_data_record_detail.qrec_type)
+    switch (res_data_record_detail.qrec_type) {
       case QueueRecordService.TYPE.INSTANT:
         _processQueue = ProcessQueue({
           queue_name: res_data_record_detail.queue_name
@@ -34,7 +34,7 @@ export default async function (props: {
         });
         break;
       case QueueRecordService.TYPE.SCHEDULE:
-        switch(res_data_record_detail.qrec_sch_schedule_type){
+        switch (res_data_record_detail.qrec_sch_schedule_type) {
           case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
             _processQueue = ProcessQueue({
               queue_name: res_data_record_detail.queue_name
@@ -53,7 +53,15 @@ export default async function (props: {
             _processQueue = ProcessScheduleQueue({
               queue_name: res_data_record_detail.queue_name
             })
-            _processQueue.remove(res_data_record_detail.job_id);
+            let _resRepeatable = await _processQueue.getRepeatableJobs();
+            const jobs = await _processQueue.getRepeatableJobs();
+            for (let i = 0; i < jobs.length; i++) {
+              const job = jobs[i];
+              if (res_data_record_detail.job_id == job.id) {
+                await _processQueue.removeRepeatableByKey(job.key);
+                break;
+              }
+            }
             resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,

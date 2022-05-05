@@ -12,7 +12,7 @@ declare let masterData: MasterDataInterface
 const oberserverPath = "queue.request.";
 const oberserverPathGroup = "queue.request.flow.";
 
-export default function (props: any) {
+const CreateQueueItem = function (props: any) {
 
   let {
     queue_name,
@@ -62,36 +62,40 @@ export default function (props: any) {
 
               break;
             case QueueRecordService.TYPE.SCHEDULE:
-              _processQueue = ProcessScheduleQueue({
-                queue_name: queue_name
-              });
 
-              let resQueueRecord = res_data_record_detail.qrec;
-
-              let qrec_sch_data = resQueueRecord.qrec_sch_data;
+              let qrec_sch_data = res_data_record_detail.qrec_sch_data;
               let _repeat = null;
               let _timeout = 5000;
+
               switch (qrec_sch_data.schedule_type) {
                 case QueueSceduleService.schedule_type.REPEATABLE:
+                  _processQueue = ProcessScheduleQueue({
+                    queue_name: queue_name
+                  });
                   _repeat = {
                     cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
                   };
                   break;
                 case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
+                  _processQueue = ProcessQueue({
+                    queue_name: queue_name
+                  });
                   let _startDate = Moment();
                   let _endDate = Moment(qrec_sch_data.date + " " + qrec_sch_data.time, "YYYY-MM-DD HH:mm:ss");
                   _timeout = _endDate.diff(_startDate, "milliseconds");
                   break;
               }
 
-              theJOb = await _processQueue.add("host_" + res_data_record_detail.data.ip_address, {
+              let idJobSchedule = (Math.random() + 1).toString(36).substring(7);
+              theJOb = await _processQueue.add("host_" + res_data_record_detail.data.host_data.ip_address, {
                 queue_record_id: res_data_record_detail.qrec_id,
                 host_id: res_data_record_detail.data.host_id,
                 index: 0,
                 total: 1,
-                host_data: res_data_record_detail.data.host_data
+                host_data: res_data_record_detail.data.host_data,
+                schedule_type: qrec_sch_data.schedule_type
               }, {
-                // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
+                jobId: idJobSchedule,
                 timeout: _timeout,
                 repeat: _repeat
               });
@@ -99,7 +103,7 @@ export default function (props: any) {
               resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
                 queue_record_id: res_data_record_detail.qrec_id,
                 queue_name: theJOb.queueName,
-                job_id: theJOb.id,
+                job_id: idJobSchedule,
                 job_data: theJOb.data,
                 status: QueueRecordDetailService.STATUS.RUNNING
               });
@@ -116,3 +120,5 @@ export default function (props: any) {
     }
   })
 }
+
+export default CreateQueueItem;
