@@ -19,6 +19,9 @@ RUN apt-get install -y iputils-ping
 # install net-tools
 RUN apt-get install -y net-tools
 
+# Install rsync
+RUN apt-get install -y rsync 
+
 # Replace shell with bash so we can source files
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 

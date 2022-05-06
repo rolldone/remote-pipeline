@@ -2,18 +2,11 @@ import SSH2Promise from "ssh2-promise";
 import mustache from 'mustache';
 import MergeVarScheme from "./MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { TaskTypeInterface } from ".";
 
 declare let masterData: MasterDataInterface
 
-export default async function (props: {
-  sshPromise: SSH2Promise,
-  variable: any
-  schema: any
-  pipeline_task: any
-  socket: any
-  resolve: Function
-  rejected: Function
-}) {
+export default async function (props: TaskTypeInterface) {
   let {
     sshPromise,
     variable,
@@ -66,14 +59,14 @@ export default async function (props: {
               }
             }
           }
-          if(eval(evalString) == true){
+          if (eval(evalString) == true) {
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
               command: command,
               parent: pipeline_task.temp_id
             })
-          }else{
+          } else {
             // throw it
-            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id+"_error", {
+            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
               command: command,
               parent: pipeline_task.temp_id
             })

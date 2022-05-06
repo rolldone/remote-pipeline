@@ -6,8 +6,8 @@ import PipelineItemService from "../services/PipelineItemService";
 import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordService from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
-import ConnectToHost from "./ConnectToHost";
-import task_type from "./task_type";
+import ConnectToHost from "./ConnectOnSShPromise";
+import task_type, { TaskTypeInterface } from "./task_type";
 
 declare let masterData: MasterDataInterface;
 
@@ -87,8 +87,8 @@ export default async function (props: {
         }
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
           // console.log("_pipeline_task[a2].type :: ", _pipeline_task[a2].type);
-
-          let isnnn = await task_type[_pipeline_task[a2].type]({
+          let theTaskTYpeFunc: { (props: TaskTypeInterface) } = task_type[_pipeline_task[a2].type];
+          let isnnn = await theTaskTYpeFunc({
             raw_variable: variable,
             sshPromise: props.sshPromise,
             variable: _var_data,
@@ -181,6 +181,7 @@ export default async function (props: {
                 })
                 command_history = "";
                 if (lastStartParent == who_parent) {
+                  console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
                   resolveDone();
                 }
               }, 2000);

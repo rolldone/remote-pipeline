@@ -2,18 +2,11 @@ import SSH2Promise from "ssh2-promise";
 import MergeVarScheme from "./MergeVarScheme";
 import mustache from 'mustache';
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { TaskTypeInterface } from ".";
 
 declare let masterData: MasterDataInterface;
 
-export default function (props: {
-  sshPromise: SSH2Promise,
-  variable: any
-  schema: any
-  pipeline_task: any
-  socket: any,
-  resolve: Function
-  rejected: Function
-}) {
+export default function (props: TaskTypeInterface) {
   let {
     sshPromise,
     variable,

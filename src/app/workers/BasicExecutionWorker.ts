@@ -6,7 +6,7 @@ import { QueueRecordStatus } from "../services/QueueRecordService";
 import QueueRecordDetail from "../services/QueueRecordDetailService";
 import QueueSceduleService from "../services/QueueSceduleService";
 import { onActive, onComplete, onFailed } from "../functions/QueueEvent";
-import ConnectToHost from "../functions/ConnectToHost";
+import ConnectToHost from "../functions/ConnectOnSShPromise";
 import PipelineLoop from "../functions/PipelineLoop";
 import GetOsName from "../functions/GetOsName";
 

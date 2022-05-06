@@ -1,7 +1,7 @@
 import HostService from "../services/HostService";
 import ssh2Promise from 'ssh2-promise';
 
-export default async function (props: {
+const ConnectOnSShPromise = async function (props: {
   host_data: any
   host_id: any
 }) {
@@ -55,10 +55,11 @@ export default async function (props: {
     }
     var ssh = new ssh2Promise(sshconfig);
     await ssh.connect();
-    console.log("aaaaaaaaaaaaaaaaaaa :: ", ssh.config);
     console.log("Connection established");
     return ssh;
   } catch (ex) {
     throw ex;
   }
 }
+
+export default ConnectOnSShPromise;
