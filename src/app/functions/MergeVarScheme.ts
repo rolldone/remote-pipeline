@@ -1,4 +1,4 @@
-export default function (variable, scheme) {
+const MergeVarScheme = function (variable, scheme) {
   let mergeVarScheme = ((variable, schema) => {
     let jj = {};
     for (var a = 0; a < schema.length; a++) {
@@ -20,3 +20,5 @@ export default function (variable, scheme) {
   })(variable, scheme)
   return mergeVarScheme;
 }
+
+export default MergeVarScheme;

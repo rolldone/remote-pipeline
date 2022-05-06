@@ -2,6 +2,7 @@ import SSH2Promise from "ssh2-promise";
 import BasicCommand from "./BasicCommand";
 import ConditionalCommand from "./ConditionalCommand";
 import FileTransfer from "./FileTransfer";
+import WriteTransfer from "./WriteTransfer";
 
 export interface TaskTypeInterface {
   raw_variable: any,
@@ -17,5 +18,6 @@ export interface TaskTypeInterface {
 export default {
   "basic-command": BasicCommand,
   "conditional-command": ConditionalCommand,
-  "file-transfer": FileTransfer
+  "file-transfer": FileTransfer,
+  "write-transfer": WriteTransfer
 }
