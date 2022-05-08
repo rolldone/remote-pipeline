@@ -69,7 +69,11 @@ export default {
       if (props.status != null) {
         query_record_detail.where("qrec_detail.status", props.status);
       }
-      // query_record_detail.limit(1);
+      if (props.order_by != null) {
+        query_record_detail.orderBy(props.order_by);
+      }
+      query_record_detail.limit(props.limit || 50);
+      query_record_detail.offset((props.offset || 0) * (props.limit || 50));
       let queryString = query_record_detail.toString();
       console.log("query :: ", queryString);
       let res_data_record_detail: Array<any> = await db.raw(queryString);
@@ -77,6 +81,7 @@ export default {
         el.data = JSON.parse(el.data || '{}');
         el.qrec_data = JSON.parse(el.qrec_data || '{}');
         el.qrec_sch_data = JSON.parse(el.qrec_sch_data || '{}');
+        el.exe_pipeline_item_ids = JSON.parse(el.exe_pipeline_item_ids || '[]');
         return el;
       });
       return res_data_record_detail;
@@ -148,6 +153,7 @@ export default {
       res_data_record_detail.data = JSON.parse(res_data_record_detail.data || '{}');
       res_data_record_detail.qrec_data = JSON.parse(res_data_record_detail.qrec_data || '{}');
       res_data_record_detail.qrec_sch_data = JSON.parse(res_data_record_detail.qrec_sch_data || '{}');
+      res_data_record_detail.exe_pipeline_item_ids = JSON.parse(res_data_record_detail.exe_pipeline_item_ids || '[]');
       return res_data_record_detail;
     } catch (ex) {
       throw ex;

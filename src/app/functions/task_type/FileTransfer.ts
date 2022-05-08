@@ -62,12 +62,14 @@ export default async function (props: TaskTypeInterface) {
                   }
                 }
                 masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+                  pipeline_task_id: pipeline_task.id,
                   command: command,
                   parent: pipeline_task.temp_id
                 })
               } catch (ex) {
                 console.log("sftp - ex :: ", ex);
                 masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+                  pipeline_task_id: pipeline_task.id,
                   command: command,
                   parent: pipeline_task.temp_id
                 })
@@ -113,6 +115,7 @@ export default async function (props: TaskTypeInterface) {
                       if (_total_times_transfer == _count_time_transfer) {
                         ptyProcess.write('exit' + '\r')
                         masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+                          pipeline_task_id: pipeline_task.id,
                           command: command,
                           parent: pipeline_task.temp_id
                         })
@@ -122,6 +125,7 @@ export default async function (props: TaskTypeInterface) {
                     case data.includes('rsync error:'):
                       ptyProcess.write('exit' + '\r')
                       masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+                        pipeline_task_id: pipeline_task.id,
                         command: command,
                         parent: pipeline_task.temp_id
                       })
@@ -170,6 +174,7 @@ export default async function (props: TaskTypeInterface) {
 
     return {
       parent: pipeline_task.temp_id,
+      pipeline_task_id: pipeline_task.id,
       command: command
     }
 

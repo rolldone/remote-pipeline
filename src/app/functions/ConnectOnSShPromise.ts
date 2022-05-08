@@ -18,6 +18,7 @@ const ConnectOnSShPromise = async function (props: {
         auth_value = host_data;
         sshconfig = {
           host: auth_value.host,
+          port: auth_value.port,
           username: auth_value.username,
           password: auth_value.password
         }
@@ -47,12 +48,14 @@ const ConnectOnSShPromise = async function (props: {
         auth_value = host_data;
         sshconfig = {
           host: auth_value.host,
+          port: auth_value.port,
           username: auth_value.username,
           privateKey: auth_value.private_key,
           passphrase: auth_value.passphrase
         }
         break;
     }
+    console.log("ooooooooooooooooooooo :: ", sshconfig);
     var ssh = new ssh2Promise(sshconfig);
     await ssh.connect();
     console.log("Connection established");

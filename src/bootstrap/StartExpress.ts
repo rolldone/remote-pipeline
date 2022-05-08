@@ -1,5 +1,6 @@
 import AppConfig from "config/AppConfig";
 import Express from "tool/Express";
+import http from 'http';
 
 var nunjucks = require("nunjucks");
 var cors = require('cors')
@@ -26,7 +27,7 @@ export default function (next: Function) {
     /* Perbedaan antara  global.Server.listen dan global.app.Listen
      - global.Server.listen -> Ini bisa di integrasikan dengan modul lain seperti socket io
      - global.app.listen -> Ini hanya untuk express saja */
-    global.Server = require('http').createServer(app);
+    global.Server = http.createServer(app);
     global.Server.listen(AppConfig.PORT, () => {
       console.log(`Example app listening}`)
     });

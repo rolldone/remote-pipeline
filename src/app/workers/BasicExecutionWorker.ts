@@ -12,28 +12,18 @@ import GetOsName from "../functions/GetOsName";
 
 declare let db: Knex;
 
-export default function (props: any) {
+const BasicExecutionWorker = function (props: any) {
   const queueEvents = new Worker(props.queue_name, async (job: Job) => {
     try {
       console.log("job ::: ", job.data);
       let {
         host_data,
         host_id,
-        queue_record_id
+        queue_record_id,
+        user_id
       } = job.data;
-      // let resConnectData = await ConnectToHost({ host_data, host_id });
-      // console.log("resConnectData :: ", resConnectData);
-      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data });
-      // let osVersion = await GetOsName({ sshPromise: resConnectData });
-      
-      // var test = () => {
-      //   return new Promise((resolve: Function) => {
-      //     setTimeout(() => {
-      //       resolve();
-      //     }, 2000 * parseInt(job.id));
-      //   })
-      // }
-      // await test();
+      let job_id = job.id;
+      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, user_id, job_id });
     } catch (ex) {
       console.log(`${props.queue_name} - ex :: `, ex);
       return 'failed';
@@ -63,3 +53,5 @@ export default function (props: any) {
   });
   return queueEvents;
 }
+
+export default BasicExecutionWorker;

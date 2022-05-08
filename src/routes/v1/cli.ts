@@ -11,6 +11,7 @@ export interface QueueRequestInterface {
   queue_name?: string
   data?: any
   callback?: Function
+  process_limit?: number
 }
 
 const Cli = BaseRouteCli.extend<BaseRouteInterface>({
@@ -30,8 +31,8 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       * Listen only basic queue
       */
     masterData.setOnListener('queue.request.sequential', function (props: QueueRequestInterface) {
-      console.log("QueueRequestInterface :: ", props);
-      if(props == null) return;
+      // console.log("QueueRequestInterface :: ", props);
+      if (props == null) return;
       if (_basicExecutions[props.queue_name] == null) {
         _basicExecutions[props.queue_name] = BasicExecutionWorker({
           ...props.data,
@@ -44,18 +45,20 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
      * Listen only parallel queue
      */
     masterData.setOnListener('queue.request.parallel', function (props: QueueRequestInterface) {
-      if(props == null) return;
+      console.log("QueueRequestInterface :: ", props);
+      if (props == null) return;
       if (_parallelExecutions[props.queue_name] == null) {
         _parallelExecutions[props.queue_name] = ParallelExecutionWorker({
           ...props.data,
           queue_name: props.queue_name,
+          concurrency: props.process_limit
         });
       }
       props.callback(_parallelExecutions[props.queue_name]);
     }, false);
 
     masterData.setOnListener('queue.request.flow.sequential', function (props: QueueRequestInterface) {
-      if(props == null) return;
+      if (props == null) return;
       if (_basicGroupExecutions[props.queue_name] == null) {
         _basicGroupExecutions[props.queue_name] = GroupExecutionWorker({
           ...props.data,
@@ -68,7 +71,7 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
      * Call all queues
      */
     masterData.setOnListener('queue.request.queues', function (props: QueueRequestInterface) {
-      if(props == null) return;
+      if (props == null) return;
       let _gg = [];
       let allQue = {
         ..._parallelExecutions,

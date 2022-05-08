@@ -15,6 +15,9 @@ import BaseRoute from "../../base/BaseRoute";
 
 import multer from 'multer';
 import QueueController from "@root/app/controllers/xhr/QueueController";
+import WSocketController from "@root/app/controllers/WSocketController";
+import QueueRecordController from "@root/app/controllers/xhr/QueueRecordController";
+import QueueRecordDetailController from "@root/app/controllers/xhr/QueueRecordDetailController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -39,6 +42,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use('/', [], function (route: BaseRouteInterface) {
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
       route.get("/dashboard*", "front.dashboard", [], DashboardController.binding().displayView);
+      route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
 
@@ -80,6 +84,15 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/delete", "xhr.queue.delete", [upload.any()], QueueController.binding().deleteQueue);
       route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
+    });
+    self.use('/xhr/queue-record', [], function (route: BaseRouteInterface) {
+      route.get("/queue-records", "xhr.queue_record.queue_records", [], QueueRecordController.binding().getQueueRecords);
+      route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
+    });
+    self.use('/xhr/queue-record-detail', [], function (route: BaseRouteInterface) {
+      route.get("/queue-record-details", "xhr.queue_record_detail.queue_record_details", [], QueueRecordDetailController.binding().getQueueRecordDetails);
+      route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
+      route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.get("/login", "xhr.auth.login", [], AuthController.binding().login);

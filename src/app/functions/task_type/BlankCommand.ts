@@ -28,6 +28,7 @@ export default function (props: TaskTypeInterface) {
         if (_parent_order_temp_ids[a] == props.parent) {
           console.log("Basic command ::  Called ");
           masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+            pipeline_task_id: pipeline_task.id,
             command: command,
             parent: pipeline_task.temp_id
           })
@@ -38,6 +39,7 @@ export default function (props: TaskTypeInterface) {
 
     return {
       parent: pipeline_task.temp_id,
+      pipeline_task_id: pipeline_task.id,
       command: command
     }
   } catch (ex) {

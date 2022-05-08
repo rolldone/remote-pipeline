@@ -120,7 +120,14 @@ export default {
         query = query.where("qrec.status", props.status);
       }
 
+      if (props.type != null) {
+        query = query.where("qrec.type", props.type);
+      }
+
       query = query.orderBy("exe.id DESC");
+
+      query.limit(props.limit || 50);
+      query.offset((props.offset || 0) * (props.limit || 50));
 
       let _query = query.toString();
       let resQueueRecords: Array<any> = await db.raw(_query);

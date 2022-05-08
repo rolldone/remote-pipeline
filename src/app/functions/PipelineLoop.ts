@@ -7,19 +7,24 @@ import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordService from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
+import RecordCommandToFileLog from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
 
 declare let masterData: MasterDataInterface;
 
-export default async function (props: {
+const PipelineLoop = async function (props: {
   queue_record_id: number
   host_id: number
-  host_data: any
+  host_data: any,
+  user_id: any
+  job_id: any
 }) {
   let {
     queue_record_id,
     host_id,
-    host_data
+    host_data,
+    user_id,
+    job_id
   } = props;
   try {
     // First get the queue_record
@@ -131,18 +136,24 @@ export default async function (props: {
           })
           let socket = await sshPromise.shell();
           let who_parent = null;
+          let pipeline_task_id = null;
           let command_history = "";
           let debounceee: DebouncedFunc<any> = null;
           masterData.setOnListener("data_pipeline_" + _pipeline_item.id + "_error", (props) => {
-            resolveReject();
+            pipeline_task_id = props.pipeline_task_id;
+            socket.write("echo " + props.message + "\r");
+            socket.write("echo error-error\r");
+            resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
           masterData.setOnListener("data_pipeline_" + _pipeline_item.id, (props) => {
             who_parent = props.parent;
             socket.write(props.command);
+            pipeline_task_id = props.pipeline_task_id;
           });
-          socket.on("data", (data) => {
+          socket.on("data", async (data) => {
             let _split = data.toString().split(/\n/);
             let _isDone = false;
+            let _isError = false;
             for (let aes = 0; aes < _split.length; aes++) {
               _split[aes] = _split[aes].replace(/\r/g, "");
               switch (_split[aes]) {
@@ -155,23 +166,48 @@ export default async function (props: {
                     _isDone = true;
                     break;
                   }
+                  if (_split[aes].toString().replace(/ /g, '') == "error-error") {
+                    _isError = true;
+                    break;
+                  }
                   break;
               }
               if (_isDone == true) {
                 break;
               }
+              if (_isError == true) {
+                break;
+              }
             }
+            console.log("Console :: ", data.toString());
             switch (true) {
               case data.toString().includes('done-done') == true:
               case data.toString().includes('echo done-done') == true:
                 break;
               default:
                 command_history += data.toString();
-                console.log(data.toString());
+                // console.log(data.toString());
+                if (pipeline_task_id != null) {
+                  if (data.toString() != "") {
+                    RecordCommandToFileLog({
+                      fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id,
+                      commandString: data.toString()
+                    })
+                    // masterData.saveData("ws.commit", {
+                    //   user_id: user_id,
+                    //   pipeline_task_id,
+                    //   data: data.toString()
+                    // });
+                  }
+                }
                 break;
             }
             if (debounceee != null) {
               debounceee.cancel();
+            }
+            if(_isError == true){
+              await sshPromise.close();
+              return;
             }
             if (_isDone == true) {
               debounceee = debounce((_command_history: string, dataString: string) => {
@@ -214,3 +250,5 @@ export default async function (props: {
     throw ex;
   }
 }
+
+export default PipelineLoop;

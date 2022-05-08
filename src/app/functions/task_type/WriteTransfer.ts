@@ -45,12 +45,14 @@ const WriteTransfer = function (props: TaskTypeInterface) {
               await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
             }
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+              pipeline_task_id: pipeline_task.id,
               command: command,
               parent: pipeline_task.temp_id
             })
           } catch (ex) {
             console.log("sftp - ex :: ", ex);
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+              pipeline_task_id: pipeline_task.id,
               command: command,
               parent: pipeline_task.temp_id
             })
@@ -60,6 +62,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     })
     return {
       parent: pipeline_task.temp_id,
+      pipeline_task_id: pipeline_task.id,
       command: command
     }
   } catch (ex) {

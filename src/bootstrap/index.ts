@@ -5,10 +5,10 @@ import StartExpress from "./StartExpress";
 import StartMasterData from "./StartMasterData";
 import StartPubSub from "./StartPubSub";
 import StartQueueWorker from "./StartQueueWorker";
-import StartRecordOpenFolder from "./StartRecordOpenFolder";
 import StartRedis from "./StartRedis";
 import StartSerializeError from "./StartSerializeError";
 import StartSqlite3 from "./StartSqlite3";
+import StartWebSocket from "./StartWebSocket";
 
 const task: Array<any> = [
   /* Main Bootstrap */
@@ -17,11 +17,11 @@ const task: Array<any> = [
   StartMasterData,
   StartConfig,
   StartExpress,
-  StartRecordOpenFolder,
   StartRedis,
   StartSqlite3,
   StartBullMQ,
-  StartQueueWorker
+  StartQueueWorker,
+  StartWebSocket
 ];
 
 export default function (asyncDone: Function) {

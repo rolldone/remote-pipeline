@@ -1,4 +1,3 @@
-import CreateQueue from "@root/app/functions/CreateQueue";
 import ProcessQueue from "@root/app/queues/ProcessQueue";
 import ProcessScheduleQueue from "@root/app/queues/ProcessScheduleQueue";
 import ExecutionService from "@root/app/services/ExecutionService";
@@ -12,7 +11,7 @@ import { Queue, Worker } from "bullmq";
 
 declare let masterData: MasterDataInterface
 
-export default function (props: any) {
+const CreateQueue = function (props: any) {
 
   let {
     id,
@@ -27,6 +26,7 @@ export default function (props: any) {
       masterData.saveData("queue.request." + process_mode, {
         queue_name,
         data,
+        process_limit,
         callback: async (worker: Worker) => {
           if (worker.isRunning() == false) {
             worker.resume();
@@ -62,14 +62,16 @@ export default function (props: any) {
               for (let a = 0; a < _hosts_datas.length; a++) {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
+                  let idJObInstant = (Math.random() + 1).toString(36).substring(7);
                   let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
                     queue_record_id: id,
                     host_id: _hosts_datas[a].id,
                     index: indexHostItem,
                     total: _total_host_item,
-                    host_data: hostDataItem
+                    host_data: hostDataItem,
+                    user_id: "one"
                   }, {
-                    // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
+                    jobId: idJObInstant,//id + "-" + resQueueRecords.exe_host_ids[a],
                     timeout: 5000
                   });
 
@@ -77,7 +79,7 @@ export default function (props: any) {
                   let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
                     queue_record_id: id,
                     queue_name: theJOb.queueName,
-                    job_id: theJOb.id,
+                    job_id: idJObInstant,
                     job_data: theJOb.data,
                     status: QueueRecordDetailService.STATUS.RUNNING
                   });
@@ -120,7 +122,8 @@ export default function (props: any) {
                     index: indexHostItem,
                     total: _total_host_item,
                     host_data: hostDataItem,
-                    schedule_type: qrec_sch_data.schedule_type
+                    schedule_type: qrec_sch_data.schedule_type,
+                    user_id: "one"
                   }, {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
                     jobId: idJobSchedule,
@@ -148,3 +151,5 @@ export default function (props: any) {
     }
   })
 }
+
+export default CreateQueue;
