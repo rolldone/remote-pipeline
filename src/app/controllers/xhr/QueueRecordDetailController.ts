@@ -48,40 +48,22 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getDisplayProcess(req, res) {
     try {
-      let _ws_client: WebSocket = ws_client[req.query.key];
+      let _ws_client: {
+        key: string
+        ws: WebSocket
+      } = ws_client[req.query.key];
       let id = req.params.id;
       let resData = await QueueRecordDetailService.getQueueRecordDetail({
         id
       });
       let _pipeline_item_ids = resData.exe_pipeline_item_ids;
-      let _aa = 50;
       for (var a = 0; a < _pipeline_item_ids.length; a++) {
         let gg = _pipeline_item_ids[a]
-        let isUsed = false;
-        let isPending = null;
-        _aa += 50;
-        let fileREadline = ReadRecordCOmmandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg, (data) => {
-          if (isPending != null) {
-            isPending.cancel();
-          }
-          isPending = debounce(() => {
-            isUsed = false;
-            fileREadline.close();
-            console.log("FileReadline Close")
-          }, 1000);
-          isPending();
-          setTimeout(() => {
-            isUsed = true;
-            _ws_client.send(JSON.stringify({
-              action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
-              data: data
-            }))
-          }, _aa += 50);
-        });
-        let isPendingTailClose = null;
-        let tail = TailRecordCommandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg);
-        tail.on("line", function (tail, data) {
-          if (isUsed == false) {
+        // Tail function
+        let runningTail = () => {
+          let isPendingTailClose = null;
+          let tail = TailRecordCommandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg);
+          tail.on("line", function (data) {
             if (isPendingTailClose != null) {
               isPendingTailClose.cancel();
             }
@@ -90,26 +72,38 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
               console.log("unwatch ", "job_id_" + resData.job_id + "_pipeline_id_" + gg)
             }, 120000);
             isPendingTailClose();
-            // console.log(data);
-            _ws_client.send(JSON.stringify({
+            // If suddenly get close by websocket event
+            if (_ws_client != null) {
+              _ws_client.ws.send(JSON.stringify({
+                action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
+                data: data
+              }))
+            }
+          });
+          tail.on("error", function (error) {
+            console.log('ERROR: ', error);
+          });
+          return tail;
+        }
+        let isPendingToClose = null;
+        let fileREadline = ReadRecordCOmmandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg, (data) => {
+          if (isPendingToClose != null) {
+            isPendingToClose.cancel();
+          }
+          isPendingToClose = debounce(() => {
+            fileREadline.close();
+            console.log("FileReadline Close")
+            runningTail();
+          }, 1000);
+          isPendingToClose();
+          // If suddenly get close by websocket event
+          if (_ws_client != null) {
+            _ws_client.ws.send(JSON.stringify({
               action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
               data: data
             }))
-            // masterData.saveData("ws.commit.one", {
-            //   action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
-            //   data: data
-            // })
           }
-        }.bind(this, tail));
-        tail.on("error", function (error) {
-          console.log('ERROR: ', error);
         });
-
-        isPendingTailClose = debounce(() => {
-          tail.unwatch();
-          console.log("unwatch ", "job_id_" + resData.job_id + "_pipeline_id_" + gg)
-        }, 120000);
-        isPendingTailClose();
       }
       return res.send({
         status: 'success',

@@ -47,7 +47,7 @@ export default function (next: Function) {
     }
     ws.onclose = function (event) {
       delete _ws_client[wsClient.key];
-      masterData.removeListener("ws.commit." + wsClient.key)
+      console.log("Get onclose from :: ", wsClient.key);
     }
     ws.on('message', function message(data: any) {
       console.log('received: %s', data);
@@ -56,12 +56,12 @@ export default function (next: Function) {
         let _return = _data.return;
         switch (_data.action) {
           case 'join':
+            // Add user id combination for make user this is for target user request
             wsClient.key = _return.key;
+            if (_ws_client[_return.key] != null) {
+              _ws_client[_return.key].ws.close();
+            }
             _ws_client[_return.key] = wsClient;
-            masterData.setOnListener("ws.commit." + wsClient.key, (props) => {
-              console.log("ws.commit :: ", props);
-              wsClient.ws.send(JSON.stringify(props));
-            })
             break;
         }
       } catch (ex) {
@@ -69,7 +69,10 @@ export default function (next: Function) {
       }
     });
 
-    ws.send('something');
+    ws.send(JSON.stringify({
+      action: "success",
+      return: "Success join"
+    }));
   });
   next();
 }
