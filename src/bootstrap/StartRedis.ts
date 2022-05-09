@@ -1,4 +1,5 @@
 import RedisConfig from "@root/config/RedisConfig";
+const redisClient = require('redis');
 
 const appConfig = {
   port: RedisConfig.port,
@@ -9,16 +10,16 @@ const appConfig = {
   no_ready_check: true,
 };
 
-const redisClient = require('redis');
 
 export default function (next: Function) {
   let redisConnect = redisClient.createClient({
-    port: appConfig.port,
-    host: appConfig.host,
-    auth: appConfig.auth,
-    no_ready_check: appConfig.no_ready_check,
-    db: appConfig.db,
-    prefix: appConfig.prefix,
+    url: `redis://:${appConfig.auth}@${appConfig.host}:${appConfig.port}`
+    // port: appConfig.port,
+    // host: appConfig.host,
+    // auth: appConfig.auth,
+    // no_ready_check: appConfig.no_ready_check,
+    // db: appConfig.db,
+    // prefix: appConfig.prefix,
     // detect_buffers: true,
     // return_buffers: true
   });
@@ -26,6 +27,7 @@ export default function (next: Function) {
     // this will throw all errors nohm encounters - not recommended
     global.redis = redisConnect
     // example code goes here!
+     
   })
-  next();
+  next(); 
 }

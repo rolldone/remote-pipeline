@@ -1,3 +1,4 @@
+import AuthService from "@root/app/services/AuthService"
 import BaseController from "@root/base/BaseController"
 
 export interface AuthControllerInterface extends BaseControllerInterface {
@@ -9,18 +10,38 @@ export interface AuthControllerInterface extends BaseControllerInterface {
 }
 
 export default BaseController.extend<AuthControllerInterface>({
-  login(req, res) {
-    // email: string
-    // password: string
-    res.send("Empty");
+  async login(req, res) {
+    try {
+      // email: string
+      // password: string
+      let props = req.body;
+      let resData = await AuthService.loginService(props);
+      let sess = req.session;
+      sess.user = resData;
+      res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  register(req, res) {
+  async register(req, res) {
     // first_name: string
     // last_name: string
     // email: string
     // password: string
     // is_active: boolean
-    res.send("Empty");
+    // term_police: string
+    let props = req.body;
+    let resData = await AuthService.registerService(props);
+
+    res.send({
+      status: "success",
+      status_code: 200,
+      return: resData
+    });
   },
   logout(req, res) {
     // Session only
@@ -32,6 +53,11 @@ export default BaseController.extend<AuthControllerInterface>({
   },
   getAuth(req, res) {
     // Session only
-    res.send("Empty");
+    let sess = req.session;
+    res.send({
+      status: "success",
+      status_code: 200,
+      return: sess.user
+    });
   }
 });

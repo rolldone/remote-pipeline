@@ -1,3 +1,4 @@
+import UserService from "@root/app/services/UserService"
 import BaseController from "@root/base/BaseController"
 
 export interface UserControllerInterface extends BaseControllerInterface {
@@ -10,44 +11,109 @@ export interface UserControllerInterface extends BaseControllerInterface {
 }
 
 export default BaseController.extend<UserControllerInterface>({
-  addUser(req, res) {
-    // first_name: string
-    // last_name: string
-    // email: string
-    // is_active: string
-    // password: string
-    res.send("Empty");
+  async addUser(req, res) {
+    try {
+      // first_name: string
+      // last_name: string
+      // email: string
+      // is_active: string
+      // password: string
+      let props = req.body;
+      let resData = await UserService.addUser(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  updateUser(req, res) {
-    // id: int
-    // first_name: string
-    // last_name: string
-    // email: string
-    // is_active: string
-    // password: string
-    res.send("Empty");
+  async updateUser(req, res) {
+    try {
+      // id: int
+      // first_name: string
+      // last_name: string
+      // email: string
+      // is_active: string
+      // password: string
+      let props = req.body;
+      let resData = await UserService.updateUser(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  updateCurrentUser(req, res) {
-    // id: int => Session only
-    // first_name: string
-    // last_name: string
-    // email: string
-    // is_active: string
-    // password: string
-    res.send("Empty");
+  async updateCurrentUser(req, res) {
+    try {
+      let sess = req.session;
+      // id: int => Session only
+      // first_name: string
+      // last_name: string
+      // email: string
+      // is_active: string
+      // password: string
+      let props = req.body;
+      let id = sess.user.id
+      let resData = await UserService.updateSelf({
+        ...props,
+        id
+      });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  deleteUser(req, res) {
-    // ids: JSON []
-    res.send("Empty");
+  async deleteUser(req, res) {
+    try {
+      // ids: JSON []
+      let ids = req.body.ids;
+      ids = JSON.parse(ids || '[]');
+      let resData = await UserService.deleteUser(ids);
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  getUser(req, res) {
-    // id: int
-    res.send("Empty");
+  async getUser(req, res) {
+    try {
+      // id: int
+      let props = req.query;
+      let id = req.params.id;
+      let resData = await UserService.getUsers({
+        ...props,
+        id
+      });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
-  getUsers(req, res) {
-    // where_by string
-    // page: int
-    // limit: int
-    res.send("Empty");
+  async getUsers(req, res) {
+    try {
+      // where_by string
+      // page: int
+      // limit: int
+      let props = req.query;
+      let resData = await UserService.getUsers(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
 });

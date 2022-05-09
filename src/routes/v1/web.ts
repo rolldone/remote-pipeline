@@ -18,14 +18,15 @@ import QueueController from "@root/app/controllers/xhr/QueueController";
 import WSocketController from "@root/app/controllers/WSocketController";
 import QueueRecordController from "@root/app/controllers/xhr/QueueRecordController";
 import QueueRecordDetailController from "@root/app/controllers/xhr/QueueRecordDetailController";
+import DashboardAuth from "@root/app/middlewares/DashboardAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
-    console.log('aaaaaaaaaaaaaaaaaaaaaa :: ', file)
+    console.log('storageTemp - destination :: ', file)
     cb(null, './storage/temp')
   },
   filename: function (req, file, cb) {
-    console.log('bbbbbbbbbbbbbbbbbbbbbb :: ', file)
+    console.log('storageTemp - filename :: ', file)
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
     cb(null, uniqueSuffix + '-' + file.originalname)
   }
@@ -41,7 +42,9 @@ export default BaseRoute.extend<BaseRouteInterface>({
     let self = this;
     self.use('/', [], function (route: BaseRouteInterface) {
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
-      route.get("/dashboard*", "front.dashboard", [], DashboardController.binding().displayView);
+      route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
+      route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
+      route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
@@ -95,18 +98,16 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
-      route.get("/login", "xhr.auth.login", [], AuthController.binding().login);
-      route.get("/forgot-password", "xhr.auth.forgot-password", [], AuthController.binding().forgotPassword);
+      route.post("/login", "xhr.auth.login", [upload.any()], AuthController.binding().login);
+      route.post("/forgot-password", "xhr.auth.forgot-password", [upload.any()], AuthController.binding().forgotPassword);
+      route.post("/register", "xhr.auth.register", [upload.any()], AuthController.binding().register);
+      route.post("/logout", "xhr.auth.logout", [], AuthController.binding().logout);
+      route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
     })
-    self.use("/xhr/auth", [], function (route: BaseRouteInterface) {
-      route.get("/register", "xhr.auth.register", [], AuthController.binding().register);
-      route.get("/logout", "xhr.auth.logout", [], AuthController.binding().logout);
-      route.get('/info', "xhr.auth.info", [], AuthController.binding().getAuth);
-    });
     self.use("/xhr/user", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.user.add", [], UserController.binding().addUser);
       route.post("/update", "xhr.user.update", [], UserController.binding().updateUser);
-      route.post("/update-current", "xhr.user.update_current", [], UserController.binding().updateCurrentUser);
+      route.post("/update/self", "xhr.user.update_current", [], UserController.binding().updateCurrentUser);
       route.post("/delete", "xhr.user.delete", [], UserController.binding().deleteUser);
       route.get("/users", "xhr.user.users", [], UserController.binding().getUsers);
       route.get("/:id", "xhr.user.user", [], UserController.binding().getUser);
