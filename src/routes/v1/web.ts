@@ -104,13 +104,13 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/logout", "xhr.auth.logout", [], AuthController.binding().logout);
       route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
     })
-    self.use("/xhr/user", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.user.add", [], UserController.binding().addUser);
-      route.post("/update", "xhr.user.update", [], UserController.binding().updateUser);
-      route.post("/update/self", "xhr.user.update_current", [], UserController.binding().updateCurrentUser);
-      route.post("/delete", "xhr.user.delete", [], UserController.binding().deleteUser);
+    self.use("/xhr/user", [DashboardAuth], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.user.add", [upload.any()], UserController.binding().addUser);
+      route.post("/update", "xhr.user.update", [upload.any()], UserController.binding().updateUser);
+      route.post("/update/self", "xhr.user.update_current", [upload.any()], UserController.binding().updateCurrentUser);
+      route.post("/delete", "xhr.user.delete", [upload.any()], UserController.binding().deleteUser);
       route.get("/users", "xhr.user.users", [], UserController.binding().getUsers);
-      route.get("/:id", "xhr.user.user", [], UserController.binding().getUser);
+      route.get("/:id/view", "xhr.user.user", [], UserController.binding().getUser);
     });
     self.use("/xhr/group", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.group.add", [], GroupController.binding().addGroup);

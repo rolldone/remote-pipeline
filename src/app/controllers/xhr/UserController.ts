@@ -1,3 +1,4 @@
+import UserPartnerService from "@root/app/services/UserPartnerService"
 import UserService from "@root/app/services/UserService"
 import BaseController from "@root/base/BaseController"
 
@@ -18,8 +19,15 @@ export default BaseController.extend<UserControllerInterface>({
       // email: string
       // is_active: string
       // password: string
+      let user = req.session.user;
       let props = req.body;
+      props.data = JSON.parse(props.data || '{}');
       let resData = await UserService.addUser(props);
+      let resDataPartner = await UserPartnerService.addUserPartner({
+        data: {},
+        partner_user_id: resData.id,
+        user_id: user.id
+      })
       res.send({
         status: 'success',
         status_code: 200,
@@ -38,6 +46,7 @@ export default BaseController.extend<UserControllerInterface>({
       // is_active: string
       // password: string
       let props = req.body;
+      props.data = JSON.parse(props.data || '{}');
       let resData = await UserService.updateUser(props);
       res.send({
         status: 'success',
@@ -87,7 +96,7 @@ export default BaseController.extend<UserControllerInterface>({
       // id: int
       let props = req.query;
       let id = req.params.id;
-      let resData = await UserService.getUsers({
+      let resData = await UserService.getUser({
         ...props,
         id
       });
@@ -105,8 +114,12 @@ export default BaseController.extend<UserControllerInterface>({
       // where_by string
       // page: int
       // limit: int
+      let user = req.session.user;
       let props = req.query;
-      let resData = await UserService.getUsers(props);
+      let resData = await UserPartnerService.getUserPartners({
+        ...props,
+        user_id: user.id
+      });
       res.send({
         status: 'success',
         status_code: 200,
