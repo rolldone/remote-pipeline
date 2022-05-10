@@ -113,32 +113,32 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.user.user", [], UserController.binding().getUser);
     });
     self.use("/xhr/group", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.group.add", [], GroupController.binding().addGroup);
-      route.post("/update", "xhr.group.update", [], GroupController.binding().updateGroup);
-      route.post("/delete", "xhr.group.delete", [], GroupController.binding().deleteGroup);
+      route.post("/add", "xhr.group.add", [upload.any()], GroupController.binding().addGroup);
+      route.post("/update", "xhr.group.update", [upload.any()], GroupController.binding().updateGroup);
+      route.post("/delete", "xhr.group.delete", [upload.any()], GroupController.binding().deleteGroup);
       route.get("/groups", "xhr.group.groups", [], GroupController.binding().getGroups);
       route.get("/:id", "xhr.group.group", [], GroupController.binding().getGroup);
     });
     self.use("/xhr/group-user", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.group_user.add", [], GroupUserController.binding().addGroupUser);
-      route.post("/update", "xhr.group_user.update", [], GroupUserController.binding().updateGroupUser);
-      route.post("/delete", "xhr.group_user.delete", [], GroupUserController.binding().deleteGroupUser);
+      route.post("/add", "xhr.group_user.add", [upload.any()], GroupUserController.binding().addGroupUser);
+      route.post("/update", "xhr.group_user.update", [upload.any()], GroupUserController.binding().updateGroupUser);
+      route.post("/delete", "xhr.group_user.delete", [upload.any()], GroupUserController.binding().deleteGroupUser);
       route.get("/group-users", "xhr.group_user.group_users", [], GroupUserController.binding().getGroupUsers);
       route.get("/:id", "xhr.group_user.group_user", [], GroupUserController.binding().getGroupUser);
     });
     self.use("/xhr/project", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.project.add", [], ProjectController.binding().addProject);
-      route.post("/update", "xhr.project.update", [], ProjectController.binding().updateProject);
-      route.post("/delete", "xhr.project.delete", [], ProjectController.binding().deleteProject);
+      route.post("/add", "xhr.project.add", [upload.any()], ProjectController.binding().addProject);
+      route.post("/update", "xhr.project.update", [upload.any()], ProjectController.binding().updateProject);
+      route.post("/delete", "xhr.project.delete", [upload.any()], ProjectController.binding().deleteProject);
       route.get("/projects", "xhr.project.projects", [], ProjectController.binding().getProjects);
-      route.get("/:id", "xhr.project.project", [], ProjectController.binding().getProject);
+      route.get("/:id/view", "xhr.project.project", [], ProjectController.binding().getProject);
     });
     self.use("/xhr/pipeline", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.pipeline.add", [], PipelineController.binding().addPipeline);
-      route.post("/update", "xhr.pipeline.update", [], PipelineController.binding().updatePipeline);
-      route.post("/delete", "xhr.pipeline.delete", [], PipelineController.binding().deletePipeline);
+      route.post("/add", "xhr.pipeline.add", [upload.any()], PipelineController.binding().addPipeline);
+      route.post("/update", "xhr.pipeline.update", [upload.any()], PipelineController.binding().updatePipeline);
+      route.post("/delete", "xhr.pipeline.delete", [upload.any()], PipelineController.binding().deletePipeline);
       route.get("/pipelines", "xhr.pipeline.pipelines", [], PipelineController.binding().getPipelines);
-      route.get("/:id", "xhr.pipeline.pipeline", [], PipelineController.binding().getPipeline);
+      route.get("/:id/view", "xhr.pipeline.pipeline", [], PipelineController.binding().getPipeline);
     });
     self.use("/xhr/pipeline-item", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.pipeline_item.add", [], PipelineItemController.binding().addPipelineItem);
