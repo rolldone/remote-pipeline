@@ -13,7 +13,13 @@ export default BaseController.extend<FileControllerInterface>({
     try {
       console.log('addFile :: ', req.body);
       console.log('files :: ', req.files);
-      res.send(req.files);
+      let _files_datas_exist = req.body.file_datas;
+      let _files_datas_new = req.files;
+      _files_datas_exist = [
+        ..._files_datas_exist,
+        ..._files_datas_new
+      ]
+      res.send(_files_datas_exist);
     } catch (ex) {
       res.send(ex);
     }

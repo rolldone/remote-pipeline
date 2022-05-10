@@ -18,18 +18,18 @@ const writePrivateKey = async function (props: {
       case status.CLEAR:
         for (var a = 0; a < props.sshPromise.config.length; a++) {
           let _config = props.sshPromise.config[a];
-          await unlinkSync(process.cwd() + "/storage/app/" + props.raw_variable.id + '/' + _config.host + "_key_" + a);
+          await unlinkSync(process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a);
 
         }
         break;
       default:
         for (var a = 0; a < props.sshPromise.config.length; a++) {
           let _config = props.sshPromise.config[a];
-          await writeFileSync(process.cwd() + "/storage/app/" + props.raw_variable.id + '/' + _config.host + "_key_" + a, _config.privateKey);
+          await writeFileSync(process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a, _config.privateKey);
           lastPrivateKeyUse = {
             host: _config.host,
             port: _config.port,
-            identityFile: process.cwd() + "/storage/app/" + props.raw_variable.id + '/' + _config.host + "_key_" + a,
+            identityFile: process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a,
             username: _config.username,
             passphrase: _config.passphrase,
             password: _config.password || _config.passphrase

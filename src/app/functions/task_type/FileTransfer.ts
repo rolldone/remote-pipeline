@@ -48,7 +48,7 @@ export default async function (props: TaskTypeInterface) {
           }
           // Remove duplicate data on array
           _files = uniq(_files);
-          // Store the privateKey string to be file and save it to storage/app/{var_id}
+          // Store the privateKey string to be file and save it to storage/app/variables/{var_id}
           let filePRivateKey = await WritePrivateKeyToVariable.writePrivateKey({ sshPromise, raw_variable });
 
           console.log("File Transfer command :: Called ");
@@ -58,7 +58,7 @@ export default async function (props: TaskTypeInterface) {
                 let sftp = await sshPromise.sftp();
                 for (var aq2 = 0; aq2 < _data.asset_datas.length; aq2++) {
                   for (var amg2 = 0; amg2 < _files.length; amg2++) {
-                    await sftp.fastPut(process.cwd() + '/storage/app/' + raw_variable.id + "/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
+                    await sftp.fastPut(process.cwd() + '/storage/app/variables/' + raw_variable.id + "/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
                   }
                 }
                 masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
@@ -132,7 +132,7 @@ export default async function (props: TaskTypeInterface) {
                       break;
                   }
                 });
-                ptyProcess.write("cd " + process.cwd() + '/storage/app/' + raw_variable.id + "/\r");
+                ptyProcess.write("cd " + process.cwd() + '/storage/app/variables/' + raw_variable.id + "/\r");
                 // Set privatekey permission to valid for auth ssh
                 ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
                 var rsync = Rsync.build({
