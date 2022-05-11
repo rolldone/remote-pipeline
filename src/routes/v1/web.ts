@@ -21,6 +21,7 @@ import QueueRecordDetailController from "@root/app/controllers/xhr/QueueRecordDe
 import DashboardAuth from "@root/app/middlewares/DashboardAuth";
 import PipelineTaskController from "@root/app/controllers/xhr/PipelineTaskController";
 import HostController from "@root/app/controllers/xhr/HostController";
+import QueueRecordScheduleController from "@root/app/controllers/xhr/QueueRecordScheduleController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -101,6 +102,13 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/queue-record-details", "xhr.queue_record_detail.queue_record_details", [], QueueRecordDetailController.binding().getQueueRecordDetails);
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
+    });
+    self.use('/xhr/queue-record-schedule', [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.queue_record_schedule.add", [upload.any()], QueueRecordScheduleController.binding().addQueueRecordSchedule);
+      route.post("/update", "xhr.queue_record_schedule.update", [upload.any()], QueueRecordScheduleController.binding().updateQueueRecordSchedule);
+      route.post("/delete", "xhr.queue_record_schedule.delete", [upload.any()], QueueRecordScheduleController.binding().deleteQueueRecordSchedule);
+      route.get("/queue-record-schedules", "xhr.queue_record_schedule.queue_record_schedules", [], QueueRecordScheduleController.binding().getQueueRecordSchedules);
+      route.get("/:id/view", "xhr.queue_record_schedule.queue_record_schedule", [], QueueRecordScheduleController.binding().getQueueRecordSchedule);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.post("/login", "xhr.auth.login", [upload.any()], AuthController.binding().login);
