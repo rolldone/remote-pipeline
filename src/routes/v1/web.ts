@@ -22,6 +22,7 @@ import DashboardAuth from "@root/app/middlewares/DashboardAuth";
 import PipelineTaskController from "@root/app/controllers/xhr/PipelineTaskController";
 import HostController from "@root/app/controllers/xhr/HostController";
 import QueueRecordScheduleController from "@root/app/controllers/xhr/QueueRecordScheduleController";
+import VariableController from "@root/app/controllers/xhr/VariableController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -183,11 +184,18 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
     });
     self.use("/xhr/execution", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.execution.add", [], ExecutionController.binding().addExecution);
-      route.post("/update", "xhr.execution.update", [], ExecutionController.binding().updateExecution);
-      route.post("/delete", "xhr.execution.delete", [], ExecutionController.binding().deleteExecution);
+      route.post("/add", "xhr.execution.add", [upload.any()], ExecutionController.binding().addExecution);
+      route.post("/update", "xhr.execution.update", [upload.any()], ExecutionController.binding().updateExecution);
+      route.post("/delete", "xhr.execution.delete", [upload.any()], ExecutionController.binding().deleteExecution);
       route.get("/executions", "xhr.execution.executions", [], ExecutionController.binding().getExecutions);
       route.get("/:id/view", "xhr.execution.execution", [], ExecutionController.binding().getExecution);
+    });
+    self.use("/xhr/variable", [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.variable.add", [upload.any()], VariableController.binding().addVariable);
+      route.post("/update", "xhr.variable.update", [upload.any()], VariableController.binding().updateVariable);
+      route.post("/delete", "xhr.variable.delete", [upload.any()], VariableController.binding().deleteVariable);
+      route.get("/variables", "xhr.variable.variables", [], VariableController.binding().getVariables);
+      route.get("/:id/view", "xhr.variable.variable", [], VariableController.binding().getVariable);
     });
   }
 });

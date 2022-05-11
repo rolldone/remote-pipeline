@@ -1,8 +1,66 @@
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import SqlService from "./SqlService";
 declare let db: Knex;
 
+export interface variable {
+  id?: number
+  pipeline_id?: number
+  project_id?: number
+  user_id?: number
+  name?: string
+  data?: any
+  schema?: any
+  description?: string
+}
+
 export default {
+  async addVariable(props: variable): Promise<any> {
+    try {
+      let query = SqlBricks.insert("variables", {
+        id: props.id,
+        pipeline_id: props.pipeline_id,
+        project_id: props.project_id,
+        user_id: props.user_id,
+        name: props.name,
+        data: JSON.stringify(props.data),
+        schema: JSON.stringify(props.schema),
+        description: props.description,
+      });
+      let resDataId = await SqlService.insert(query.toString());
+      let resData = await this.getVariable({
+        id: resDataId
+      })
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async updateVariable(props: variable): Promise<any> {
+    try {
+      let query = SqlBricks.update("variables", {
+        pipeline_id: props.pipeline_id,
+        project_id: props.project_id,
+        user_id: props.user_id,
+        name: props.name,
+        data: JSON.stringify(props.data),
+        schema: JSON.stringify(props.schema),
+        description: props.description,
+      });
+      query = query.where({
+        "id": props.id,
+        "user_id": props.user_id
+      });
+      await SqlService.update(query.toString());
+      let resData = await this.getVariable({
+        id: props.id,
+        user_id: props.user_id
+      });
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   getVariable: async function (props: any) {
     try {
       SqlBricks.aliasExpansions({
@@ -95,5 +153,21 @@ export default {
     } catch (ex) {
       throw ex;
     }
-  }
+  },
+  async deleteVariable(ids: Array<number>): Promise<any> {
+    try {
+      let _in: Array<any> | string = [
+        ...ids
+      ];
+      _in = _in.join(',');
+      let resData = await SqlService.delete(SqlBricks.delete('variables').where(SqlBricks.in("id", _in)).toString());
+      return {
+        status: 'success',
+        status_code: 200,
+        return: resData
+      }
+    } catch (ex) {
+      throw ex;
+    }
+  },
 }
