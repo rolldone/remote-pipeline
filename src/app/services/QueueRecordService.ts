@@ -1,5 +1,7 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateQueue from "../functions/CreateQueue";
+import SqlService from "./SqlService";
 declare let db: Knex;
 
 export const QueueRecordStatus = {
@@ -10,6 +12,15 @@ export const QueueRecordStatus = {
   DELAYED: 4
 }
 
+export interface QueueRecordInterface {
+  id?: number
+  queue_key?: string
+  execution_id?: number
+  status?: number
+  data?: string
+  type?: string
+}
+
 export const QueueRecordType = {
   SCHEDULE: 'schedule',
   INSTANT: 'instant'
@@ -18,6 +29,58 @@ export const QueueRecordType = {
 export default {
   STATUS: QueueRecordStatus,
   TYPE: QueueRecordType,
+  async addQueueRecord(props: QueueRecordInterface) {
+    try {
+      let id = await SqlService.insert(sqlbricks.insert('queue_records', {
+        queue_key: props.queue_key,
+        execution_id: props.execution_id,
+        status: props.status,
+        data: JSON.stringify(props.data || {}),
+        type: props.type
+      }).toString());
+      let resData = await this.getQueueRecord({
+        id
+      })
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async updateQueueRecord(props: QueueRecordInterface) {
+    try {
+      let resData = await SqlService.update(sqlbricks.update('queue_records', {
+        queue_key: props.queue_key,
+        execution_id: props.execution_id,
+        status: props.status,
+        data: JSON.stringify(props.data || {}),
+        type: props.type || 'instant'
+      }).where("id", props.id).toString());
+
+      resData = await this.getQueueRecord({
+        id: props.id
+      })
+
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteQueueRecord(ids: Array<number>) {
+    try {
+      let _in: Array<any> | string = [
+        ...ids
+      ];
+      _in = _in.join(',');
+      let resData = await SqlService.delete(sqlbricks.delete('queue_records').where(sqlbricks.in("id", _in)).toString());
+      return {
+        status: 'success',
+        status_code: 200,
+        return: resData
+      }
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getQueueRecord(props) {
     try {
       sqlbricks.aliasExpansions({
@@ -124,7 +187,11 @@ export default {
         query = query.where("qrec.type", props.type);
       }
 
-      query = query.orderBy("exe.id DESC");
+      if (props.order_by != null) {
+        query = query.orderBy(props.order_by);
+      }else{
+        query = query.orderBy("exe.id DESC");
+      }
 
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));

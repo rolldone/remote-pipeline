@@ -19,6 +19,8 @@ import WSocketController from "@root/app/controllers/WSocketController";
 import QueueRecordController from "@root/app/controllers/xhr/QueueRecordController";
 import QueueRecordDetailController from "@root/app/controllers/xhr/QueueRecordDetailController";
 import DashboardAuth from "@root/app/middlewares/DashboardAuth";
+import PipelineTaskController from "@root/app/controllers/xhr/PipelineTaskController";
+import HostController from "@root/app/controllers/xhr/HostController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -89,6 +91,9 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
     });
     self.use('/xhr/queue-record', [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.queue_record.add", [upload.any()], QueueRecordController.binding().addQueueRecord);
+      route.post("/update", "xhr.queue_record.update", [upload.any()], QueueRecordController.binding().updateQueueRecord);
+      route.post("/delete", "xhr.queue_record.delete", [upload.any()], QueueRecordController.binding().deleteQueueRecord);
       route.get("/queue-records", "xhr.queue_record.queue_records", [], QueueRecordController.binding().getQueueRecords);
       route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
     });
@@ -141,25 +146,40 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.pipeline.pipeline", [], PipelineController.binding().getPipeline);
     });
     self.use("/xhr/pipeline-item", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.pipeline_item.add", [], PipelineItemController.binding().addPipelineItem);
-      route.post("/update", "xhr.pipeline_item.update", [], PipelineItemController.binding().updatePipline);
-      route.post("/delete", "xhr.pipeline_item.delete", [], PipelineItemController.binding().deletePipeline);
+      route.post("/add", "xhr.pipeline_item.add", [upload.any()], PipelineItemController.binding().addPipelineItem);
+      route.post("/update", "xhr.pipeline_item.update", [upload.any()], PipelineItemController.binding().updatePipline);
+      route.post("/delete", "xhr.pipeline_item.delete", [upload.any()], PipelineItemController.binding().deletePipeline);
       route.get("/pipeline-items", "xhr.pipeline_item.pipeline_items", [], PipelineItemController.binding().getPipelines);
-      route.get("/:id", "xhr.pipeline_item.pipeline_item", [], PipelineItemController.binding().getPipeline);
+      route.get("/:id/view", "xhr.pipeline_item.pipeline_item", [], PipelineItemController.binding().getPipeline);
+    });
+    self.use("/xhr/pipeline-task", [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.pipeline_task.add", [upload.any()], PipelineTaskController.binding().addPipelineTask);
+      route.post("/update", "xhr.pipeline_task.update", [upload.any()], PipelineTaskController.binding().updatePipelineTask);
+      route.post("/delete", "xhr.pipeline_task.delete", [upload.any()], PipelineTaskController.binding().deletePipelineTask);
+      route.post("/delete-by-pipeline", "xhr.pipeline_task.delete_by_pipeline", [upload.any()], PipelineTaskController.binding().deletePipelineTaskByPipelineItemId);
+      route.get("/pipeline-tasks", "xhr.pipeline_task.pipeline_tasks", [], PipelineTaskController.binding().getPipelineTasks);
+      route.get("/:id/view", "xhr.pipeline_item.pipeline_task", [], PipelineTaskController.binding().getPipelineTask);
+    });
+    self.use("/xhr/host", [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.host.add", [upload.any()], HostController.binding().addHost);
+      route.post("/update", "xhr.host.update", [upload.any()], HostController.binding().updateHost);
+      route.post("/delete", "xhr.host.delete", [upload.any()], HostController.binding().deleteHosts);
+      route.get("/hosts", "xhr.host.hosts", [], HostController.binding().getHosts);
+      route.get("/:id/view", "xhr.host.host", [], HostController.binding().getHost);
     });
     self.use("/xhr/configuration", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.configuration.add", [], ConfigurationController.binding().addConfiguration);
       route.post("/update", "xhr.configuration.update", [], ConfigurationController.binding().updateConfiguration);
       route.post("/delete", "xhr.configuration.delete", [], ConfigurationController.binding().deleteConfiguration);
       route.get("/configurations", "xhr.configuration.configurations", [], ConfigurationController.binding().getConfigurations);
-      route.get("/:id", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
+      route.get("/:id/view", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
     });
     self.use("/xhr/execution", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.execution.add", [], ExecutionController.binding().addExecution);
       route.post("/update", "xhr.execution.update", [], ExecutionController.binding().updateExecution);
       route.post("/delete", "xhr.execution.delete", [], ExecutionController.binding().deleteExecution);
       route.get("/executions", "xhr.execution.executions", [], ExecutionController.binding().getExecutions);
-      route.get("/:id", "xhr.execution.execution", [], ExecutionController.binding().getExecution);
+      route.get("/:id/view", "xhr.execution.execution", [], ExecutionController.binding().getExecution);
     });
   }
 });

@@ -1,9 +1,72 @@
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import SqlService from "./SqlService";
 declare let db: Knex;
 
+export interface command_data {
+  project_id?: number
+  pipeline_id?: number
+  pipeline_item_id?: number
+  type: string
+  description?: string
+  name?: string
+  order_number?: number
+  temp_id?: string
+  parent_order_temp_ids?: Array<string>
+  is_active?: boolean | number
+  data?: {
+    parent_condition_type?: string
+    condition_values?: string
+    command?: string
+  }
+}
 
 export default {
+  async deletePipelineTaskByPipelineItemId(pipeline_item_id: number) {
+    try {
+      let resData = await SqlService.delete(SqlBricks.deleteFrom("pipeline_tasks").where({
+        pipeline_item_id: pipeline_item_id
+      }).toString());
+      return {
+        status: 'success',
+        status_code: 200,
+        return: resData
+      }
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async addPipelineTasks(props: Array<command_data>) {
+    try {
+      // Delete First
+      let resDeleteData = await SqlService.delete(SqlBricks.deleteFrom("pipeline_tasks").where({
+        pipeline_item_id: props[0].pipeline_item_id
+      }).toString());
+      let resData = [];
+      for (var a = 0; a < props.length; a++) {
+        // Insert again
+        let _command_data = props[a];
+        let resDataId = await SqlService.insert(SqlBricks.insert("pipeline_tasks", {
+          pipeline_id: _command_data.pipeline_id,
+          project_id: _command_data.project_id,
+          pipeline_item_id: _command_data.pipeline_item_id,
+          name: _command_data.name,
+          description: _command_data.description,
+          type: _command_data.type,
+          order_number: _command_data.order_number,
+          temp_id: _command_data.temp_id,
+          parent_order_temp_ids: _command_data.parent_order_temp_ids == null ? null : JSON.stringify(_command_data.parent_order_temp_ids),
+          is_active: _command_data.is_active,
+          data: JSON.stringify(_command_data.data)
+        }).toString());
+        // Select the data
+        resData.push(await SqlService.selectOne(SqlBricks.select("*").from("pipeline_tasks").where("id", resDataId).toString()));
+      }
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getPipelineTask(props: any) {
     try {
 

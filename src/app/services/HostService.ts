@@ -1,39 +1,173 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import SqlService from "./SqlService";
 declare let db: Knex;
+
+export interface Host {
+  id?: number,
+  name?: string,
+  description?: string,
+  data?: Array<any>
+  auth_type?: string
+  password?: string
+  username?: string
+  private_key?: string
+  user_id?: number
+}
 
 export default {
   async getHosts(props) {
     try {
-      let _hosts_query = sqlbricks.select("*")
-        .from("hosts");
-      if (props.ids != null) {
-        _hosts_query.where(sqlbricks.in("id", props.ids))
+      sqlbricks.aliasExpansions({
+        'usr': "users",
+        'hos': "hosts"
+      });
+      let query = sqlbricks.select(
+        'usr.id as usr_id',
+        'usr.first_name as usr_first_name',
+        'usr.last_name as usr_last_name',
+        'hos.id as id',
+        'hos.name as name',
+        'hos.data as data',
+        'hos.description as description',
+        'hos.username as username',
+        'hos.password as password',
+        'hos.auth_type as auth_type',
+        'hos.private_key as private_key'
+      ).from("hos");
+      query = query.leftJoin('usr').on({
+        "usr.id": "hos.user_id"
+      });
+      if (props.user_id != null) {
+        query = query.where("usr.id", props.user_id);
       }
-      let _hosts_datas: Array<any> = await db.raw(_hosts_query.toString());
-      _hosts_datas.filter((el) => {
+      if (props.ids != null) {
+        query.where(sqlbricks.in("host.id", props.ids))
+      }
+      query = query.orderBy("usr.id DESC");
+      let resData = await SqlService.select(query.toString());
+      resData.filter((el) => {
         el.data = JSON.parse(el.data);
         return el;
       })
-      return _hosts_datas;
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+
+    // try {
+    //   let _hosts_query = sqlbricks.select("*")
+    //     .from("hosts");
+    //   if (props.ids != null) {
+    //     _hosts_query.where(sqlbricks.in("id", props.ids))
+    //   }
+    //   let _hosts_datas: Array<any> = await db.raw(_hosts_query.toString());
+    //   _hosts_datas.filter((el) => {
+    //     el.data = JSON.parse(el.data);
+    //     return el;
+    //   })
+    //   return _hosts_datas;
+    // } catch (ex) {
+    //   throw ex;
+    // }
+  },
+  async getHost(props) {
+    try {
+      sqlbricks.aliasExpansions({
+        'usr': "users",
+        'hos': "hosts"
+      });
+      let query = sqlbricks.select(
+        'usr.id as usr_id',
+        'usr.first_name as usr_first_name',
+        'usr.last_name as usr_last_name',
+        'hos.id as id',
+        'hos.name as name',
+        'hos.data as data',
+        'hos.description as description',
+        'hos.username as username',
+        'hos.password as password',
+        'hos.auth_type as auth_type',
+        'hos.private_key as private_key'
+      ).from("hos");
+      query = query.leftJoin('usr').on({
+        "usr.id": "hos.user_id"
+      });
+      if (props.user_id != null) {
+        query = query.where("usr.id", props.user_id);
+      }
+      query = query.where("hos.id", props.id);
+      query = query.orderBy("usr.id DESC");
+      query = query.limit(1);
+      let resData = await SqlService.selectOne(query.toString());
+      if (resData == null) return null;
+      resData.data = JSON.parse(resData.data);
+      return resData;
+
+      //   let _hosts_query = sqlbricks.select("*")
+      //     .from("hosts");
+      //   _hosts_query.where("id", props.id);
+      //   _hosts_query.limit(1);
+      //   let _hosts_datas: Array<any> = await db.raw(_hosts_query.toString());
+      //   _hosts_datas.filter((el) => {
+      //     el.data = JSON.parse(el.data);
+      //     return el;
+      //   })
+      //   if (_hosts_datas.length == 0) return null;
+      //   _hosts_datas = _hosts_datas[0];
+      //   return _hosts_datas as any;
     } catch (ex) {
       throw ex;
     }
   },
-  async getHost(props) {
+  async addHost(props: Host): Promise<any> {
     try {
-      let _hosts_query = sqlbricks.select("*")
-        .from("hosts");
-      _hosts_query.where("id", props.id);
-      _hosts_query.limit(1);
-      let _hosts_datas: Array<any> = await db.raw(_hosts_query.toString());
-      _hosts_datas.filter((el) => {
-        el.data = JSON.parse(el.data);
-        return el;
+      let resData = await SqlService.insert(sqlbricks.insert('hosts', {
+        name: props.name,
+        description: props.description,
+        data: JSON.stringify(props.data),
+        auth_type: props.auth_type,
+        private_key: props.private_key,
+        username: props.username,
+        password: props.password,
+        user_id: props.user_id
+      }).toString());
+      resData = await this.getHost({
+        id: resData.id
       })
-      if (_hosts_datas.length == 0) return null;
-      _hosts_datas = _hosts_datas[0];
-      return _hosts_datas as any;
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async updateHost(props: Host): Promise<any> {
+    try {
+      let resData = await SqlService.update(sqlbricks.update('hosts', {
+        name: props.name,
+        description: props.description,
+        data: JSON.stringify(props.data),
+        auth_type: props.auth_type,
+        private_key: props.private_key,
+        username: props.username,
+        password: props.password,
+        user_id: props.user_id
+      }).where("id", props.id).toString());
+      resData = await this.getHost({
+        id: props.id
+      });
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteHost(ids: Array<number>): Promise<any> {
+    try {
+      let _in: Array<any> | string = [
+        ...ids
+      ];
+      _in = _in.join(',');
+      let resData = await SqlService.delete(sqlbricks.delete('hosts').where(sqlbricks.in("id", _in)).toString());
+      return resData;
     } catch (ex) {
       throw ex;
     }

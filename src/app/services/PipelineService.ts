@@ -36,11 +36,7 @@ export default {
         project_id: props.project_id
       }).where("id", props.id).toString());
       resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
-      return {
-        status: 'success',
-        status_code: 200,
-        return: resData
-      }
+      return resData;
     } catch (ex) {
       throw ex;
     }
@@ -84,11 +80,7 @@ export default {
       _in = _in.join(',');
       let query = Sqlbricks.delete('users').where(Sqlbricks.in("id", _in)).toString();
       let deleteUser = await SqlService.delete(query.toString());
-      return {
-        status: 'success',
-        status_code: 200,
-        return: deleteUser
-      }
+      return deleteUser;
     } catch (ex) {
       throw ex;
     }
