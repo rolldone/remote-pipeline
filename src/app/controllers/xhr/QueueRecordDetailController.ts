@@ -96,6 +96,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
             runningTail();
           }, 1000);
           isPendingToClose();
+
           // If suddenly get close by websocket event
           if (_ws_client != null) {
             _ws_client.ws.send(JSON.stringify({
@@ -104,6 +105,8 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
             }))
           }
         });
+        // Write for first time for get line on trigger event
+        fileREadline.write("--" + "\n")
       }
       return res.send({
         status: 'success',
