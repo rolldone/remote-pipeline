@@ -190,7 +190,7 @@ export default {
 
       if (props.parent != null) {
         if (props.parent == "NULL") {
-          query = query.where(SqlBricks.isNull('pip_task.parent_order_temp_ids'));
+          query = query.where(SqlBricks.or(SqlBricks.isNull('pip_task.parent_order_temp_ids'), { "pip_task.parent_order_temp_ids": "[]"}))
         } else {
           query = query.where(SqlBricks("json_array(pip_task.parent_order_temp_ids) LIKE '%" + props.parent + "%'"));
         }

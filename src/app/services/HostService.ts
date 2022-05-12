@@ -42,7 +42,7 @@ export default {
         query = query.where("usr.id", props.user_id);
       }
       if (props.ids != null) {
-        query.where(sqlbricks.in("host.id", props.ids))
+        query.where(sqlbricks.in("hos.id", props.ids))
       }
       query = query.orderBy("usr.id DESC");
       let resData = await SqlService.select(query.toString());

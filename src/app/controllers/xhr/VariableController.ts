@@ -19,6 +19,8 @@ export default BaseController.extend<VariableControllerInterface>({
     let user = GetAuthUser(req);
     let props = req.body;
     props.user_id = user.id;
+    props.data = JSON.parse(props.data || '[]');
+    props.schema = JSON.parse(props.schema || '[]');
     let resData = await VariableService.addVariable(props);
     res.send({
       status: 'success',
@@ -35,6 +37,8 @@ export default BaseController.extend<VariableControllerInterface>({
     let user = GetAuthUser(req);
     let props = req.body;
     props.user_id = user.id;
+    props.data = JSON.parse(props.data || '[]');
+    props.schema = JSON.parse(props.schema || '[]');
     let resData = await VariableService.updateVariable(props);
     res.send({
       status: 'success',

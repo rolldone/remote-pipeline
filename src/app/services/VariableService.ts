@@ -90,11 +90,14 @@ export default {
       query = query
         .leftJoin("pip").on("pip.id", "vari.pipeline_id")
         .leftJoin("pro").on("pro.id", "pip.project_id");
-      console.log("aaaaaaaaaaaaaaaaaaa :: ", props);
       query = query.where({
-        "vari.id": props.id,
-        "vari.user_id": props.user_id
+        "vari.id": props.id
       });
+
+      if (props.user_id) {
+        query = query.where("vari.user_id", props.user_id);
+      }
+      
       // Where segment
       if (props.pipeline_id != null) {
         query = query.where("pip.id", props.pipeline_id);
