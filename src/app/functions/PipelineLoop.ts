@@ -75,8 +75,7 @@ const PipelineLoop = async function (props: {
       }, recursiveFunc?: Function) => {
         let _pipeline_task: Array<any> = await PipelineTaskService.getPipelineTasks({
           pipeline_item_id: props.pipeline_item_id,
-          order_by: "pip_task.order_number",
-          order_by_value: "ASC",
+          order_by: "pip_task.order_number ASC",
           parent: props.parent || null
         });
         // console.log("_pipeline_task :::: ", _pipeline_task);
@@ -190,7 +189,7 @@ const PipelineLoop = async function (props: {
                 if (pipeline_task_id != null) {
                   if (data.toString() != "") {
                     RecordCommandToFileLog({
-                      fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id,
+                      fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id,
                       commandString: data.toString()
                     })
                     // masterData.saveData("ws.commit", {
@@ -205,7 +204,7 @@ const PipelineLoop = async function (props: {
             if (debounceee != null) {
               debounceee.cancel();
             }
-            if(_isError == true){
+            if (_isError == true) {
               await sshPromise.close();
               return;
             }

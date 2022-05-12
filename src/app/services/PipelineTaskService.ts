@@ -112,6 +112,10 @@ export default {
         query = query.where("pip_task.id", props.id);
       };
 
+      if (props.pipeline_id != null) {
+        query = query.where("pip.id", props.pipeline_id);
+      }
+
       if (props.order_number != null) {
         query = query.where("pip_task.order_number", props.order_number);
       }
@@ -119,6 +123,7 @@ export default {
       if (props.parent != null) {
         query = query.where(SqlBricks("json_extract(json_each.value,'$') = " + props.parent));
       }
+
 
       query = query.orderBy("pip_task.id ASC");
       query = query.limit(1);
@@ -180,8 +185,8 @@ export default {
         query = query.where("pip_item.id", props.pipeline_item_id);
       };
 
-      if (props.order_by) {
-        query = query.orderBy(props.order_by + " " + (props.order_by_value || "ASC"));
+      if (props.pipeline_id != null) {
+        query = query.where("pip.id", props.pipeline_id);
       }
 
       if (props.order_number != null) {
@@ -190,11 +195,17 @@ export default {
 
       if (props.parent != null) {
         if (props.parent == "NULL") {
-          query = query.where(SqlBricks.or(SqlBricks.isNull('pip_task.parent_order_temp_ids'), { "pip_task.parent_order_temp_ids": "[]"}))
+          query = query.where(SqlBricks.or(SqlBricks.isNull('pip_task.parent_order_temp_ids'), { "pip_task.parent_order_temp_ids": "[]" }))
         } else {
           query = query.where(SqlBricks("json_array(pip_task.parent_order_temp_ids) LIKE '%" + props.parent + "%'"));
         }
       }
+
+
+      if (props.order_by) {
+        query = query.orderBy(props.order_by);
+      }
+
 
       let gg = query.toString();
       let resDatas = await db.raw(gg);

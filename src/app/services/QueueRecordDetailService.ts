@@ -11,8 +11,17 @@ const STATUS = {
   STOPPED: 6
 }
 
+const transformColumn = (el) => {
+  el.data = JSON.parse(el.data || '{}');
+  el.qrec_data = JSON.parse(el.qrec_data || '{}');
+  el.qrec_sch_data = JSON.parse(el.qrec_sch_data || '{}');
+  el.exe_host_ids = JSON.parse(el.exe_host_ids || '[]');
+  el.exe_pipeline_item_ids = JSON.parse(el.exe_pipeline_item_ids || '[]');
+  return el;
+}
 export default {
   STATUS,
+
   async getQueueRecordDetails(props) {
     try {
       sqlbricks.aliasExpansions({
@@ -78,11 +87,7 @@ export default {
       console.log("query :: ", queryString);
       let res_data_record_detail: Array<any> = await db.raw(queryString);
       res_data_record_detail.filter((el) => {
-        el.data = JSON.parse(el.data || '{}');
-        el.qrec_data = JSON.parse(el.qrec_data || '{}');
-        el.qrec_sch_data = JSON.parse(el.qrec_sch_data || '{}');
-        el.exe_pipeline_item_ids = JSON.parse(el.exe_pipeline_item_ids || '[]');
-        return el;
+        return transformColumn(el);
       });
       return res_data_record_detail;
     } catch (ex) {
@@ -149,11 +154,7 @@ export default {
       res_data_record_detail = res_data_record_detail[0];
       // If null
       if (res_data_record_detail == null) return null;
-
-      res_data_record_detail.data = JSON.parse(res_data_record_detail.data || '{}');
-      res_data_record_detail.qrec_data = JSON.parse(res_data_record_detail.qrec_data || '{}');
-      res_data_record_detail.qrec_sch_data = JSON.parse(res_data_record_detail.qrec_sch_data || '{}');
-      res_data_record_detail.exe_pipeline_item_ids = JSON.parse(res_data_record_detail.exe_pipeline_item_ids || '[]');
+      res_data_record_detail = transformColumn(res_data_record_detail);
       return res_data_record_detail;
     } catch (ex) {
       throw ex;
