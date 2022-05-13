@@ -1,0 +1,31 @@
+import DotEnv from "../tool/DotEnv";
+
+export interface OAuthInterface {
+  GITHUB_CLIENT_ID: string
+  GITHUB_SECRET_ID: string
+  GITHUB_HOMEPAGE_URL: string
+  GITHUB_REDIRECT_URI: string
+  GITLAB_CLIENT_ID: string
+  GITLAB_SECRET_ID: string
+  GITLAB_HOMEPAGE_URL: string
+  GITLAB_REDIRECT_URI: string
+  BITBUCKET_CLIENT_ID: string
+  BITBUCKET_SECRET_ID: string
+  BITBUCKET_HOMEPAGE_URL: string
+  BITBUCKET_REDIRECT_URI: string
+}
+
+export default ({
+  GITHUB_CLIENT_ID: '4839904b1862296f97bc',
+  GITHUB_SECRET_ID: '4096adfafe10b94a1d569348f633dda27653ba5f',
+  GITHUB_HOMEPAGE_URL: 'http://192.168.50.4:3000',
+  GITHUB_REDIRECT_URI: 'http://192.168.50.4:3000/dashboard/login/oauth2/code',
+  GITLAB_CLIENT_ID: '',
+  GITLAB_SECRET_ID: '',
+  GITLAB_HOMEPAGE_URL: '',
+  GITLAB_REDIRECT_URI: '',
+  BITBUCKET_CLIENT_ID: '',
+  BITBUCKET_SECRET_ID: '',
+  BITBUCKET_HOMEPAGE_URL: '',
+  BITBUCKET_REDIRECT_URI: '',
+} as OAuthInterface);

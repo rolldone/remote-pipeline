@@ -1,4 +1,6 @@
 Features
+- Github or famous repos integration
+- Notification script
+- Dynamic environment value by api request
 - Connection hopping and Create tunnel for instant connection 
 - Ansible integration
-- Dynamic environment value by api request

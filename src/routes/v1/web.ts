@@ -23,6 +23,8 @@ import PipelineTaskController from "@root/app/controllers/xhr/PipelineTaskContro
 import HostController from "@root/app/controllers/xhr/HostController";
 import QueueRecordScheduleController from "@root/app/controllers/xhr/QueueRecordScheduleController";
 import VariableController from "@root/app/controllers/xhr/VariableController";
+import RepositoryController from "@root/app/controllers/xhr/RepositoryController";
+import GithubAuth from "@root/app/middlewares/GithubAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -48,6 +50,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
       route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
       route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
+      route.get("/dashboard/login/oauth2/code*", "front.dashboard.oauth_redirect", [DashboardAuth], DashboardController.binding().oauthRedirect)
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
@@ -112,6 +115,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.queue_record_schedule.queue_record_schedule", [], QueueRecordScheduleController.binding().getQueueRecordSchedule);
     });
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
+      route.post('/login/oauth/generate', 'xhr.auth.login.oauth.generate', [upload.any()], AuthController.binding().oAuthGenerate);
       route.post("/login", "xhr.auth.login", [upload.any()], AuthController.binding().login);
       route.post("/forgot-password", "xhr.auth.forgot-password", [upload.any()], AuthController.binding().forgotPassword);
       route.post("/register", "xhr.auth.register", [upload.any()], AuthController.binding().register);
@@ -197,5 +201,10 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/variables", "xhr.variable.variables", [], VariableController.binding().getVariables);
       route.get("/:id/view", "xhr.variable.variable", [], VariableController.binding().getVariable);
     });
+    self.use("/xhr/repository", [DashboardAuth, GithubAuth], function (route: BaseRouteInterface) {
+      route.get("/repositories", "xhr.repository.repositories", [], RepositoryController.binding().getRepositories);
+      route.get("/:id/view", "xhr.repository.repository", [], RepositoryController.binding().getRepository);
+      route.post("/select", "xhr.repository.select", [upload.any()], RepositoryController.binding().selectRepository);
+    })
   }
 });

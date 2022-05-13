@@ -1,0 +1,467 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{{from}} oAuth Callback Error</title>
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin="">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="">
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin="">
+  <meta name="msapplication-TileColor" content="#206bc4">
+  <meta name="theme-color" content="#206bc4">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+  <meta name="description"
+    content="Tabler comes with tons of well-designed components and features. Start your adventure with Tabler and make your dashboard great again. For free!">
+  <meta name="twitter:image:src" content="https://preview.tabler.io/static/og.png">
+  <meta name="twitter:site" content="@tabler_ui">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title"
+    content="Tabler: Premium and Open Source dashboard template with responsive and high quality UI.">
+  <meta name="twitter:description"
+    content="Tabler comes with tons of well-designed components and features. Start your adventure with Tabler and make your dashboard great again. For free!">
+  <meta property="og:image" content="https://preview.tabler.io/static/og.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:site_name" content="Tabler">
+  <meta property="og:type" content="object">
+  <meta property="og:title"
+    content="Tabler: Premium and Open Source dashboard template with responsive and high quality UI.">
+  <meta property="og:url" content="https://preview.tabler.io/static/og.png">
+  <meta property="og:description"
+    content="Tabler comes with tons of well-designed components and features. Start your adventure with Tabler and make your dashboard great again. For free!">
+  <!-- CSS files -->
+  <style>
+    /*! CSS Used from: https://preview.tabler.io/dist/css/tabler.min.css?1652048814 */
+    :root {
+      --tblr-blue: #206bc4;
+      --tblr-indigo: #4263eb;
+      --tblr-purple: #ae3ec9;
+      --tblr-pink: #d6336c;
+      --tblr-red: #d63939;
+      --tblr-orange: #f76707;
+      --tblr-yellow: #f59f00;
+      --tblr-green: #2fb344;
+      --tblr-teal: #0ca678;
+      --tblr-cyan: #17a2b8;
+      --tblr-white: #ffffff;
+      --tblr-gray: #475569;
+      --tblr-gray-dark: #1e293b;
+      --tblr-gray-100: #f1f5f9;
+      --tblr-gray-200: #e2e8f0;
+      --tblr-gray-300: #cbd5e1;
+      --tblr-gray-400: #94a3b8;
+      --tblr-gray-500: #64748b;
+      --tblr-gray-600: #475569;
+      --tblr-gray-700: #334155;
+      --tblr-gray-800: #1e293b;
+      --tblr-gray-900: #0f172a;
+      --tblr-primary: #206bc4;
+      --tblr-secondary: #626976;
+      --tblr-success: #2fb344;
+      --tblr-info: #4299e1;
+      --tblr-warning: #f76707;
+      --tblr-danger: #d63939;
+      --tblr-light: #fafbfc;
+      --tblr-dark: #1e293b;
+      --tblr-muted: #626976;
+      --tblr-primary-rgb: 32, 107, 196;
+      --tblr-secondary-rgb: 98, 105, 118;
+      --tblr-success-rgb: 47, 179, 68;
+      --tblr-info-rgb: 66, 153, 225;
+      --tblr-warning-rgb: 247, 103, 7;
+      --tblr-danger-rgb: 214, 57, 57;
+      --tblr-light-rgb: 250, 251, 252;
+      --tblr-dark-rgb: 30, 41, 59;
+      --tblr-muted-rgb: 98, 105, 118;
+      --tblr-white-rgb: 255, 255, 255;
+      --tblr-black-rgb: 0, 0, 0;
+      --tblr-body-color-rgb: 30, 41, 59;
+      --tblr-body-bg-rgb: 245, 247, 251;
+      --tblr-font-sans-serif: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+      --tblr-font-monospace: Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+      --tblr-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+      --tblr-body-font-family: var(--tblr-font-sans-serif);
+      --tblr-body-font-size: 0.875rem;
+      --tblr-body-font-weight: 400;
+      --tblr-body-line-height: 1.4285714286;
+      --tblr-body-color: #1e293b;
+      --tblr-body-bg: #f5f7fb;
+    }
+
+    *,
+    ::after,
+    ::before {
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion:no-preference) {
+      :root {
+        scroll-behavior: smooth;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--tblr-body-font-family);
+      font-size: var(--tblr-body-font-size);
+      font-weight: var(--tblr-body-font-weight);
+      line-height: var(--tblr-body-line-height);
+      color: var(--tblr-body-color);
+      text-align: var(--tblr-body-text-align);
+      background-color: var(--tblr-body-bg);
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    a {
+      color: #206bc4;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #1a569d;
+      text-decoration: underline;
+    }
+
+    svg {
+      vertical-align: middle;
+    }
+
+    ::-moz-focus-inner {
+      padding: 0;
+      border-style: none;
+    }
+
+    .btn {
+      display: inline-block;
+      font-weight: 500;
+      line-height: 1.4285714286;
+      color: #1e293b;
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      background-color: transparent;
+      border: 1px solid transparent;
+      padding: .4375rem 1rem;
+      font-size: .875rem;
+      border-radius: 4px;
+      transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .btn {
+        transition: none;
+      }
+    }
+
+    .btn:hover {
+      color: #1e293b;
+      text-decoration: none;
+    }
+
+    .btn:focus {
+      outline: 0;
+      box-shadow: 0 0 0 .25rem rgba(32, 107, 196, .25);
+    }
+
+    .btn:disabled {
+      pointer-events: none;
+      opacity: .65;
+    }
+
+    .d-flex {
+      display: flex !important;
+    }
+
+    .border-top-wide {
+      border-top: 2px solid rgba(98, 105, 118, .16) !important;
+    }
+
+    .border-primary {
+      border-color: #206bc4 !important;
+    }
+
+    .flex-column {
+      flex-direction: column !important;
+    }
+
+    .py-4 {
+      padding-top: 2rem !important;
+      padding-bottom: 2rem !important;
+    }
+
+    .text-muted {
+      --tblr-text-opacity: 1;
+      color: #626976 !important;
+    }
+
+    :root {
+      font-size: 16px;
+      height: 100%;
+      --tblr-card-bg: #ffffff;
+      --tblr-card-bg-rgb: 255, 255, 255;
+      --tblr-border-color: #e6e7e9;
+      --tblr-border-color-rgb: 230, 231, 233;
+      --tblr-border-color-light: #f2f3f4;
+      --tblr-border-color-light-rgb: 242, 243, 244;
+    }
+
+    body {
+      overflow-y: scroll;
+      letter-spacing: 0;
+      touch-action: manipulation;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: "liga" 0;
+      position: relative;
+      min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @media print {
+      body {
+        background: 0 0;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+      -webkit-transition: background .3s;
+      transition: background .3s;
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      ::-webkit-scrollbar {
+        -webkit-transition: none;
+        transition: none;
+      }
+    }
+
+    ::-webkit-scrollbar-thumb {
+      border-radius: 5px;
+      background: rgba(var(--tblr-body-color-rgb), .16);
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(var(--tblr-body-color-rgb), .06);
+    }
+
+    :hover::-webkit-scrollbar-thumb {
+      background: rgba(var(--tblr-body-color-rgb), .32);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: 0 0;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    .page-center {
+      justify-content: center;
+    }
+
+    .btn {
+      --tblr-btn-color-text-rgb: var(--tblr-body-color-rgb);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-color: var(--tblr-border-color);
+      white-space: nowrap;
+      background-color: var(--tblr-btn-color, var(--tblr-card-bg));
+      color: var(--tblr-btn-color-text);
+    }
+
+    .btn:hover {
+      color: var(--tblr-btn-color-text);
+      border-color: rgba(var(--tblr-btn-color-text-rgb), .48);
+    }
+
+    .btn:focus:not([disabled]):not(.disabled) {
+      border-color: var(--tblr-btn-color, #206bc4);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+    }
+
+    .btn .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      min-width: 1.25rem;
+      margin: 0 .5rem 0 -.25rem;
+      vertical-align: bottom;
+      color: inherit;
+    }
+
+    .btn-primary {
+      border-color: rgba(98, 105, 118, .24);
+    }
+
+    .btn-primary:hover {
+      color: var(--tblr-btn-color-text);
+      background: var(--tblr-btn-color-interactive);
+      border-color: var(--tblr-btn-color);
+    }
+
+    .btn-primary {
+      --tblr-btn-color: #206bc4;
+      --tblr-btn-color-interactive: #1d60b0;
+      --tblr-btn-color-text: #fafbfc;
+    }
+
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    @media (min-width:768px) {
+      .empty {
+        padding: 3rem;
+      }
+    }
+
+    .empty-header {
+      margin: 0 0 1rem;
+      font-size: 4rem;
+      font-weight: 300;
+      line-height: 1;
+      color: #626976;
+    }
+
+    .empty-title {
+      font-size: 1.25rem;
+      line-height: 1.4;
+      font-weight: 600;
+    }
+
+    .empty-subtitle,
+    .empty-title {
+      margin: 0 0 .5rem;
+    }
+
+    .empty-action {
+      margin-top: 1.5rem;
+    }
+
+    .container-tight {
+      width: 100%;
+      padding-right: var(--tblr-gutter-x, 1.5rem);
+      padding-left: var(--tblr-gutter-x, 1.5rem);
+      margin-right: auto;
+      margin-left: auto;
+      max-width: 30rem;
+    }
+
+    .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      font-size: 1.25rem;
+      vertical-align: bottom;
+      stroke-width: 1.5;
+    }
+
+    .icon:hover {
+      text-decoration: none;
+    }
+
+    a {
+      -webkit-text-decoration-skip: ink;
+      text-decoration-skip-ink: auto;
+    }
+
+    ::-moz-selection {
+      color: #fff;
+      background-color: #307fdd;
+    }
+
+    ::selection {
+      color: #fff;
+      background-color: #307fdd;
+    }
+
+    .text-muted {
+      color: #626976 !important;
+    }
+
+    /*! CSS Used from: https://preview.tabler.io/dist/css/tabler-vendors.min.css?1652048814 */
+    svg {
+      touch-action: none;
+    }
+  </style>
+</head>
+
+<body class="border-top-wide border-primary d-flex flex-column theme-light">
+  <div class="page page-center">
+    <div class="container-tight py-4">
+      <div class="empty">
+        <div class="empty-header">Failure</div>
+        <p class="empty-title">oAuth Error</p>
+        <p class="empty-subtitle text-muted">
+          {{error_description}}
+        </p>
+        <div class="empty-action">
+          <a href="{{forward_to}}" class="btn btn-primary">
+            <!-- Download SVG icon from http://tabler-icons.io/i/arrow-left -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <desc>Download more icon variants from https://tabler-icons.io/i/arrow-left</desc>
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <line x1="5" y1="12" x2="11" y2="18"></line>
+              <line x1="5" y1="12" x2="11" y2="6"></line>
+            </svg>
+            Take me to main page
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://browser.sentry-cdn.com/5.27.6/bundle.tracing.min.js"
+    integrity="sha384-9Z8PxByVWP+gIm/rTMPn9BWwknuJR5oJcLj+Nr9mvzk8nJVkVXgQvlLGZ9SIFEJF"
+    crossorigin="anonymous"></script>
+  <script>
+    Sentry.init({
+      dsn: "https://8e4ad02f495946f888620f9fb99fd495@o484108.ingest.sentry.io/5536918",
+      release: "tabler@1.0.0-beta10",
+      integrations: [
+        new Sentry.Integrations.BrowserTracing()
+      ],
+
+      tracesSampleRate: 1.0,
+    });
+  </script>
+  <!-- Libs JS -->
+  <!-- Tabler Core -->
+  <script src="./dist/js/tabler.min.js?1652048814" defer=""></script>
+  <script src="./dist/js/demo.min.js?1652048814" defer=""></script>
+
+</body>
+
+</html>
