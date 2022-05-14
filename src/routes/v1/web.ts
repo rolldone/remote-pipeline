@@ -203,7 +203,10 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
     self.use("/xhr/repository", [DashboardAuth, GithubAuth], function (route: BaseRouteInterface) {
       route.get("/repositories", "xhr.repository.repositories", [], RepositoryController.binding().getRepositories);
-      route.get("/:id/view", "xhr.repository.repository", [], RepositoryController.binding().getRepository);
+      route.get("/owner", "xhr.repository.owner", [], RepositoryController.binding().getOwner);
+      route.get("/branch/branchs", "xhr.repository.branch.branchs", [], RepositoryController.binding().getBranchRepository);
+      route.get("/commit/commits", "xhr.repository.commit.commits", [], RepositoryController.binding().getCommits);
+      route.get("/:repo_name/view", "xhr.repository.repository", [], RepositoryController.binding().getRepository);
       route.post("/select", "xhr.repository.select", [upload.any()], RepositoryController.binding().selectRepository);
     })
   }

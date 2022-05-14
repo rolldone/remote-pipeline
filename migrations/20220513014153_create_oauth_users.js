@@ -6,6 +6,7 @@ exports.up = function (knex) {
   return knex.schema.createTable('oauth_users', function (tableBuilder) {
     tableBuilder.increments('id');
     tableBuilder.integer("user_id");
+    tableBuilder.integer("oauth_id");
     tableBuilder.string("access_token");
     tableBuilder.string("repo_from");
     tableBuilder.string("token_type");

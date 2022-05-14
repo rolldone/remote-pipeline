@@ -1,5 +1,6 @@
 import BaseController from "base/BaseController";
 import GetAuthUser from "../functions/GetAuthUser";
+import GithubService from "../services/GithubService";
 import OAuthService from "../services/OAuthService";
 
 export interface DashboardControllerInterface extends BaseControllerInterface {
@@ -19,14 +20,28 @@ export default BaseController.extend<DashboardControllerInterface>({
       if (resData.error != null) {
         return res.render("oauth_response/oauth_callback_error.html", resData);
       }
-      let resAddData = await OAuthService.addOAuthToken({
-        user_id: user.id,
-        access_token: resData.access_token,
-        repo_from: resData.from,
-        token_type: resData.token_type,
-        scope: resData.scope,
-        data: JSON.stringify({})
-      })
+      let oauthUserData = null;
+      let resAddData = null;
+      switch (resData.from) {
+        case 'github':
+          oauthUserData = await GithubService.getCurrentUser({
+            access_token: resData.access_token,
+          })
+
+          resAddData = await OAuthService.addOrUpdateOAuthToken({
+            user_id: user.id,
+            oauth_id: oauthUserData.id,
+            access_token: resData.access_token,
+            repo_from: resData.from,
+            token_type: resData.token_type,
+            scope: resData.scope,
+            data: JSON.stringify({})
+          })
+          
+          // Add oauth_user_id to resdata
+          resData.oauth_user_id = resAddData.id;
+          break;
+      }
       res.render("oauth_response/oauth_callback.html", resData);
     } catch (ex) {
       return res.status(400).send(ex);

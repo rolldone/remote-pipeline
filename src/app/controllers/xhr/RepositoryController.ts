@@ -6,6 +6,9 @@ export interface RepositoryControllerInterface extends BaseControllerInterface {
   getRepositories: { (req: any, res: any): void }
   getRepository: { (req: any, res: any): void }
   selectRepository: { (req: any, res: any): void }
+  getBranchRepository: { (req: any, res: any): void }
+  getOwner: { (req: any, res: any): void }
+  getCommits: { (req: any, res: any): void }
 }
 
 declare let db: Knex;
@@ -19,7 +22,6 @@ export default BaseController.extend<RepositoryControllerInterface>({
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
-          console.log("vmdkfvm", githubAccessToken);
           resData = await GithubService.getCurrentRepositories({
             owner: githubUser.login,
             access_token: githubAccessToken
@@ -36,9 +38,103 @@ export default BaseController.extend<RepositoryControllerInterface>({
     }
   },
   async getRepository(req, res) {
-
+    try {
+      let props = req.query;
+      props.repo_name = req.params.repo_name;
+      let resData = null;
+      switch (props.from) {
+        case 'github':
+          let githubUser = req.github_user;
+          let githubAccessToken = req.github_access_token;
+          resData = await GithubService.getCurrentRepository({
+            owner: githubUser.login,
+            access_token: githubAccessToken,
+            repo_name: props.repo_name
+          })
+          res.send({
+            status: "success",
+            status_code: 200,
+            return: resData
+          });
+          break;
+      }
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
   async selectRepository(req, res) {
 
   },
+  async getBranchRepository(req, res) {
+    try {
+      let props = req.query;
+      let resData = null;
+      switch (props.from) {
+        case 'github':
+          let githubUser = req.github_user;
+          let githubAccessToken = req.github_access_token;
+          resData = await GithubService.getCurrentBranchRepository({
+            owner: githubUser.login,
+            access_token: githubAccessToken,
+            repo_name: props.repo_name
+          })
+          res.send({
+            status: "success",
+            status_code: 200,
+            return: resData
+          });
+          break;
+      }
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async getOwner(req, res) {
+    try {
+      let props = req.query;
+      let resData = null;
+      switch (props.from) {
+        case 'github':
+          let githubUser = req.github_user;
+          let githubAccessToken = req.github_access_token;
+          resData = await GithubService.getCurrentUser({
+            owner: githubUser.login,
+            access_token: githubAccessToken,
+            repo_name: props.repo_name
+          })
+          res.send({
+            status: "success",
+            status_code: 200,
+            return: resData
+          });
+          break;
+      }
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async getCommits(req, res) {
+    try {
+      let props = req.query;
+      let resData = null;
+      switch (props.from) {
+        case 'github':
+          let githubUser = req.github_user;
+          let githubAccessToken = req.github_access_token;
+          resData = await GithubService.getCommits({
+            owner: githubUser.login,
+            access_token: githubAccessToken,
+            repo_name: props.repo_name
+          })
+          res.send({
+            status: "success",
+            status_code: 200,
+            return: resData
+          });
+          break;
+      }
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  }
 });

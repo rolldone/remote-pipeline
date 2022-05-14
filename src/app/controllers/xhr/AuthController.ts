@@ -1,5 +1,6 @@
 import AuthService from "@root/app/services/AuthService"
 import BaseController from "@root/base/BaseController"
+import OAuth from "@root/config/OAuth"
 
 export interface AuthControllerInterface extends BaseControllerInterface {
   oAuthGenerate: { (req: any, res: any): void }
@@ -13,12 +14,12 @@ export interface AuthControllerInterface extends BaseControllerInterface {
 export default BaseController.extend<AuthControllerInterface>({
   oAuthGenerate(req, res) {
     let oauth = req.body.oauth || null;
-    let call_query : any = {
+    let call_query: any = {
       forward_to: encodeURI(req.body.forward_to),
       from: oauth
     }
     call_query = new URLSearchParams(call_query);
-    let redirect_uri = 'http://192.168.50.4:3000/dashboard/login/oauth2/code?' + call_query
+    let redirect_uri = null;
     if (oauth == null) {
       return res.send("There is no oauth page here");
     }
@@ -26,8 +27,9 @@ export default BaseController.extend<AuthControllerInterface>({
     let props = {};
     switch (oauth) {
       case 'github':
+        redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + call_query
         props = {
-          client_id: '4839904b1862296f97bc',
+          client_id: OAuth.GITHUB_CLIENT_ID,
           redirect_uri: redirect_uri,
           scope: 'user,email,repo',
         }
@@ -40,7 +42,7 @@ export default BaseController.extend<AuthControllerInterface>({
         });
         break;
     }
-    res.send("vmdkfvmfdkvmkdfvmfkv");
+    return res.send("There is no process");
   },
   async login(req, res) {
     try {

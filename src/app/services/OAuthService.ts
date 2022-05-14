@@ -8,6 +8,7 @@ import SqlService from "./SqlService";
 export interface OauthInterface {
   id?: number
   user_id?: number
+  oauth_id?: number
   access_token?: string
   repo_from?: string
   token_type?: string
@@ -50,6 +51,7 @@ export default {
     try {
       let id = await SqlService.insert(Sqlbricks.insert("oauth_users", {
         user_id: props.user_id,
+        oauth_id: props.oauth_id,
         access_token: props.access_token,
         repo_from: props.repo_from,
         token_type: props.token_type,
@@ -62,9 +64,33 @@ export default {
       throw ex;
     }
   },
+  async addOrUpdateOAuthToken(props: OauthInterface) {
+    try {
+      let oauthData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where({
+        "oauth_id": props.oauth_id,
+        "user_id": props.user_id
+      }).toString());
+      if (oauthData == null) {
+        return this.addOAuthToken(props);
+      }
+      let datStatus = await SqlService.update(Sqlbricks.update("oauth_users", {
+        access_token: props.access_token
+      }).where({
+        "oauth_id": props.oauth_id,
+        "user_id": props.user_id
+      }).toString())
+      let resData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where("id", oauthData.id).toString());
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getOauthData(props: OauthInterface) {
     try {
-      let resData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where("user_id", props.user_id).orderBy("id DESC").toString())
+      let resData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where({
+        "user_id": props.user_id,
+        "id": props.id
+      }).orderBy("id DESC").toString())
       return resData;
     } catch (ex) {
       throw ex;

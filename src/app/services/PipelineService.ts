@@ -9,6 +9,11 @@ export interface PipelineServiceInterface {
   name?: string
   description?: string
   project_id?: number
+  oauth_user_id?: number
+  repo_data?: any
+  repo_name?: string
+  source_type?: string
+  from?: string
 }
 
 export default {
@@ -17,7 +22,12 @@ export default {
       let resData = await db.raw(Sqlbricks.insert('pipelines', {
         name: props.name,
         description: props.description,
-        project_id: props.project_id
+        project_id: props.project_id,
+        oauth_user_id: props.oauth_user_id,
+        repo_name: props.repo_name,
+        from: props.from,
+        source_type: props.source_type,
+        repo_data: JSON.stringify(props.repo_data),
       }).toString());
       let id = resData.lastInsertRowid
       resData = await this.getPipeline({
@@ -33,7 +43,12 @@ export default {
       let resData = await SqlService.update(Sqlbricks.update('pipelines', {
         name: props.name,
         description: props.description,
-        project_id: props.project_id
+        project_id: props.project_id,
+        oauth_user_id: props.oauth_user_id,
+        repo_data: JSON.stringify(props.repo_data),
+        repo_name: props.repo_name,
+        from: props.from,
+        source_type: props.source_type,
       }).where("id", props.id).toString());
       resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
       return resData;
@@ -44,6 +59,8 @@ export default {
   async getPipeline(props): Promise<any> {
     try {
       let resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
+      if (resData == null) return null;
+      resData.repo_data = JSON.parse(resData.repo_data);
       return resData;
     } catch (ex) {
       throw ex;
@@ -57,7 +74,11 @@ export default {
       });
       let query = Sqlbricks.select(
         "pip.id as id",
+        "pip.project_id as project_id",
+        "pip.oauth_user_id as oauth_user_id",
+        "pip.source_type as source_type",
         "pip.name as name",
+        "pip.repo_data as repo_data",
         "pro.id as pro_id",
         "pro.name as pro_name"
       ).from("pip");
@@ -66,7 +87,11 @@ export default {
         query = query.where("pro.id", props.project_id);
       }
       query = query.orderBy("pip.id DESC");
-      let resData = await db.raw(query.toString());
+      let resData: Array<any> = await db.raw(query.toString());
+      resData.forEach((el) => {
+        el.repo_data = JSON.parse(el.repo_data || '{}');
+        return el;
+      })
       return resData;
     } catch (ex) {
       throw ex;

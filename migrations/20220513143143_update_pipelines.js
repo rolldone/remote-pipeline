@@ -4,7 +4,10 @@
  */
 exports.up = function (knex) {
   return knex.schema.alterTable('pipelines', function (table) {
+    table.string("source_type");
+    table.string("repo_name");
     table.string("from");
+    table.integer("oauth_user_id");
     table.json("repo_data");
   });
 };
@@ -15,6 +18,6 @@ exports.up = function (knex) {
  */
 exports.down = function (knex) {
   return knex.schema.alterTable('pipelines', function (table) {
-    table.dropColumn("from", "repo_data");
+    table.dropColumn("source_type","from", "repo_name", "oauth_user_id", "repo_data");
   });
 };

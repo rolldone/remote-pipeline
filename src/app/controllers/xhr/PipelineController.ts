@@ -16,6 +16,7 @@ export default BaseController.extend<PipelineControllerInterface>({
     // description: string
     // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
     let props = req.body;
+    props.repo_data = JSON.parse(props.repo_data || '{}');
     let resData = await PipelineService.addPipeline(props);
     res.send({
       status: 'success',
@@ -30,6 +31,7 @@ export default BaseController.extend<PipelineControllerInterface>({
     // description: text
     // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
     let props = req.body;
+    props.repo_data = JSON.parse(props.repo_data || '{}');
     let resData = await PipelineService.updatePipeline(props);
     res.send({
       status: 'success',
