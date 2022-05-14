@@ -7,6 +7,7 @@ import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordService from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
+import DownloadRepo from "./DownloadRepo";
 import RecordCommandToFileLog from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
 
@@ -16,14 +17,12 @@ const PipelineLoop = async function (props: {
   queue_record_id: number
   host_id: number
   host_data: any,
-  user_id: any
   job_id: any
 }) {
   let {
     queue_record_id,
     host_id,
     host_data,
-    user_id,
     job_id
   } = props;
   try {
@@ -129,9 +128,18 @@ const PipelineLoop = async function (props: {
           break;
         case PipelineItemService.TYPE.BASIC:
         default:
+
+          // Try create connection ssh
           let sshPromise = await ConnectToHost({
             host_data,
             host_id
+          })
+
+          // Download repository from pipeline and branch on execution
+          // If there is no repo on pipeline return null
+          let downloadInfo = await DownloadRepo({
+            pipeline_id: execution.pipeline_id,
+            execution_id: execution.id
           })
           let socket = await sshPromise.shell();
           let who_parent = null;

@@ -20,10 +20,9 @@ const BasicExecutionWorker = function (props: any) {
         host_data,
         host_id,
         queue_record_id,
-        user_id
       } = job.data;
       let job_id = job.id;
-      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, user_id, job_id });
+      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id });
     } catch (ex) {
       console.log(`${props.queue_name} - ex :: `, ex);
       return 'failed';

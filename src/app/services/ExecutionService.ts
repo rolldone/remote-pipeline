@@ -20,6 +20,7 @@ export interface Execution {
   pipeline_id?: number
   project_id?: number
   user_id?: number
+  branch?: string
   variable_id?: number
   variable_option?: string
   pipeline_item_ids?: Array<number>
@@ -38,6 +39,7 @@ export default {
         pipeline_id: props.pipeline_id,
         project_id: props.project_id,
         user_id: props.user_id,
+        branch: props.branch,
         variable_id: props.variable_id,
         variable_option: props.variable_option,
         pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
@@ -60,6 +62,7 @@ export default {
         process_limit: props.process_limit,
         pipeline_id: props.pipeline_id,
         project_id: props.project_id,
+        branch: props.branch,
         user_id: props.user_id,
         variable_id: props.variable_id,
         variable_option: props.variable_option,
@@ -87,7 +90,7 @@ export default {
       throw ex;
     }
   },
-  getExecution: async function (props: any) {
+  getExecution: async function (props: Execution) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -105,6 +108,7 @@ export default {
         'exe.pipeline_id as pipeline_id',
         'exe.project_id as project_id',
         'exe.user_id as user_id',
+        'exe.branch as branch',
         'exe.variable_id as variable_id',
         'exe.variable_option as variable_option',
         'exe.pipeline_item_ids as pipeline_item_ids',
@@ -142,7 +146,7 @@ export default {
       throw ex;
     }
   },
-  getExecutions: async function (props: any) {
+  getExecutions: async function (props: Execution) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -160,6 +164,7 @@ export default {
         'exe.pipeline_id as pipeline_id',
         'exe.project_id as project_id',
         'exe.user_id as user_id',
+        'exe.branch as branch',
         'exe.variable_id as variable_id',
         'exe.variable_option as variable_option',
         'exe.pipeline_item_ids as pipeline_item_ids',

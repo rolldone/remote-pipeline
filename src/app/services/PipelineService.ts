@@ -13,7 +13,7 @@ export interface PipelineServiceInterface {
   repo_data?: any
   repo_name?: string
   source_type?: string
-  from?: string
+  from_provider?: string
 }
 
 export default {
@@ -25,7 +25,7 @@ export default {
         project_id: props.project_id,
         oauth_user_id: props.oauth_user_id,
         repo_name: props.repo_name,
-        from: props.from,
+        from_provider: props.from_provider,
         source_type: props.source_type,
         repo_data: JSON.stringify(props.repo_data),
       }).toString());
@@ -47,7 +47,7 @@ export default {
         oauth_user_id: props.oauth_user_id,
         repo_data: JSON.stringify(props.repo_data),
         repo_name: props.repo_name,
-        from: props.from,
+        from_provider: props.from_provider,
         source_type: props.source_type,
       }).where("id", props.id).toString());
       resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
@@ -56,7 +56,7 @@ export default {
       throw ex;
     }
   },
-  async getPipeline(props): Promise<any> {
+  async getPipeline(props: PipelineServiceInterface): Promise<any> {
     try {
       let resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
       if (resData == null) return null;
@@ -66,7 +66,7 @@ export default {
       throw ex;
     }
   },
-  async getPipelines(props): Promise<any> {
+  async getPipelines(props: PipelineServiceInterface): Promise<any> {
     try {
       Sqlbricks.aliasExpansions({
         'pro': "projects",
@@ -77,6 +77,8 @@ export default {
         "pip.project_id as project_id",
         "pip.oauth_user_id as oauth_user_id",
         "pip.source_type as source_type",
+        "pip.repo_name as repo_name",
+        "pip.from_provider as from_provider",
         "pip.name as name",
         "pip.repo_data as repo_data",
         "pro.id as pro_id",

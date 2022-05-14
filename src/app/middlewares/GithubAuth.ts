@@ -4,10 +4,10 @@ import OAuthService from "../services/OAuthService";
 export default function (req, res, next) {
   let asyncFunc = async () => {
     try {
-      let from = req.body.from || req.query.from;
+      let from_provider = req.body.from_provider || req.query.from_provider;
       let oauth_user_id = req.body.oauth_user_id || req.query.oauth_user_id;
       let user = req.session.user;
-      switch (from) {
+      switch (from_provider) {
         case 'github':
           let oAuthData = await OAuthService.getOauthData({
             user_id: user.id,

@@ -17,12 +17,27 @@ export interface OauthInterface {
 }
 
 export default {
+  generateOAuthUrl(props) {
+    try {
+      let redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + props.call_query
+      let queryProps = {
+        client_id: OAuth.GITHUB_CLIENT_ID,
+        redirect_uri: redirect_uri,
+        scope: 'user,email,repo',
+      }
+      let queryUrl = new URLSearchParams(queryProps);
+      let url = 'https://github.com/login/oauth/authorize?' + queryUrl;
+      return url;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getOAuthToken(props) {
     let code = props.code;
     let forward_to = props.forward_to;
-    let from = props.from;
+    let from_provider = props.from_provider;
     let resData = null;
-    switch (props.from) {
+    switch (from_provider) {
       case 'github':
         let formData = new FormData();
         formData.append("client_id", OAuth.GITHUB_CLIENT_ID);
@@ -41,7 +56,7 @@ export default {
         parseQuery = {
           ...parseQuery,
           forward_to,
-          from
+          from_provider
         };
         console.log("parseQuery :: ", parseQuery);
         return parseQuery as any;
@@ -88,7 +103,7 @@ export default {
   async getOauthData(props: OauthInterface) {
     try {
       let resData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where({
-        "user_id": props.user_id,
+        // "user_id": props.user_id,
         "id": props.id
       }).orderBy("id DESC").toString())
       return resData;

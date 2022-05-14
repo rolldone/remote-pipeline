@@ -48,10 +48,9 @@ const CreateQueueItem = function (props: any) {
                 index: 0,
                 total: 1,
                 host_data: res_data_record_detail.data.host_data,
-                user_id: "one"
               }, {
                 jobId: idJObInstant,// id + "-" + resQueueRecords.exe_host_ids[a],
-                timeout: 5000
+                delay: 2000
               });
 
               resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
@@ -96,10 +95,9 @@ const CreateQueueItem = function (props: any) {
                 total: 1,
                 host_data: res_data_record_detail.data.host_data,
                 schedule_type: qrec_sch_data.schedule_type,
-                user_id: "one"
               }, {
                 jobId: idJobSchedule,
-                timeout: _timeout,
+                delay: _timeout,
                 repeat: _repeat
               });
 

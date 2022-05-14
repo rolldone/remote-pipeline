@@ -67,11 +67,11 @@ export default {
   },
   async deleteQueueRecord(ids: Array<number>) {
     try {
-      let _in: Array<any> | string = [
-        ...ids
-      ];
-      _in = _in.join(',');
-      let resData = await SqlService.delete(sqlbricks.delete('queue_records').where(sqlbricks.in("id", _in)).toString());
+      // let _in: Array<any> | string = [
+      //   ...ids
+      // ];
+      // _in = _in.join(',');
+      let resData = await SqlService.delete(sqlbricks.delete('queue_records').where(sqlbricks.in("id", ids)).toString());
       return {
         status: 'success',
         status_code: 200,

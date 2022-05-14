@@ -22,7 +22,7 @@ export default BaseController.extend<DashboardControllerInterface>({
       }
       let oauthUserData = null;
       let resAddData = null;
-      switch (resData.from) {
+      switch (resData.from_provider) {
         case 'github':
           oauthUserData = await GithubService.getCurrentUser({
             access_token: resData.access_token,
@@ -32,14 +32,15 @@ export default BaseController.extend<DashboardControllerInterface>({
             user_id: user.id,
             oauth_id: oauthUserData.id,
             access_token: resData.access_token,
-            repo_from: resData.from,
+            repo_from: resData.from_provider,
             token_type: resData.token_type,
             scope: resData.scope,
             data: JSON.stringify({})
           })
-          
+
           // Add oauth_user_id to resdata
           resData.oauth_user_id = resAddData.id;
+          resData.query_string_callback = "from_provider=" + resData.from_provider + "&oauth_user_id=" + resData.oauth_user_id;
           break;
       }
       res.render("oauth_response/oauth_callback.html", resData);

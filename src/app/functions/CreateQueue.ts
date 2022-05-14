@@ -69,10 +69,10 @@ const CreateQueue = function (props: any) {
                     index: indexHostItem,
                     total: _total_host_item,
                     host_data: hostDataItem,
-                    user_id: "one"
                   }, {
                     jobId: idJObInstant,//id + "-" + resQueueRecords.exe_host_ids[a],
-                    timeout: 5000
+                    // timeout: 5000,
+                    delay: 2000
                   });
 
                   // Insert to queue record detail 
@@ -123,7 +123,6 @@ const CreateQueue = function (props: any) {
                     total: _total_host_item,
                     host_data: hostDataItem,
                     schedule_type: qrec_sch_data.schedule_type,
-                    user_id: "one"
                   }, {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
                     jobId: idJobSchedule,

@@ -1,4 +1,5 @@
 import AuthService from "@root/app/services/AuthService"
+import OAuthService from "@root/app/services/OAuthService"
 import BaseController from "@root/base/BaseController"
 import OAuth from "@root/config/OAuth"
 
@@ -13,28 +14,20 @@ export interface AuthControllerInterface extends BaseControllerInterface {
 
 export default BaseController.extend<AuthControllerInterface>({
   oAuthGenerate(req, res) {
-    let oauth = req.body.oauth || null;
+    let from_provider = req.body.from_provider || null;
     let call_query: any = {
       forward_to: encodeURI(req.body.forward_to),
-      from: oauth
+      from_provider: from_provider
     }
     call_query = new URLSearchParams(call_query);
-    let redirect_uri = null;
-    if (oauth == null) {
-      return res.send("There is no oauth page here");
+    if (from_provider == null) {
+      return res.send("There is no provider page here");
     }
-    let url = null;
-    let props = {};
-    switch (oauth) {
+    switch (from_provider) {
       case 'github':
-        redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + call_query
-        props = {
-          client_id: OAuth.GITHUB_CLIENT_ID,
-          redirect_uri: redirect_uri,
-          scope: 'user,email,repo',
-        }
-        let queryUrl = new URLSearchParams(props);
-        url = 'https://github.com/login/oauth/authorize?' + queryUrl;
+        let url = OAuthService.generateOAuthUrl({
+          call_query,
+        })
         return res.send({
           status: "success",
           status_code: 200,

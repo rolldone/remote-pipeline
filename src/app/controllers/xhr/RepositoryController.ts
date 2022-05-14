@@ -18,7 +18,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
-      switch (props.from) {
+      switch (props.from_provider) {
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
@@ -42,7 +42,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
       let props = req.query;
       props.repo_name = req.params.repo_name;
       let resData = null;
-      switch (props.from) {
+      switch (props.from_provider) {
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
@@ -69,7 +69,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
-      switch (props.from) {
+      switch (props.from_provider) {
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
@@ -93,7 +93,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
-      switch (props.from) {
+      switch (props.from_provider) {
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
@@ -117,7 +117,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
-      switch (props.from) {
+      switch (props.from_provider) {
         case 'github':
           let githubUser = req.github_user;
           let githubAccessToken = req.github_access_token;
