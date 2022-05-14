@@ -1,6 +1,7 @@
 Features
 - Github or famous repos integration
 - Notification script
+- Also can download zip and deploy by commit sha on execution
 - Dynamic environment value by api request
 - Connection hopping and Create tunnel for instant connection 
 - Ansible integration
