@@ -3,13 +3,16 @@ import { IPty } from 'node-pty';
 var size = require('window-size');
 var os = require('os');
 
-const InitPtyProcess = function (props: [], authOpts: any) {
+const InitPtyProcess = function (props: {
+  commands?: Array<string>,
+  working_dir?: string
+}, authOpts?: any) {
   var shell = os.platform() === 'win32' ? "C:\\Program Files\\Git\\bin\\bash.exe" : 'bash';
-  let _ptyProcess = pty.spawn(shell, props, {
+  let _ptyProcess = pty.spawn(shell, props.commands, {
     name: 'xterm-color',
     // cols: process.stdin.width,
     // rows: process.stdin.height,
-    cwd: process.env.HOME,
+    cwd: props.working_dir || process.env.HOME,
     env: {
       /* Fill from parent process.env */
       ...process.env,
@@ -23,7 +26,7 @@ const InitPtyProcess = function (props: [], authOpts: any) {
     // console.log(data)
     /* Disable pty stdout print */
     // process.stdout.write(data);
-    
+
 
     // switch (true) {
     //   case data.includes('Are you sure you want to continue connecting'):

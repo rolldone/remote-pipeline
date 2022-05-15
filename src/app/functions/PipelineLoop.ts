@@ -77,6 +77,7 @@ const PipelineLoop = async function (props: {
           order_by: "pip_task.order_number ASC",
           parent: props.parent || null
         });
+        console.log("_pipeline_task :::::: ", _pipeline_task);
         // console.log("_pipeline_task :::: ", _pipeline_task);
         // console.log("_pipeline_task - " + props.parent + " :: ", _pipeline_task);
         if (_pipeline_task.length == 0) {
@@ -84,8 +85,13 @@ const PipelineLoop = async function (props: {
           resolveDone = props.resolve;
           resolveReject = props.rejected;
           lastStartParent = props.parent
-          masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
+          console.log("props.pipeline_item_id :::: ",props.pipeline_item_id);
           console.log("firstStart ::", firstStart)
+          if(typeof firstStart.command !== 'function'){
+            masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
+            return;
+          }
+          firstStart.command();
           return;
         }
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
@@ -98,8 +104,10 @@ const PipelineLoop = async function (props: {
             schema: _var_scheme,
             pipeline_task: _pipeline_task[a2],
             socket: props.socket,
+            execution: execution,
             resolve: props.resolve,
-            rejected: props.rejected
+            rejected: props.rejected,
+            job_id
           });
 
           if (props.parent == "NULL") {

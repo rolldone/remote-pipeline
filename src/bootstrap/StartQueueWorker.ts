@@ -23,12 +23,12 @@ export default function (next: Function) {
         })
         for (var b = 0; b < queue_record_details.length; b++) {
           await DeleteQueueItem({
-            queue_record_detail_id : queue_record_details[b].id
+            queue_record_detail_id: queue_record_details[b].id
           })
         }
         await CreateQueue({ id, data, process_mode, process_limit, queue_name });
       }
-      console.log("DONEEEEEEEEEEEEEEEEEEEEE");
+      console.log("StartQueueQorker.ts - execute :: ", "DONE");
       resolve();
     } catch (ex) {
       console.error("StartQueueQorker - ex :: ", ex);

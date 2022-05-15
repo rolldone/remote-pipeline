@@ -1,6 +1,6 @@
 
 import Rsync from "@root/tool/rsync";
-import { unlinkSync, writeFile, writeFileSync } from "fs";
+import { mkdirSync, unlinkSync, writeFile, writeFileSync } from "fs";
 import SSH2Promise from "ssh2-promise";
 
 const status = {
@@ -9,27 +9,31 @@ const status = {
 
 const writePrivateKey = async function (props: {
   sshPromise: SSH2Promise
-  raw_variable: any
+  execution: any
 }, action?: string) {
   try {
     console.log('sshPromise.config :::: ', props.sshPromise.config);
     let lastPrivateKeyUse = {};
     switch (action) {
       case status.CLEAR:
+        mkdirSync(process.cwd() + "/storage/app/executions/" + props.execution.id, { recursive: true });
         for (var a = 0; a < props.sshPromise.config.length; a++) {
           let _config = props.sshPromise.config[a];
-          await unlinkSync(process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a);
+          await unlinkSync(process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.host + "_key_" + a);
 
         }
         break;
       default:
+        try {
+          mkdirSync(process.cwd() + "/storage/app/executions/" + props.execution.id, { recursive: true });
+        } catch (ex) { }
         for (var a = 0; a < props.sshPromise.config.length; a++) {
           let _config = props.sshPromise.config[a];
-          await writeFileSync(process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a, _config.privateKey);
+          await writeFileSync(process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.host + "_key_" + a, _config.privateKey);
           lastPrivateKeyUse = {
             host: _config.host,
             port: _config.port,
-            identityFile: process.cwd() + "/storage/app/variables/" + props.raw_variable.id + '/' + _config.host + "_key_" + a,
+            identityFile: process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.host + "_key_" + a,
             username: _config.username,
             passphrase: _config.passphrase,
             password: _config.password || _config.passphrase

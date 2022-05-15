@@ -2,6 +2,7 @@ import SSH2Promise from "ssh2-promise";
 import BasicCommand from "./BasicCommand";
 import ConditionalCommand from "./ConditionalCommand";
 import FileTransfer from "./FileTransfer";
+import RepoInstall from "./RepoInstall";
 import WriteTransfer from "./WriteTransfer";
 
 export interface TaskTypeInterface {
@@ -11,13 +12,16 @@ export interface TaskTypeInterface {
   schema: any
   pipeline_task: any
   socket: any
+  execution: any
   resolve: Function
   rejected: Function
+  job_id: number
 }
 
 export default {
   "basic-command": BasicCommand,
   "conditional-command": ConditionalCommand,
   "file-transfer": FileTransfer,
-  "write-transfer": WriteTransfer
+  "write-transfer": WriteTransfer,
+  "repo-install": RepoInstall
 }

@@ -7,7 +7,7 @@ import RecordCommandToFileLog from "../RecordCommandToFileLog";
 
 declare let masterData: MasterDataInterface;
 
-const WriteTransfer = function (props: TaskTypeInterface) {
+const DownloadRequest = function (props: TaskTypeInterface) {
   let {
     sshPromise,
     variable,
@@ -35,7 +35,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     // console.log("_data :: ", _data);
     // console.log("_pipeline_task :: ", pipeline_task);
 
-    let processWait = async ()=>{
+    let processWait = async () => {
       try {
         console.log("File Write command ::  Called ");
         let _files = [];
@@ -82,4 +82,4 @@ const WriteTransfer = function (props: TaskTypeInterface) {
   }
 }
 
-export default WriteTransfer;
+export default DownloadRequest;
