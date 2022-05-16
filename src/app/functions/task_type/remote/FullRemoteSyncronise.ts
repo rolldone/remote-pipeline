@@ -92,15 +92,21 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
       });
       let _delete_mode_active = _data.transfer_mode == "force" ? true : false;
 
+      let _excludes = _data.exclude.split("\n");
+      let _includes = _data.include.split("\n");
+
+      console.log("_exclude ::::: ", _excludes);
+      console.log("_include ::::: ", _includes);
+      
       var rsync = Rsync.build({
         /* Support multiple source too */
         source: _data.transfer_action == "upload" ? "./" : _data.username + '@' + _data.host + ':' + _data.target_path,
         // source : upath.normalize(_local_path+'/'),
         destination: _data.transfer_action == "upload" ? _data.username + '@' + _data.host + ':' + _data.target_path : _data.working_dir,
         /* Include First */
-        include: [],
+        include: _includes,
         /* Exclude after include */
-        exclude: [],//extraWatchs[index].ignores,
+        exclude: _excludes,//extraWatchs[index].ignores,
         // flags : '-vt',
         flags: '-avzLm',
         set: '--size-only --checksum ' + (_delete_mode_active == false ? '' : '--delete'),

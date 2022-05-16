@@ -63,8 +63,9 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 let pathDirname = upath.normalize(path.dirname(base_working_dir + "/" + _data.asset_datas[aq2].target_path));
                 mkdirSync(pathDirname, { recursive: true });
               } catch (ex) { }
-              writeFileSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path), '');
-              await sftp.fastGet(_data.asset_datas[aq2].source_path, upath.normalize(base_working_dir + _data.asset_datas[aq2].target_path))
+              let _writeFileName = upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path);
+              writeFileSync(_writeFileName, '');
+              await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName)
               RecordCommandToFileLog({
                 fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
                 commandString: "Fash Get :: " + _data.asset_datas[aq2].source_path + " to [storage-saved]:" + _data.asset_datas[aq2].target_path + "\n"
@@ -96,20 +97,6 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               working_dir: base_working_dir
             }, filePRivateKey);
             ptyProcess.on('data', (data: any) => {
-              // let _split = data.split(/\n/);
-              // if (_split != "") {
-              //   for (var af2 = 0; af2 < _split.length; af2++) {
-              //     switch (_split[af2]) {
-              //       case '':
-              //       case '\r':
-              //       case '\u001b[32m\r':
-              //         break;
-              //       default:
-              //         console.log(_split[af2].toString() + '\n');
-              //         break;
-              //     }
-              //   }
-              // }
               if (data.includes('failed: Not a directory')) {
                 // _is_file = true;
               }
@@ -158,6 +145,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
             if (filePRivateKey.identityFile != null) {
               ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
             }
+
             var rsync = Rsync.build({
               /* Support multiple source too */
               source: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.asset_datas[r1].source_path,
