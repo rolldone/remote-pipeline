@@ -1,6 +1,5 @@
 import SSH2Promise from "ssh2-promise";
 import MergeVarScheme from "../MergeVarScheme";
-import mustache from 'mustache';
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { TaskTypeInterface } from ".";
 import InitPtyProcess from "../InitPtyProcess";

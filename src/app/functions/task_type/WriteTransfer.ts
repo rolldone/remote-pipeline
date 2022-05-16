@@ -1,9 +1,9 @@
 import { TaskTypeInterface } from ".";
 import MergeVarScheme from "../MergeVarScheme";
-import mustache from 'mustache';
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { uniq } from "lodash";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
+import MustacheRender from "../MustacheRender";
 
 declare let masterData: MasterDataInterface;
 
@@ -26,7 +26,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
-    let command = mustache.render(_data.command.toString() + "\r", mergeVarScheme);
+    let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
     // console.log("mergeVarScheme :: ", mergeVarScheme);
     // console.log("schema :: ", schema);

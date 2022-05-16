@@ -83,11 +83,12 @@ const PipelineLoop = async function (props: {
         if (_pipeline_task.length == 0) {
           // props.resolve();
           resolveDone = props.resolve;
+
           resolveReject = props.rejected;
           lastStartParent = props.parent
-          console.log("props.pipeline_item_id :::: ",props.pipeline_item_id);
+          console.log("props.pipeline_item_id :::: ", props.pipeline_item_id);
           console.log("firstStart ::", firstStart)
-          if(typeof firstStart.command !== 'function'){
+          if (typeof firstStart.command !== 'function') {
             masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
             return;
           }
@@ -97,6 +98,9 @@ const PipelineLoop = async function (props: {
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
           // console.log("_pipeline_task[a2].type :: ", _pipeline_task[a2].type);
           let theTaskTYpeFunc: { (props: TaskTypeInterface) } = task_type[_pipeline_task[a2].type];
+          if (theTaskTYpeFunc == null) {
+            throw new Error("I think your forgot define the task_type, check your file on app/functions/task_type/index.ts");
+          }
           let isnnn = await theTaskTYpeFunc({
             raw_variable: variable,
             sshPromise: props.sshPromise,
@@ -233,6 +237,7 @@ const PipelineLoop = async function (props: {
                 command_history = "";
                 if (lastStartParent == who_parent) {
                   console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
+                  console.log("resolveDone::", resolveDone);
                   resolveDone();
                 }
               }, 2000);

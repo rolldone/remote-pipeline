@@ -1,8 +1,8 @@
 import SSH2Promise from "ssh2-promise";
-import mustache from 'mustache';
 import MergeVarScheme from "../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { TaskTypeInterface } from ".";
+import MustacheRender from "../MustacheRender";
 
 declare let masterData: MasterDataInterface
 
@@ -22,7 +22,7 @@ export default async function (props: TaskTypeInterface) {
     let _condition_values = _data.condition_values;
     let isPassed = [];
     let evalString = "";
-    let command = mustache.render(_data.command.toString() + "\r", mergeVarScheme);
+    let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {

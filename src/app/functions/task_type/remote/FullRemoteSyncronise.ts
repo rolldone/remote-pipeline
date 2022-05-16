@@ -1,68 +1,57 @@
 import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
+import MergeVarScheme from "../../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import InitPtyProcess from "../InitPtyProcess";
+import { TaskTypeInterface } from "../.";
+import InitPtyProcess from "../../InitPtyProcess";
 import Rsync from "@root/tool/rsync";
-import WritePrivateKeyToVariable from "../WritePrivateKeyToVariable";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
-import MustacheRender from "../MustacheRender";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
+import WritePrivateKeyToVariable from "../../WritePrivateKeyToVariable";
+import MustacheRender from "../../MustacheRender";
 
 declare let masterData: MasterDataInterface;
 
-const RepoInstall = function (props: TaskTypeInterface) {
+
+const FullRemoteSyncronise = function (props: TaskTypeInterface) {
   let {
     sshPromise,
     variable,
     schema,
     pipeline_task,
     socket,
-    execution,
     resolve,
     rejected,
     raw_variable,
-    job_id
+    job_id,
+    execution
   } = props;
   try {
     let mergeVarScheme = MergeVarScheme(variable, schema);
     let _data = pipeline_task.data;
+    _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
+    // console.log("mergeVarScheme :: ", mergeVarScheme);
+    // console.log("schema :: ", schema);
+    // console.log("_raw_variable :: ", raw_variable);
+    // console.log("_command :: ", command);
+    // console.log("_data :: ", _data);
+    // console.log("_pipeline_task :: ", pipeline_task);
+
     let processWait = async () => {
+      let socket = await sshPromise.shell();
+      let sftp = await sshPromise.sftp();
 
-      // Store the privateKey string to be file and save it to storage/app/variables/{var_id}
-      let filePRivateKey = await WritePrivateKeyToVariable.writePrivateKey({ sshPromise, execution });
-
-      if (execution.branch == null) {
-        // Ignore it
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
-          pipeline_task_id: pipeline_task.id,
-          command: command,
-          parent: pipeline_task.temp_id
-        })
-        return;
+      let hostport = (_data.host + "_" + _data.port).toString().replace(/\./g, "_");
+      let privateKeyPathName = _data.private_key_path + "/" + hostport;
+      if (_data.auth_type == "private_key") {
+        let resultRender = MustacheRender(_data.private_key, mergeVarScheme);
+        await sftp.writeFile(privateKeyPathName, resultRender, {});
+        await sftp.chmod(privateKeyPathName, "600");
       }
-      let ptyProcess = InitPtyProcess({
-        working_dir: process.cwd() + '/storage/app/executions/' + execution.id + '/repo/' + execution.branch,
-        commands: []
-      });
-      ptyProcess.on('data', (data: any) => {
-        let _split = data.split(/\n/);
-        if (_split != "") {
-          for (var af2 = 0; af2 < _split.length; af2++) {
-            switch (_split[af2]) {
-              case '':
-              case '\r':
-              case '\u001b[32m\r':
-                break;
-              default:
-                console.log(_split[af2].toString() + '\n');
-                break;
-            }
-          }
-        }
+
+      socket.on('data', (data) => {
         if (data.includes('failed: Not a directory')) {
           // _is_file = true;
         }
@@ -70,16 +59,20 @@ const RepoInstall = function (props: TaskTypeInterface) {
           fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
           commandString: data.toString()
         })
+        console.log("Full Remote Command :: ", data.toString());
         switch (true) {
           case data.includes('Are you sure you want to continue connecting'):
-            ptyProcess.write('yes\r')
+            socket.write('yes\r')
             break;
           case data.includes('Enter passphrase for key'):
+            socket.write(_data.passphrase + '\r');
+            break;
           case data.includes('password:'):
-            ptyProcess.write(filePRivateKey.password + '\r')
+            socket.write(_data.password + '\r')
             break;
           case data.includes('total size'):
-            ptyProcess.write('exit' + '\r')
+            // socket.write('exit' + '\r')
+            socket.write("rm " + privateKeyPathName)
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
               pipeline_task_id: pipeline_task.id,
               command: command,
@@ -88,7 +81,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
             break;
           case data.includes('No such file or directory'):
           case data.includes('rsync error:'):
-            ptyProcess.write('exit' + '\r')
+            // socket.write('exit' + '\r')
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
               pipeline_task_id: pipeline_task.id,
               command: command,
@@ -97,16 +90,13 @@ const RepoInstall = function (props: TaskTypeInterface) {
             break;
         }
       });
-      // Set privatekey permission to valid for auth ssh
-      if (filePRivateKey.identityFile != null) {
-        ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
-      }
       let _delete_mode_active = _data.transfer_mode == "force" ? true : false;
+
       var rsync = Rsync.build({
         /* Support multiple source too */
-        source: "./",
+        source: _data.transfer_action == "upload" ? "./" : _data.username + '@' + _data.host + ':' + _data.target_path,
         // source : upath.normalize(_local_path+'/'),
-        destination: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.target_path,
+        destination: _data.transfer_action == "upload" ? _data.username + '@' + _data.host + ':' + _data.target_path : _data.working_dir,
         /* Include First */
         include: [],
         /* Exclude after include */
@@ -117,20 +107,29 @@ const RepoInstall = function (props: TaskTypeInterface) {
         // set : '--no-perms --no-owner --no-group',
         // set : '--chmod=D777,F777',
         // set : '--perms --chmod=u=rwx,g=rwx,o=,Dg+s',
-        shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+        shell: (() => {
+          if (_data.auth_type == "private_key") {
+            return 'ssh -i ' + privateKeyPathName + ' -p ' + _data.port
+          } else if (_data.auth_type == "basic_auth") {
+            return 'ssh -p ' + _data.port
+          } else {
+            // Local
+            return "";
+          }
+        })()
       });
-      ptyProcess.write(rsync.command() + '\r');
+      // Its important cd to working directory
+      socket.write("cd " + _data.working_dir + "\r");
+      console.log('rsync.command() :: ', rsync.command())
+      socket.write(rsync.command() + '\r');
     }
-    // console.log("command :::: ", command);
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           processWait();
-          break;
         }
       }
     })
-
     return {
       parent: pipeline_task.temp_id,
       pipeline_task_id: pipeline_task.id,
@@ -139,7 +138,6 @@ const RepoInstall = function (props: TaskTypeInterface) {
   } catch (ex) {
     throw ex;
   }
-  // console.log("props basic-command ::: ", props);
 }
 
-export default RepoInstall;
+export default FullRemoteSyncronise;

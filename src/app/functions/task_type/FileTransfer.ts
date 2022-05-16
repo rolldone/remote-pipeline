@@ -1,5 +1,4 @@
 import SSH2Promise from "ssh2-promise";
-import mustache from 'mustache';
 import MergeVarScheme from "../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { uniq } from "lodash";
@@ -8,6 +7,7 @@ import { TaskTypeInterface } from ".";
 import Rsync from "@root/tool/rsync";
 import InitPtyProcess from "../InitPtyProcess";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
+import MustacheRender from "../MustacheRender";
 
 declare let masterData: MasterDataInterface
 
@@ -30,7 +30,7 @@ export default async function (props: TaskTypeInterface) {
     let _condition_values = _data.condition_values;
     let isPassed = false;
     _data.command = "\r";
-    let command = mustache.render(_data.command.toString(), mergeVarScheme);
+    let command = MustacheRender(_data.command.toString(), mergeVarScheme);
     // console.log("mergeVarScheme :: ", mergeVarScheme);
     // console.log("schema :: ", schema);
     // console.log("_raw_variable :: ", raw_variable);
@@ -38,7 +38,7 @@ export default async function (props: TaskTypeInterface) {
     // console.log("_data :: ", _data);
     // console.log("_pipeline_task :: ", pipeline_task);
 
-    let processWait = async() => {
+    let processWait = async () => {
       let _files = [];
       for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
         for (var b = 0; b < mergeVarScheme[_data.asset_datas[au2].name].length; b++) {
@@ -63,7 +63,7 @@ export default async function (props: TaskTypeInterface) {
                 await sftp.fastPut(process.cwd() + '/storage/app/variables/' + raw_variable.id + "/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
                 RecordCommandToFileLog({
                   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-                  commandString: "Fash Put :: " + _data.asset_datas[aq2].target_path + "/" + _files[amg2]
+                  commandString: "Fash Put :: " + _data.asset_datas[aq2].target_path + "/" + _files[amg2] + "\n"
                 })
               }
             }

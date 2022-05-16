@@ -18,7 +18,7 @@ const MergeVarScheme = function (variable, scheme) {
     }
     return jj;
   })(variable, scheme)
-  return mergeVarScheme;
+  return mergeVarScheme as any;
 }
 
 export default MergeVarScheme;
