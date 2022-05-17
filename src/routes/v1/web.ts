@@ -25,6 +25,7 @@ import QueueRecordScheduleController from "@root/app/controllers/xhr/QueueRecord
 import VariableController from "@root/app/controllers/xhr/VariableController";
 import RepositoryController from "@root/app/controllers/xhr/RepositoryController";
 import GithubAuth from "@root/app/middlewares/GithubAuth";
+import WebHookController from "@root/app/controllers/xhr/WebHookController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -208,6 +209,14 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/commit/commits", "xhr.repository.commit.commits", [], RepositoryController.binding().getCommits);
       route.get("/:repo_name/view", "xhr.repository.repository", [], RepositoryController.binding().getRepository);
       route.post("/select", "xhr.repository.select", [upload.any()], RepositoryController.binding().selectRepository);
+    })
+    self.use("/xhr/webhook", [], function (route: BaseRouteInterface) {
+      route.get("/webhooks", "xhr.webhook.webhooks", [DashboardAuth], WebHookController.binding().getWebHooks);
+      route.get("/:id/view", "xhr.webhook.webhook", [DashboardAuth], WebHookController.binding().getWebHook);
+      route.post("/add", "xhr.webhook.add", [upload.any(), DashboardAuth], WebHookController.binding().addWebHook);
+      route.post("/update", "xhr.webhook.update", [upload.any(), DashboardAuth], WebHookController.binding().updateWebHook);
+      route.post("/delete", "xhr.webhook.delete", [upload.any(), DashboardAuth], WebHookController.binding().deleteWebHook);
+      route.post("/execute", "xhr.webhook.execute", [upload.any()], WebHookController.binding().execute);
     })
   }
 });
