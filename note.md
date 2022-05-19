@@ -42,4 +42,5 @@
     - Create tester form
     \
     &nbsp;
+- Create new field for store value on queue_detail for passing value between pipeline task 
 
