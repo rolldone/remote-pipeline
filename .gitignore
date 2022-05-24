@@ -7,3 +7,4 @@ sync-config.yaml
 docker-compose.yaml
 .env
 storage/
+my.log
