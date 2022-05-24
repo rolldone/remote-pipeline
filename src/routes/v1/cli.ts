@@ -4,10 +4,18 @@ import BasicExecutionWorker from "@root/app/workers/BasicExecutionWorker";
 import { Worker } from "bullmq";
 import ParallelExecutionWorker from "@root/app/workers/ParallelExecutionWorker";
 import GroupExecutionWorker from "@root/app/workers/GroupExecutionWorker";
+import WebhookWorker from "@root/app/workers/WebhookWorker";
 
 declare var masterData: MasterDataInterface;
 
 export interface QueueRequestInterface {
+  queue_name?: string
+  data?: any
+  callback?: Function
+  process_limit?: number
+}
+
+export interface QueueWebhookInterface {
   queue_name?: string
   data?: any
   callback?: Function
@@ -119,6 +127,36 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       }
       props.callback(_gg);
     })
+
+    /** 
+     * Call webhook Queue For testing
+     */
+    masterData.setOnListener('queue.webhook.execute.item.test', function (props: QueueWebhookInterface) {
+      // console.log("QueueRequestInterface :: ", props);
+      if (props == null) return;
+      if (_basicExecutions[props.queue_name] == null) {
+        _basicExecutions[props.queue_name] = WebhookWorker({
+          ...props.data,
+          queue_name: props.queue_name,
+        });
+      }
+      props.callback(_basicExecutions[props.queue_name]);
+    }, false);
+
+    /**
+     * Call webhook with key
+     */
+    masterData.setOnListener('queue.webhook.execute', function (props: QueueWebhookInterface) {
+      // console.log("QueueRequestInterface :: ", props);
+      if (props == null) return;
+      if (_basicExecutions[props.queue_name] == null) {
+        _basicExecutions[props.queue_name] = WebhookWorker({
+          ...props.data,
+          queue_name: props.queue_name,
+        });
+      }
+      props.callback(_basicExecutions[props.queue_name]);
+    }, false);
   }
 });
 

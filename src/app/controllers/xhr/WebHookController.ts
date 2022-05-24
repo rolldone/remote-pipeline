@@ -9,6 +9,7 @@ export interface WebHookControllerInterface extends BaseControllerInterface {
   getWebHooks: { (req: any, res: any): void }
   getWebHook: { (req: any, res: any): void }
   execute: { (req: any, res: any): void }
+  executeTestItem: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<WebHookControllerInterface>({
@@ -109,7 +110,22 @@ export default BaseController.extend<WebHookControllerInterface>({
   async execute(req, res) {
     try {
       let props = req.body;
-      let resData = await WebHookService.execute({});
+      props.data = JSON.parse(props.data || '{}');
+      let resData = await WebHookService.execute(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async executeTestItem(req, res) {
+    try {
+      let props = req.body;
+      props.data = JSON.parse(props.data || '{}');
+      let resData = await WebHookService.executeTestItem(props);
       res.send({
         status: 'success',
         status_code: 200,

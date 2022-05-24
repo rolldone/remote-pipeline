@@ -20,13 +20,11 @@ export default function (req, res, next) {
           req.github_access_token = oAuthData.access_token;
           break;
       }
+      next();
     } catch (ex) {
-      throw ex;
+      console.log("GithubAuth - err :: ", ex);
+      return res.status(400).send(ex);
     }
   }
-  asyncFunc().then(() => {
-    next();
-  }).catch((err) => {
-    console.log("GithubAuth - err :: ", err);
-  })
+  asyncFunc();
 }

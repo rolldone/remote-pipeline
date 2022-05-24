@@ -26,6 +26,7 @@ import VariableController from "@root/app/controllers/xhr/VariableController";
 import RepositoryController from "@root/app/controllers/xhr/RepositoryController";
 import GithubAuth from "@root/app/middlewares/GithubAuth";
 import WebHookController from "@root/app/controllers/xhr/WebHookController";
+import WebhookAuth from "@root/app/middlewares/WebhookAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -216,7 +217,8 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/add", "xhr.webhook.add", [upload.any(), DashboardAuth], WebHookController.binding().addWebHook);
       route.post("/update", "xhr.webhook.update", [upload.any(), DashboardAuth], WebHookController.binding().updateWebHook);
       route.post("/delete", "xhr.webhook.delete", [upload.any(), DashboardAuth], WebHookController.binding().deleteWebHook);
-      route.post("/execute", "xhr.webhook.execute", [upload.any()], WebHookController.binding().execute);
+      route.post("/execute/test-item", "xhr.webhook.execute.test_item", [upload.any(), DashboardAuth], WebHookController.binding().executeTestItem)
+      route.post("/execute", "xhr.webhook.execute", [upload.any(), WebhookAuth], WebHookController.binding().execute);
     })
   }
 });
