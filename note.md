@@ -45,4 +45,6 @@
     &nbsp;
 - [Pipeline] : Create full script programing or something with add environment [Waiting]
 - [Pipeline] : Create tester for pipeline item for better experience [Waiting]
+
+## Phase 1 
 - [User] : Manage join group share project [Waiting]

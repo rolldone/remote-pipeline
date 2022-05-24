@@ -5,6 +5,7 @@ import DownloadRequest from "./DownloadRequest";
 import FileTransfer from "./FileTransfer";
 import FullRemoteSyncronise from "./remote/FullRemoteSyncronise";
 import RepoInstall from "./RepoInstall";
+import WriteScriptCode from "./WriteScriptCode";
 import WriteTransfer from "./WriteTransfer";
 
 export interface TaskTypeInterface {
@@ -27,5 +28,6 @@ export default {
   "write-transfer": WriteTransfer,
   "repo-install": RepoInstall,
   "transfer-remote": FullRemoteSyncronise,
-  "download-request": DownloadRequest
+  "download-request": DownloadRequest,
+  "write-script": WriteScriptCode
 }
