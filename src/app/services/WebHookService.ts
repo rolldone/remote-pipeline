@@ -1,10 +1,14 @@
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import SqlBricks from "@root/tool/SqlBricks";
+import { Queue, Worker } from "bullmq";
 import { Knex } from "knex";
+import WebhookQueue from "../queues/WebhookQueue";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
 export interface webhook {
   id?: number
+  webhook_id?: number // Alias of id webhook
   name?: string
   user_id?: number
   status?: number
@@ -13,6 +17,45 @@ export interface webhook {
   data?: any,
   key?: string
 }
+
+export interface SubmitExecuteInterfaceTest {
+  data?: {
+    subject?: string
+    message?: string
+  }
+  type?: string
+  webhook_id?: number
+  item_key?: string
+}
+
+export interface SubmitExecuteInterface {
+  data?: {
+    subject?: string
+    message?: string
+  }
+  key?: string
+}
+
+const defineQuery = () => {
+  SqlBricks.aliasExpansions({
+    "whook": "webhooks"
+  });
+
+  let query = SqlBricks.select(
+    "whook.id as id",
+    "whook.name as name",
+    "whook.user_id as user_id",
+    "whook.status as status",
+    "whook.key as key",
+    "whook.description as description",
+    "whook.webhook_datas as webhook_datas",
+    "whook.data as data",
+  );
+
+  return query;
+}
+
+declare let masterData: MasterDataInterface
 
 export default {
   async addWebHook(props: webhook): Promise<any> {
@@ -62,36 +105,15 @@ export default {
       throw ex;
     }
   },
-  getWebHook: async function (props: any) {
+  getWebHookByKey: async function (props: webhook) {
     try {
-      SqlBricks.aliasExpansions({
-        "whook": "webhooks"
-      });
-
-      let query = SqlBricks.select(
-        "whook.id as id",
-        "whook.name as name",
-        "whook.user_id as user_id",
-        "whook.status as status",
-        "whook.key as key",
-        "whook.description as description",
-        "whook.webhook_datas as webhook_datas",
-        "whook.data as data",
-      );
-
+      let query = defineQuery();
       query = query.from("whook");
-
       query = query.where({
-        "whook.id": props.id
+        "whook.key": props.key
       });
-
       if (props.user_id) {
         query = query.where("whook.user_id", props.user_id);
-      }
-
-      // Where segment
-      if (props.pipeline_id != null) {
-        query = query.where("pip.id", props.pipeline_id);
       }
       let resData = await SqlService.selectOne(query.toString());
       if (resData == null) return null;
@@ -102,26 +124,30 @@ export default {
       throw ex;
     }
   },
-  getWebHooks: async function (props: any) {
+  getWebHook: async function (props: webhook) {
     try {
-      SqlBricks.aliasExpansions({
-        "whook": "webhooks",
+      let query = defineQuery();
+      query = query.from("whook");
+      query = query.where({
+        "whook.id": props.id
       });
-
-      let query = SqlBricks.select(
-        "whook.id as id",
-        "whook.name as name",
-        "whook.user_id as user_id",
-        "whook.status as status",
-        "whook.key as key",
-        "whook.description as description",
-        "whook.webhook_datas as webhook_datas",
-        "whook.data as data",
-      );
-
+      if (props.user_id) {
+        query = query.where("whook.user_id", props.user_id);
+      }
+      let resData = await SqlService.selectOne(query.toString());
+      if (resData == null) return null;
+      resData.data = JSON.parse(resData.data || '{}');
+      resData.webhook_datas = JSON.parse(resData.webhook_datas || '[]');
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  getWebHooks: async function (props: webhook) {
+    try {
+      let query = defineQuery();
       query = query.from("whook");
       query.where("whook.user_id", props.user_id);
-
       let resDatas = await SqlService.select(query.toString());
       resDatas.filter((resData) => {
         resData.data = JSON.parse(resData.data || '{}');
@@ -149,11 +175,114 @@ export default {
       throw ex;
     }
   },
-  async execute(props) {
-    try {
+  execute(props: SubmitExecuteInterface) {
+    return new Promise((resolve: Function, rejected: Function) => {
+      try {
+        let {
+          data,
+          key
+        } = props;
+        let queue_name = "webhook_queue_execute";
+        masterData.saveData("queue.webhook.execute", {
+          queue_name,
+          callback: async (worker: Worker) => {
+            if (worker.isRunning() == false) {
+              worker.resume();
+            }
 
-    } catch (ex) {
-      throw ex;
-    }
+            /**
+             * Get the webhook data first
+             */
+            let webhook_data: webhook = await this.getWebHookByKey({
+              key: key
+            })
+
+            /* Generate webhook queue */
+            let _queue = WebhookQueue({
+              queue_name
+            });
+
+            /* Loop the all webhook */
+            for (var a = 0; a < webhook_data.webhook_datas.length; a++) {
+              let hook_data = webhook_data.webhook_datas[a];
+              console.log("hook_data ::: " + a, hook_data);
+              let idJObInstant = (Math.random() + (1 + a)).toString(36).substring(7);
+              let job_name = hook_data.key + "_" + hook_data.type;
+              _queue.add(job_name, {
+                data,
+                type: hook_data.webhook_type,
+                item_info: hook_data
+              }, {
+                jobId: idJObInstant,
+                delay: 2000
+              });
+            }
+
+            resolve(worker.name + " :: start running!");
+            return;
+          }
+        });
+      } catch (ex) {
+        throw ex;
+      }
+    });
+  },
+  executeTestItem(props: SubmitExecuteInterfaceTest) {
+    return new Promise((resolve: Function, rejected: Function) => {
+      try {
+        let {
+          data,
+          type,
+          webhook_id,
+          item_key
+        } = props;
+        let queue_name = "webhook_queue_execute_test";
+        masterData.saveData("queue.webhook.execute.item.test", {
+          queue_name,
+          callback: async (worker: Worker) => {
+            if (worker.isRunning() == false) {
+              worker.resume();
+            }
+            /**
+             * Get the webhook data first
+             */
+            let webhook_data = await this.getWebHook({
+              id: webhook_id
+            })
+
+            /**
+             * Loop the webhook datas to get the right use
+             */
+            let webHookItems = webhook_data.webhook_datas;
+            let isFound = false;
+            for (var a = 0; a < webHookItems.length; a++) {
+              if (webHookItems[a].key == item_key) {
+                let idJObInstant = (Math.random() + 1).toString(36).substring(7);
+                let _queue = WebhookQueue({
+                  queue_name,
+                });
+                let job_name = item_key + "_" + type;
+                await _queue.add(job_name, {
+                  data,
+                  type,
+                  item_info: webHookItems[a]
+                }, {
+                  jobId: idJObInstant,
+                  delay: 2000
+                });
+                isFound = true;
+                break;
+              }
+            }
+            if (isFound == false) {
+              return resolve(worker.name + " :: Not found the item key and cant start the queue!");
+            }
+            return resolve(worker.name + " :: The queue is running.");
+          }
+        });
+      } catch (ex) {
+        rejected(ex);
+      }
+    });
   }
 }
