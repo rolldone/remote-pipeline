@@ -14,10 +14,11 @@ export default function (props: TaskTypeInterface) {
     pipeline_task,
     socket,
     resolve,
-    rejected
+    rejected,
+    extra_var
   } = props;
   try {
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 

@@ -20,11 +20,12 @@ export default async function (props: TaskTypeInterface) {
     socket,
     raw_variable,
     execution,
-    job_id
+    job_id,
+    extra_var
   } = props;
 
   try {
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
     let _condition_values = _data.condition_values;

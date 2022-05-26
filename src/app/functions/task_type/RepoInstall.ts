@@ -22,10 +22,11 @@ const RepoInstall = function (props: TaskTypeInterface) {
     resolve,
     rejected,
     raw_variable,
-    job_id
+    job_id,
+    extra_var
   } = props;
   try {
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
@@ -124,11 +125,11 @@ const RepoInstall = function (props: TaskTypeInterface) {
       // Use sftp to create folder first
       let sftp = await sshPromise.sftp();
       await MkdirReqursive(sftp, _data.target_path);
-      
+
       // Run the rsync
       ptyProcess.write(rsync.command() + '\r');
     }
-    
+
     // console.log("command :::: ", command);
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {

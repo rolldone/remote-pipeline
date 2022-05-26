@@ -19,11 +19,12 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
     resolve,
     rejected,
     raw_variable,
-    job_id
+    job_id,
+    extra_var
   } = props;
   try {
     console.log("'WriteScriptCode' ::::: ", props);
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;

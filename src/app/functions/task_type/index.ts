@@ -19,6 +19,7 @@ export interface TaskTypeInterface {
   resolve: Function
   rejected: Function
   job_id: number
+  extra_var: any
 }
 
 export default {

@@ -1,17 +1,8 @@
 import BaseController from "@root/base/BaseController"
 import { Knex } from "knex"
-import { JobInformation3, Queue, QueueScheduler, Worker } from 'bullmq'
+import { Queue, Worker } from 'bullmq'
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData"
-import GroupQueue from "@root/app/queues/GroupQueue"
-import sqlbricks from "@root/tool/SqlBricks"
-import ProcessQueue from "@root/app/queues/ProcessQueue"
-import SqlBricks from "@root/tool/SqlBricks/sql-bricks"
 import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService"
-import QueueRecordService from "@root/app/services/QueueRecordService"
-import HostService from "@root/app/services/HostService"
-import ProcessScheduleQueue from "@root/app/queues/ProcessScheduleQueue"
-import QueueSceduleService from "@root/app/services/QueueSceduleService"
-import { Moment } from "@root/tool"
 import CreateQueue from "@root/app/functions/CreateQueue"
 import CreateQueueItem from "@root/app/functions/CreateQueueItem"
 import DeleteQueueItem from "@root/app/functions/DeleteQueueItem"
@@ -127,7 +118,6 @@ export default BaseController.extend<QueueControllerInterface>({
   async deleteQueue(req, res) {
     try {
       let id = req.body.id;
-      let resDaa
       let _data_queue_record_details = await QueueRecordDetailService.getQueueRecordDetails({
         queue_record_id: id,
         status: QueueRecordDetailService.STATUS.RUNNING

@@ -1,6 +1,6 @@
-const MergeVarScheme = function (variable, scheme) {
+const MergeVarScheme = function (variable, scheme, extra) {
   let mergeVarScheme = ((variable, schema) => {
-    let jj = {};
+    let jj = extra || {};
     for (var a = 0; a < schema.length; a++) {
       if (variable[a].is_active == true) {
         switch (schema[a].type) {

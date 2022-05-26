@@ -1,4 +1,5 @@
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import AppConfig from "@root/config/AppConfig";
 import { debounce, DebouncedFunc } from "lodash";
 import SSH2Promise from "ssh2-promise";
 import ExecutionService from "../services/ExecutionService";
@@ -110,6 +111,11 @@ const PipelineLoop = async function (props: {
           if (theTaskTYpeFunc == null) {
             throw new Error("I think your forgot define the task_type, check your file on app/functions/task_type/index.ts");
           }
+          let extraVar = {
+            job_id,
+            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record-detail/job/" + job_id
+          }
+          
           let isnnn = await theTaskTYpeFunc({
             raw_variable: variable,
             sshPromise: props.sshPromise,
@@ -120,7 +126,8 @@ const PipelineLoop = async function (props: {
             execution: execution,
             resolve: props.resolve,
             rejected: props.rejected,
-            job_id
+            job_id,
+            extra_var: extraVar
           });
 
           if (props.parent == "NULL") {

@@ -7,6 +7,7 @@ import Rsync from "@root/tool/rsync";
 import RecordCommandToFileLog from "../../RecordCommandToFileLog";
 import WritePrivateKeyToVariable from "../../WritePrivateKeyToVariable";
 import MustacheRender from "../../MustacheRender";
+import AppConfig from "@root/config/AppConfig";
 
 declare let masterData: MasterDataInterface;
 
@@ -22,10 +23,11 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
     rejected,
     raw_variable,
     job_id,
-    execution
+    execution,
+    extra_var
   } = props;
   try {
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
@@ -97,7 +99,7 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
 
       console.log("_exclude ::::: ", _excludes);
       console.log("_include ::::: ", _includes);
-      
+
       var rsync = Rsync.build({
         /* Support multiple source too */
         source: _data.transfer_action == "upload" ? "./" : _data.username + '@' + _data.host + ':' + _data.target_path,

@@ -25,11 +25,12 @@ const DownloadRequest = function (props: TaskTypeInterface) {
     rejected,
     raw_variable,
     job_id,
-    execution
+    execution,
+    extra_var
   } = props;
   try {
     console.log("WriteTransfer ::::: ", props);
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;

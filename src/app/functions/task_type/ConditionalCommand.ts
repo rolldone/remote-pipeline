@@ -12,17 +12,18 @@ export default async function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket
+    socket,
+    extra_var
   } = props;
 
   try {
-    let mergeVarScheme = MergeVarScheme(variable, schema);
+    let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
     let _condition_values = _data.condition_values;
     let isPassed = [];
     let evalString = "";
-    
+
     let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
     if (working_dir != null) {
