@@ -18,12 +18,21 @@ export default async function (props: {
     let _processQueue: Queue = null;
     let resDataInsert = null;
     console.log("res_data_record_detail.qrec_data :: ", res_data_record_detail.qrec_type)
+    let jobs = null;
     switch (res_data_record_detail.qrec_type) {
       case QueueRecordService.TYPE.INSTANT:
         _processQueue = ProcessQueue({
           queue_name: res_data_record_detail.queue_name
         })
         _processQueue.remove(res_data_record_detail.job_id);
+        // jobs = await _processQueue.getRepeatableJobs();
+        // for (let i = 0; i < jobs.length; i++) {
+        //   const job = jobs[i];
+        //   if (res_data_record_detail.job_id == job.id) {
+        //     await _processQueue.removeRepeatableByKey(job.key);
+        //     break;
+        //   }
+        // }
         resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
           id: queue_record_detail_id,
           queue_record_id: res_data_record_detail.qrec_id,
@@ -40,6 +49,14 @@ export default async function (props: {
               queue_name: res_data_record_detail.queue_name
             })
             _processQueue.remove(res_data_record_detail.job_id);
+            // jobs = await _processQueue.getRepeatableJobs();
+            // for (let i = 0; i < jobs.length; i++) {
+            //   const job = jobs[i];
+            //   if (res_data_record_detail.job_id == job.id) {
+            //     await _processQueue.removeRepeatableByKey(job.key);
+            //     break;
+            //   }
+            // }
             resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,
@@ -54,7 +71,7 @@ export default async function (props: {
               queue_name: res_data_record_detail.queue_name
             })
             let _resRepeatable = await _processQueue.getRepeatableJobs();
-            const jobs = await _processQueue.getRepeatableJobs();
+            jobs = await _processQueue.getRepeatableJobs();
             for (let i = 0; i < jobs.length; i++) {
               const job = jobs[i];
               if (res_data_record_detail.job_id == job.id) {

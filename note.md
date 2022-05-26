@@ -42,7 +42,7 @@
     \
     &nbsp;
 - [Pipeline] : Create full script programing or something with add environment [Alpha]
-- [Pipeline] : Create tester for pipeline item for better experience [Alpha]
+- [Pipeline] : Create tester for pipeline item for better experience [Alpha] 
 
 ## Phase 2
 - [User] : Manage join group share project [Waiting]
