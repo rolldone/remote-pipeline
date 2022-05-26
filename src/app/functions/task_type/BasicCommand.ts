@@ -21,7 +21,12 @@ export default function (props: TaskTypeInterface) {
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
+    let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+    if (working_dir != null) {
+      command = `cd ${working_dir} && ${command}`;
+    }
+
     // console.log("command :::: ", command);
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {

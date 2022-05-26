@@ -15,6 +15,7 @@ export default BaseController.extend<PipelineTaskControllerInterface>({
   async getPipelineTasks(req, res) {
     try {
       let props = req.query;
+      props.pipeline_item_ids = JSON.parse(props.pipeline_item_ids || '[]');
       let resData = await PipelineTaskService.getPipelineTasks({
         ...props,
       });

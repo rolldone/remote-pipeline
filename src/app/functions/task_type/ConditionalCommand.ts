@@ -22,51 +22,65 @@ export default async function (props: TaskTypeInterface) {
     let _condition_values = _data.condition_values;
     let isPassed = [];
     let evalString = "";
+    
+    let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
-
+    if (working_dir != null) {
+      command = `cd ${working_dir} && ${command}`;
+    }
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           // console.log("Conditional command :: Called ");
-          for (var key in _condition_values) {
-            if (_condition_values[key].condition_logic == 'NONE') {
-              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
-                isPassed.push(true);
-                evalString += "true";
-              } else {
-                isPassed.push(false);
-                evalString += "false";
+          try {
+            for (var key in _condition_values) {
+              if (_condition_values[key].condition_logic == 'NONE') {
+                if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                  isPassed.push(true);
+                  evalString += "true";
+                } else {
+                  isPassed.push(false);
+                  evalString += "false";
+                }
               }
-            }
 
-            if (_condition_values[key].condition_logic == 'AND') {
-              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
-                isPassed.push(true);
-                evalString += " && true";
-              } else {
-                isPassed.push(false);
-                evalString += " && false";
+              if (_condition_values[key].condition_logic == 'AND') {
+                if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                  isPassed.push(true);
+                  evalString += " && true";
+                } else {
+                  isPassed.push(false);
+                  evalString += " && false";
+                }
               }
-            }
 
-            if (_condition_values[key].condition_logic == 'OR') {
-              if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
-                isPassed.push(true);
-                evalString += " || true";
-              } else {
-                isPassed.push(false);
-                evalString += " || false";
+              if (_condition_values[key].condition_logic == 'OR') {
+                if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
+                  isPassed.push(true);
+                  evalString += " || true";
+                } else {
+                  isPassed.push(false);
+                  evalString += " || false";
+                }
               }
             }
-          }
-          if (eval(evalString) == true) {
-            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
-              pipeline_task_id: pipeline_task.id,
-              command: command,
-              parent: pipeline_task.temp_id
-            })
-          } else {
-            // throw it
+            if (eval(evalString) == true) {
+              masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+                pipeline_task_id: pipeline_task.id,
+                command: command,
+                parent: pipeline_task.temp_id
+              })
+            } else {
+              // throw it
+              masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+                pipeline_task_id: pipeline_task.id,
+                command: command,
+                parent: pipeline_task.temp_id,
+                message: "On Pipeline Task " + pipeline_task.name + " :: There is no match the result with your conditions"
+              })
+            }
+          } catch (ex) {
+            console.log("Conditional Command ::: ", ex);
             masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
               pipeline_task_id: pipeline_task.id,
               command: command,

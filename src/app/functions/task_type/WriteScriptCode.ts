@@ -63,7 +63,7 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
           await sftp.writeFile(_write_to, _content_data, {});
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-            commandString: "Write File :: " + _write_to
+            commandString: "Write File :: " + _write_to + "\n"
           })
         }
         masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {

@@ -3,11 +3,12 @@ import { Knex } from "knex";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
-export interface command_data {
+export interface PipelineTaskInterface {
+  id?: number
   project_id?: number
   pipeline_id?: number
   pipeline_item_id?: number
-  type: string
+  type?: string
   description?: string
   name?: string
   order_number?: number
@@ -19,6 +20,13 @@ export interface command_data {
     condition_values?: string
     command?: string
   }
+}
+
+export interface PipelineTaskServiceInterface extends PipelineTaskInterface {
+  ids?: Array<number>
+  pipeline_item_ids?: Array<number>
+  parent?: string
+  order_by?: string
 }
 
 export default {
@@ -36,7 +44,7 @@ export default {
       throw ex;
     }
   },
-  async addPipelineTasks(props: Array<command_data>) {
+  async addPipelineTasks(props: Array<PipelineTaskInterface>) {
     try {
       // Delete First
       let resDeleteData = await SqlService.delete(SqlBricks.deleteFrom("pipeline_tasks").where({
@@ -67,7 +75,7 @@ export default {
       throw ex;
     }
   },
-  async getPipelineTask(props: any) {
+  async getPipelineTask(props: PipelineTaskServiceInterface) {
     try {
 
       SqlBricks.aliasExpansions({
@@ -121,9 +129,12 @@ export default {
       }
 
       if (props.parent != null) {
-        query = query.where(SqlBricks("json_extract(json_each.value,'$') = " + props.parent));
+        if (props.parent == "NULL") {
+          query = query.where(SqlBricks.or(SqlBricks.isNull('pip_task.parent_order_temp_ids'), { "pip_task.parent_order_temp_ids": "[]" }))
+        } else {
+          query = query.where(SqlBricks("json_array(pip_task.parent_order_temp_ids) LIKE '%" + props.parent + "%'"));
+        }
       }
-
 
       query = query.orderBy("pip_task.id ASC");
       query = query.limit(1);
@@ -139,7 +150,7 @@ export default {
       throw ex;
     }
   },
-  async getPipelineTasks(props: any) {
+  async getPipelineTasks(props: PipelineTaskServiceInterface) {
     try {
 
       SqlBricks.aliasExpansions({
@@ -201,6 +212,13 @@ export default {
         }
       }
 
+      if (props.ids != null) {
+        query = query.where(SqlBricks.in("pip_task.id", props.ids || []));
+      }
+
+      if (props.pipeline_item_ids != null && props.pipeline_item_ids.length > 0) {
+        query = query.where(SqlBricks.in("pip_task.pipeline_item_id", props.pipeline_item_ids || []));
+      }
 
       if (props.order_by) {
         query = query.orderBy(props.order_by);

@@ -1,5 +1,6 @@
 
 import { ReadRecordCOmmandFileLog, TailRecordCommandFileLog } from "@root/app/functions/RecordCommandToFileLog";
+import ExecutionService from "@root/app/services/ExecutionService";
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
 import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
@@ -59,7 +60,8 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       });
       let res_pipeline_item = await PipelineTaskService.getPipelineTasks({
         pipeline_id: resData.exe_pipeline_id,
-        order_by: "pip_item.id ASC, pip_task.order_number ASC"
+        order_by: "pip_item.id ASC, pip_task.order_number ASC",
+        pipeline_item_ids: resData.exe_pipeline_item_ids
       })
       let resGroupPipeline = _(res_pipeline_item).groupBy("pip_item_id").map((g) => {
         return {
@@ -73,7 +75,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
           let gg = _tasks[j]
           let keyLis = "job_id_" + resData.job_id + "_pipeline_id_" + gg.pip_item_id + '_task_id_' + gg.id;
           // Tail function
-          let runningTail = (keyLis:string) => {
+          let runningTail = (keyLis: string) => {
             let isPendingTailClose = null;
             let tail = TailRecordCommandFileLog(keyLis);
             tail.on("line", function (data) {
@@ -122,58 +124,6 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
           fileREadline.write("--" + "\n")
         }
       }
-      // let _pipeline_item_ids = resData.exe_pipeline_item_ids;
-      // for (var a = 0; a < _pipeline_item_ids.length; a++) {
-      //   let gg = _pipeline_item_ids[a]
-      //   // Tail function
-      //   let runningTail = () => {
-      //     let isPendingTailClose = null;
-      //     let tail = TailRecordCommandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg);
-      //     tail.on("line", function (data) {
-      //       if (isPendingTailClose != null) {
-      //         isPendingTailClose.cancel();
-      //       }
-      //       isPendingTailClose = debounce(() => {
-      //         tail.unwatch();
-      //         console.log("unwatch ", "job_id_" + resData.job_id + "_pipeline_id_" + gg)
-      //       }, 120000);
-      //       isPendingTailClose();
-      //       // If suddenly get close by websocket event
-      //       if (_ws_client != null) {
-      //         _ws_client.ws.send(JSON.stringify({
-      //           action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
-      //           data: data
-      //         }))
-      //       }
-      //     });
-      //     tail.on("error", function (error) {
-      //       console.log('ERROR: ', error);
-      //     });
-      //     return tail;
-      //   }
-      //   let isPendingToClose = null;
-      //   let fileREadline = ReadRecordCOmmandFileLog("job_id_" + resData.job_id + "_pipeline_id_" + gg, (data) => {
-      //     if (isPendingToClose != null) {
-      //       isPendingToClose.cancel();
-      //     }
-      //     isPendingToClose = debounce(() => {
-      //       fileREadline.close();
-      //       console.log("FileReadline Close")
-      //       runningTail();
-      //     }, 1000);
-      //     isPendingToClose();
-
-      //     // If suddenly get close by websocket event
-      //     if (_ws_client != null) {
-      //       _ws_client.ws.send(JSON.stringify({
-      //         action: "job_id_" + resData.job_id + "_pipeline_id_" + gg,
-      //         data: data
-      //       }))
-      //     }
-      //   });
-      //   // Write for first time for get line on trigger event
-      //   fileREadline.write("--" + "\n")
-      // }
       return res.send({
         status: 'success',
         status_code: 200,

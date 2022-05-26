@@ -55,7 +55,7 @@ const PipelineLoop = async function (props: {
 
     // Get Schema
     let _var_scheme = variable.schema;
-
+    let pendingCallCommand: DebouncedFunc<any> = null;
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
@@ -77,24 +77,33 @@ const PipelineLoop = async function (props: {
           order_by: "pip_task.order_number ASC",
           parent: props.parent || null
         });
-        console.log("_pipeline_task :::::: ", _pipeline_task);
+
+        // console.log("_pipeline_task :::::: ", _pipeline_task);
         // console.log("_pipeline_task :::: ", _pipeline_task);
         // console.log("_pipeline_task - " + props.parent + " :: ", _pipeline_task);
+
+        /**
+         * This is call after initialze all pipeline first time
+         */
         if (_pipeline_task.length == 0) {
           // props.resolve();
-          resolveDone = props.resolve;
-
-          resolveReject = props.rejected;
-          lastStartParent = props.parent
-          console.log("props.pipeline_item_id :::: ", props.pipeline_item_id);
-          console.log("firstStart ::", firstStart)
-          if (typeof firstStart.command !== 'function') {
-            masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
-            return;
+          if (pendingCallCommand != null) {
+            pendingCallCommand.cancel();
           }
-          firstStart.command();
+          pendingCallCommand = debounce(() => {
+            resolveDone = props.resolve;
+            resolveReject = props.rejected;
+            lastStartParent = props.parent
+            if (typeof firstStart.command !== 'function') {
+              masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
+              return;
+            }
+            firstStart.command();
+          }, 3000);
+          pendingCallCommand();
           return;
         }
+
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
           // console.log("_pipeline_task[a2].type :: ", _pipeline_task[a2].type);
           let theTaskTYpeFunc: { (props: TaskTypeInterface) } = task_type[_pipeline_task[a2].type];
@@ -128,12 +137,14 @@ const PipelineLoop = async function (props: {
           }, recursiveFunc);
         }
       }
+
       // Get pipeline item by id
       let _pipeline_item = await PipelineItemService.getPipelineItem({
         id: _pipeline_item_ids[a],
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
+
       // Filter processing by type
       switch (_pipeline_item.type) {
         case PipelineItemService.TYPE.ANSIBLE:
@@ -169,6 +180,10 @@ const PipelineLoop = async function (props: {
             socket.write(props.command);
             pipeline_task_id = props.pipeline_task_id;
           });
+          socket.on("exit", async () => {
+            console.log("Get call exit from command");
+            resolveDone();
+          })
           socket.on("data", async (data) => {
             let _split = data.toString().split(/\n/);
             let _isDone = false;

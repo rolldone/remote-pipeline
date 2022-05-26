@@ -39,7 +39,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
 
     let processWait = async () => {
       try {
-        console.log("File Write command ::  Called ");
+        console.log("File Write command ::  Called  ");
         let _files = [];
         let sftp = await sshPromise.sftp();
         for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
@@ -48,7 +48,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
           await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-            commandString: "Write File :: " + _data.asset_datas[au2].target_path
+            commandString: "Write File :: " + _data.asset_datas[au2].target_path + "\n"
           })
         }
         masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
