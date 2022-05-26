@@ -2,6 +2,8 @@ import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
 import CreateQueue from "../functions/CreateQueue";
+import HostService, { Host } from "./HostService";
+import PipelineItemService, { PipelineItemInterface } from "./PipelineItemService";
 import SqlService from "./SqlService";
 
 declare let db: Knex;
@@ -24,8 +26,11 @@ export interface Execution {
   variable_id?: number
   variable_option?: string
   pipeline_item_ids?: Array<number>
+  pipeline_items?: Array<PipelineItemInterface>
   host_ids?: Array<number>
   description?: string
+  mode?: string
+  hosts?: Array<Host>
 }
 
 export default {
@@ -45,6 +50,7 @@ export default {
         pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
         host_ids: JSON.stringify(props.host_ids),
         description: props.description,
+        mode: props.mode
       }).toString());
       resData = await this.getExecution({
         id: resData.id
@@ -69,6 +75,7 @@ export default {
         pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
         host_ids: JSON.stringify(props.host_ids),
         description: props.description,
+        mode: props.mode,
       }).where("id", props.id).toString());
       resData = await this.getExecution({
         id: props.id
@@ -114,6 +121,7 @@ export default {
         'exe.pipeline_item_ids as pipeline_item_ids',
         'exe.host_ids as host_ids',
         'exe.description as description',
+        'exe.mode as mode',
         'pro.name as pro_name',
         'pip.name as pip_name',
         'var.name as var_name'
@@ -170,6 +178,7 @@ export default {
         'exe.pipeline_item_ids as pipeline_item_ids',
         'exe.host_ids as host_ids',
         'exe.description as description',
+        'exe.mode as mode',
         'pro.name as pro_name',
         'pip.name as pip_name',
         'var.name as var_name'
@@ -189,13 +198,26 @@ export default {
       if (props.user_id != null) {
         query = query.where("usr.id", props.user_id);
       }
+      if (props.mode == null) {
+        query = query.where(SqlBricks.isNull("exe.mode"));
+      } else {
+        query = query.where("exe.mode", props.mode);
+      }
       query = query.orderBy("exe.id DESC");
       let resDatas: Array<any> = await db.raw(query.toString());
-      resDatas.filter((resData) => {
-        resData.pipeline_item_ids = JSON.parse(resData.pipeline_item_ids || '[]');
-        resData.host_ids = JSON.parse(resData.host_ids || '[]');
-        return resData;
-      })
+      for (let a = 0; a < resDatas.length; a++) {
+        let resData: Execution = resDatas[a];
+        resData.pipeline_item_ids = JSON.parse(resData.pipeline_item_ids as any || '[]');
+        resData.pipeline_items = await PipelineItemService.getPipelineItems({
+          project_id: resData.project_id,
+          pipeline_id: resData.pipeline_id,
+          ids: resData.pipeline_item_ids
+        });
+        resData.host_ids = JSON.parse(resData.host_ids as any || '[]');
+        resData.hosts = await HostService.getHosts({
+          ids : resData.host_ids
+        })
+      }
       return resDatas;
     } catch (ex) {
       throw ex;

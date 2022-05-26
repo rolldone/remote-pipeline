@@ -115,7 +115,7 @@ export default {
           infoJSON = null;
         }
         let commitData = await this.getCommit(props);
-        if (commitData.sha == infoJSON.sha) {
+        if (infoJSON != null && commitData.sha == infoJSON.sha) {
           if (existsSync(props.download_path + "/" + props.branch) == true) {
             console.log("GithubService ::: Branch " + props.branch + " is exist");
             return resolve(props.download_path + "/" + props.branch);
@@ -148,6 +148,7 @@ export default {
           console.log("GithubService ::: Shelljs is done");
           resolve(place_save_file);
         }).catch((err) => {
+          console.log("downloadRepo - ex :: ", err);
           reject(err);
         })
       })

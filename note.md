@@ -43,8 +43,10 @@
     - Create template every webhook [Waiting]
     \
     &nbsp;
-- [Pipeline] : Create full script programing or something with add environment [Waiting]
+- [Pipeline] : Create full script programing or something with add environment [Alpha]
 - [Pipeline] : Create tester for pipeline item for better experience [Waiting]
+- [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Waiting]
 
-## Phase 1 
+## Phase 2
 - [User] : Manage join group share project [Waiting]
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 

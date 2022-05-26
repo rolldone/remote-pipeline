@@ -4,6 +4,8 @@ import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { uniq } from "lodash";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import MustacheRender from "../MustacheRender";
+import MkdirReqursive from "../sftp/Mkdir";
+import path from "path";
 
 declare let masterData: MasterDataInterface;
 
@@ -35,13 +37,14 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     // console.log("_data :: ", _data);
     // console.log("_pipeline_task :: ", pipeline_task);
 
-    let processWait = async ()=>{
+    let processWait = async () => {
       try {
         console.log("File Write command ::  Called ");
         let _files = [];
         let sftp = await sshPromise.sftp();
         for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
           let _content_data = mergeVarScheme[_data.asset_datas[au2].name];
+          await MkdirReqursive(sftp, path.dirname(_data.asset_datas[au2].target_path));
           await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,

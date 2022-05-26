@@ -7,6 +7,7 @@ import Rsync from "@root/tool/rsync";
 import WritePrivateKeyToVariable from "../WritePrivateKeyToVariable";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import MustacheRender from "../MustacheRender";
+import MkdirReqursive from "../sftp/Mkdir";
 
 declare let masterData: MasterDataInterface;
 
@@ -119,8 +120,15 @@ const RepoInstall = function (props: TaskTypeInterface) {
         // set : '--perms --chmod=u=rwx,g=rwx,o=,Dg+s',
         shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
       });
+
+      // Use sftp to create folder first
+      let sftp = await sshPromise.sftp();
+      await MkdirReqursive(sftp, _data.target_path);
+      
+      // Run the rsync
       ptyProcess.write(rsync.command() + '\r');
     }
+    
     // console.log("command :::: ", command);
     masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {

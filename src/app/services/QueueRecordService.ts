@@ -21,6 +21,14 @@ export interface QueueRecordInterface {
   type?: string
 }
 
+export interface QueueRecordServiceInterface extends QueueRecordInterface {
+  ids?: Array<number>
+  limit?: number
+  page?: number
+  order_by?: string
+  offset?: number
+}
+
 export const QueueRecordType = {
   SCHEDULE: 'schedule',
   INSTANT: 'instant'
@@ -139,7 +147,7 @@ export default {
       throw ex;
     }
   },
-  async getQueueRecords(props) {
+  async getQueueRecords(props?: QueueRecordServiceInterface) {
     try {
       sqlbricks.aliasExpansions({
         'qrec': "queue_records",
@@ -187,9 +195,13 @@ export default {
         query = query.where("qrec.type", props.type);
       }
 
+      if (props.execution_id != null) {
+        query = query.where("qrec.execution_id", props.execution_id);
+      }
+
       if (props.order_by != null) {
         query = query.orderBy(props.order_by);
-      }else{
+      } else {
         query = query.orderBy("exe.id DESC");
       }
 

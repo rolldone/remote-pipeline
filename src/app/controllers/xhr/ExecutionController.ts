@@ -67,6 +67,11 @@ export default BaseController.extend<ExecutionControllerInterface>({
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
       let resData = await ExecutionService.deleteExecutions(ids);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }

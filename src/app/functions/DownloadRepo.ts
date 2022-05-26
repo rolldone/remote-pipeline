@@ -25,6 +25,7 @@ const DownloadRepo = async (props: {
       id: pipeline_data.oauth_user_id
     })
 
+    console.log("execution_data ::: ", execution_data);
     let response = null;
     switch (pipeline_data.from_provider) {
       case 'github':

@@ -7,6 +7,21 @@ const TYPE = {
   ANSIBLE: "ansible",
   BASIC: "basic"
 }
+export interface PipelineItemInterface {
+  project_id?: number
+  pipeline_id?: number
+  id?: number
+  name?: string
+  is_active?: boolean
+  type?: string
+  order_number?: number
+  description?: string
+}
+export interface PipelineItemServiceInterface extends PipelineItemInterface {
+  ids?: Array<number>
+  order_by_name?: string
+  order_by_value?: string
+}
 
 export default {
   TYPE,
@@ -62,7 +77,7 @@ export default {
       throw ex;
     }
   },
-  async getPipelineItems(props) {
+  async getPipelineItems(props: PipelineItemServiceInterface) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -91,17 +106,20 @@ export default {
         "pip_item.project_id": props.project_id,
         "pip_item.pipeline_id": props.pipeline_id,
       });
+      if (props.ids != null) {
+        query = query.where(SqlBricks.in("pip_item.id", props.ids));
+      }
       if (props.order_by_name != null) {
         query = query.orderBy("pip_item." + props.order_by_name + " " + props.order_by_value);
       }
       // return query.toString();
-      let resData = await db.raw(query.toString());
+      let resData = await SqlService.select(query.toString());
       return resData;
     } catch (ex) {
       throw ex;
     }
   },
-  async addPipelineItem(props) {
+  async addPipelineItem(props: PipelineItemServiceInterface) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -137,7 +155,7 @@ export default {
       throw ex;
     }
   },
-  async updatePipelineItem(props) {
+  async updatePipelineItem(props: PipelineItemServiceInterface) {
     try {
       await SqlService.update(SqlBricks.update('pipeline_items', {
         pipeline_id: props.pipeline_id,

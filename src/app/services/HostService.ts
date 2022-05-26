@@ -15,8 +15,12 @@ export interface Host {
   user_id?: number
 }
 
+export interface HostServiceInterface extends Host {
+  ids?: Array<number>
+}
+
 export default {
-  async getHosts(props) {
+  async getHosts(props: HostServiceInterface) {
     try {
       sqlbricks.aliasExpansions({
         'usr': "users",
