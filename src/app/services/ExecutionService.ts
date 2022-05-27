@@ -33,6 +33,10 @@ export interface Execution {
   hosts?: Array<Host>
 }
 
+export interface ExecutionServiceInterface extends Execution {
+
+}
+
 export default {
   PROCESS_MODE,
   async addExecution(props: Execution) {
@@ -97,7 +101,7 @@ export default {
       throw ex;
     }
   },
-  getExecution: async function (props: Execution) {
+  getExecution: async function (props: ExecutionServiceInterface) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -154,7 +158,7 @@ export default {
       throw ex;
     }
   },
-  getExecutions: async function (props: Execution) {
+  getExecutions: async function (props: ExecutionServiceInterface) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",

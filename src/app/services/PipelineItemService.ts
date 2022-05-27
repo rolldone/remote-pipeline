@@ -1,12 +1,11 @@
 import SqlBricks from "@root/tool/SqlBricks";
-import { Knex } from "knex";
 import SqlService from "./SqlService";
-declare let db: Knex;
 
 const TYPE = {
   ANSIBLE: "ansible",
   BASIC: "basic"
 }
+
 export interface PipelineItemInterface {
   project_id?: number
   pipeline_id?: number
@@ -17,6 +16,7 @@ export interface PipelineItemInterface {
   order_number?: number
   description?: string
 }
+
 export interface PipelineItemServiceInterface extends PipelineItemInterface {
   ids?: Array<number>
   order_by_name?: string
@@ -37,7 +37,7 @@ export default {
       throw ex;
     }
   },
-  async getPipelineItem(props) {
+  async getPipelineItem(props: PipelineItemServiceInterface) {
     try {
       SqlBricks.aliasExpansions({
         'pro': "projects",
@@ -69,8 +69,7 @@ export default {
       });
       query = query.limit(1);
       // return query.toString();
-      let resData = await db.raw(query.toString());
-      resData = resData[0];
+      let resData = await SqlService.selectOne(query.toString());
       if (resData == null) return;
       return resData;
     } catch (ex) {
@@ -146,7 +145,9 @@ export default {
           order_number: props.order_number,
           description: props.description
         }).toString());
-        resData = await SqlService.selectOne(SqlBricks.select("*").from("pipeline_items").where("id", resData).toString());
+        resData = await this.getPipelineItem({
+          id: resData
+        })
         return resData;
       } else {
         return this.updatePipelineItem(props);

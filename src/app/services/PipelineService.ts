@@ -16,6 +16,11 @@ export interface PipelineServiceInterface {
   from_provider?: string
 }
 
+const returnFactoryColumn = (props: PipelineServiceInterface) => {
+  props.repo_data = JSON.parse(props.repo_data || '{}');
+  return props;
+}
+
 export default {
   async addPipeline(props: PipelineServiceInterface): Promise<any> {
     try {
@@ -60,7 +65,7 @@ export default {
     try {
       let resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
       if (resData == null) return null;
-      resData.repo_data = JSON.parse(resData.repo_data);
+      resData = returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
       throw ex;
@@ -89,10 +94,9 @@ export default {
         query = query.where("pro.id", props.project_id);
       }
       query = query.orderBy("pip.id DESC");
-      let resData: Array<any> = await db.raw(query.toString());
+      let resData: Array<any> = await SqlService.select(query.toString());
       resData.forEach((el) => {
-        el.repo_data = JSON.parse(el.repo_data || '{}');
-        return el;
+        return returnFactoryColumn(el);
       })
       return resData;
     } catch (ex) {
