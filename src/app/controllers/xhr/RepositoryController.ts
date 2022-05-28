@@ -85,6 +85,11 @@ export default BaseController.extend<RepositoryControllerInterface>({
           });
           break;
       }
+      return res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      }); 
     } catch (ex) {
       return res.status(400).send(ex);
     }
