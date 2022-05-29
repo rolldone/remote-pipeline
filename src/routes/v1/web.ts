@@ -97,19 +97,21 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
     });
-    self.use('/xhr/queue-record', [], function (route: BaseRouteInterface) {
+    self.use('/xhr/queue-record', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record.add", [upload.any()], QueueRecordController.binding().addQueueRecord);
       route.post("/update", "xhr.queue_record.update", [upload.any()], QueueRecordController.binding().updateQueueRecord);
       route.post("/delete", "xhr.queue_record.delete", [upload.any()], QueueRecordController.binding().deleteQueueRecord);
       route.get("/queue-records", "xhr.queue_record.queue_records", [], QueueRecordController.binding().getQueueRecords);
+      route.get("/ids/status", "xhr.queue_record.ids.status", [], QueueRecordController.binding().getQueueIdsstatus);
       route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
     });
-    self.use('/xhr/queue-record-detail', [], function (route: BaseRouteInterface) {
+    self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {
       route.get("/queue-record-details", "xhr.queue_record_detail.queue_record_details", [], QueueRecordDetailController.binding().getQueueRecordDetails);
+      route.get("/ids/status", "xhr.queue_record_detail.ids.status", [], QueueRecordDetailController.binding().getIdsStatus);
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
     });
-    self.use('/xhr/queue-record-schedule', [], function (route: BaseRouteInterface) {
+    self.use('/xhr/queue-record-schedule', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record_schedule.add", [upload.any()], QueueRecordScheduleController.binding().addQueueRecordSchedule);
       route.post("/update", "xhr.queue_record_schedule.update", [upload.any()], QueueRecordScheduleController.binding().updateQueueRecordSchedule);
       route.post("/delete", "xhr.queue_record_schedule.delete", [upload.any()], QueueRecordScheduleController.binding().deleteQueueRecordSchedule);

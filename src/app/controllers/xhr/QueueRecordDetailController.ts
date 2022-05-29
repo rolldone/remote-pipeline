@@ -1,8 +1,9 @@
 
+import GetAuthUser from "@root/app/functions/GetAuthUser";
 import { ReadRecordCOmmandFileLog, TailRecordCommandFileLog } from "@root/app/functions/RecordCommandToFileLog";
 import ExecutionService from "@root/app/services/ExecutionService";
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
-import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService";
+import QueueRecordDetailService, { QueueRecordDetailServiceInterface } from "@root/app/services/QueueRecordDetailService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import Sqlbricks from "@root/tool/SqlBricks";
 import BaseController from "base/BaseController";
@@ -15,6 +16,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getQueueRecordDetails: { (req: any, res: any): void }
   getQueueRecordDetail: { (req: any, res: any): void }
   getDisplayProcess: { (req: any, res: any): void }
+  getIdsStatus: { (req: any, res: any): void }
 }
 
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
@@ -124,6 +126,23 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
           fileREadline.write("--" + "\n")
         }
       }
+      return res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      console.log(ex);
+      return res.status(400).send(ex);
+    }
+  },
+  async getIdsStatus(req, res) {
+    try {
+      let user = GetAuthUser(req);
+      let props: QueueRecordDetailServiceInterface = req.query;
+      props.ids = JSON.parse(props.ids || '[]' as any);
+      props.user_id = user.id;
+      let resData = await QueueRecordDetailService.getQueueIdsStatus(props);
       return res.send({
         status: 'success',
         status_code: 200,

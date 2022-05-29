@@ -27,11 +27,47 @@ export interface QueueRecordServiceInterface extends QueueRecordInterface {
   page?: number
   order_by?: string
   offset?: number
+  user_id?: number
 }
 
 export const QueueRecordType = {
   SCHEDULE: 'schedule',
   INSTANT: 'instant'
+}
+
+const preSelectQuery = () => {
+  sqlbricks.aliasExpansions({
+    'qrec': "queue_records",
+    'qrec_sch': "queue_schedules",
+    'exe': "executions",
+  });
+
+  let query = sqlbricks.select(
+    'qrec.id as id',
+    'qrec.queue_key as queue_key',
+    'qrec.execution_id as execution_id',
+    'qrec.status as status',
+    'qrec.data as data',
+    'qrec.type as type',
+    'qrec_sch.id as qrec_sch_id',
+    'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
+    'qrec_sch.execution_id as qrec_sch_execution_id',
+    'qrec_sch.schedule_type as qrec_sch_schedule_type',
+    'qrec_sch.data as qrec_sch_data',
+    'exe.id as exe_id',
+    'exe.name as exe_name',
+    'exe.process_mode as exe_process_mode',
+    'exe.process_limit as exe_process_limit',
+    'exe.pipeline_id as exe_pipeline_id',
+    'exe.project_id as exe_project_id',
+    'exe.user_id as exe_user_id',
+    'exe.variable_id as exe_variable_id',
+    'exe.variable_option as exe_variable_option',
+    'exe.pipeline_item_ids as exe_pipeline_item_ids',
+    'exe.host_ids as exe_host_ids',
+    'exe.description as exe_description',
+  ).from("qrec");
+  return query;
 }
 
 export default {
@@ -91,37 +127,7 @@ export default {
   },
   async getQueueRecord(props) {
     try {
-      sqlbricks.aliasExpansions({
-        'qrec': "queue_records",
-        'qrec_sch': "queue_schedules",
-        'exe': "executions",
-      });
-
-      let query = sqlbricks.select(
-        'qrec.id as id',
-        'qrec.queue_key as queue_key',
-        'qrec.execution_id as execution_id',
-        'qrec.status as status',
-        'qrec.data as data',
-        'qrec.type as type',
-        'qrec_sch.id as qrec_sch_id',
-        'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
-        'qrec_sch.execution_id as qrec_sch_execution_id',
-        'qrec_sch.schedule_type as qrec_sch_schedule_type',
-        'qrec_sch.data as qrec_sch_data',
-        'exe.id as exe_id',
-        'exe.name as exe_name',
-        'exe.process_mode as exe_process_mode',
-        'exe.process_limit as exe_process_limit',
-        'exe.pipeline_id as exe_pipeline_id',
-        'exe.project_id as exe_project_id',
-        'exe.user_id as exe_user_id',
-        'exe.variable_id as exe_variable_id',
-        'exe.variable_option as exe_variable_option',
-        'exe.pipeline_item_ids as exe_pipeline_item_ids',
-        'exe.host_ids as exe_host_ids',
-        'exe.description as exe_description',
-      ).from("qrec");
+      let query = preSelectQuery();
       query = query.leftJoin('qrec_sch').on({
         "qrec_sch.queue_record_id": "qrec.id"
       });
@@ -149,37 +155,7 @@ export default {
   },
   async getQueueRecords(props?: QueueRecordServiceInterface) {
     try {
-      sqlbricks.aliasExpansions({
-        'qrec': "queue_records",
-        'qrec_sch': "queue_schedules",
-        'exe': "executions",
-      });
-
-      let query = sqlbricks.select(
-        'qrec.id as id',
-        'qrec.queue_key as queue_key',
-        'qrec.execution_id as execution_id',
-        'qrec.status as status',
-        'qrec.data as data',
-        'qrec.type as type',
-        'qrec_sch.id as qrec_sch_id',
-        'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
-        'qrec_sch.execution_id as qrec_sch_execution_id',
-        'qrec_sch.schedule_type as qrec_sch_schedule_type',
-        'qrec_sch.data as qrec_sch_data',
-        'exe.id as exe_id',
-        'exe.name as exe_name',
-        'exe.process_mode as exe_process_mode',
-        'exe.process_limit as exe_process_limit',
-        'exe.pipeline_id as exe_pipeline_id',
-        'exe.project_id as exe_project_id',
-        'exe.user_id as exe_user_id',
-        'exe.variable_id as exe_variable_id',
-        'exe.variable_option as exe_variable_option',
-        'exe.pipeline_item_ids as exe_pipeline_item_ids',
-        'exe.host_ids as exe_host_ids',
-        'exe.description as exe_description',
-      ).from("qrec");
+      let query = preSelectQuery();
       query = query.leftJoin('qrec_sch').on({
         "qrec_sch.queue_record_id": "qrec.id"
       });
@@ -218,6 +194,38 @@ export default {
         resQueueRecords[a].exe_host_ids = JSON.parse(resQueueRecords[a].exe_host_ids);
       }
       return resQueueRecords;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getQueueIdsStatus(props?: QueueRecordServiceInterface) {
+    try {
+      sqlbricks.aliasExpansions({
+        'qrec': "queue_records",
+        'qrec_sch': "queue_schedules",
+        'exe': "executions",
+      });
+
+      let query = sqlbricks.select(
+        'qrec.id as id',
+        'qrec.status as status',
+        'exe.user_id as exe_user_id'
+      ).from("qrec");
+
+      query = query.leftJoin('qrec_sch').on({
+        "qrec_sch.queue_record_id": "qrec.id"
+      });
+
+      query = query.leftJoin('exe').on({
+        "qrec.execution_id": "exe.id"
+      });
+
+      query = query.where(sqlbricks.in("qrec.id", props.ids));
+      query = query.where("exe.user_id", props.user_id)
+
+      let resData = await SqlService.select(query.toString());
+      return resData;
+
     } catch (ex) {
       throw ex;
     }
