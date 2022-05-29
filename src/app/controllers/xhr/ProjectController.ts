@@ -71,6 +71,11 @@ export default BaseController.extend<ProjectControllerInterface>({
         ids,
         user_id: user.id
       });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }

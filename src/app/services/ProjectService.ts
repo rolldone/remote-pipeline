@@ -1,18 +1,24 @@
 
 import Sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import SqlService from "./SqlService";
 declare let db: Knex;
 
-export interface ProjectServiceInteface {
+export interface ProjectInterface {
   id?: number
   user_id?: number
   name?: string
   description?: string
+}
+
+export interface ProjectServiceInterface extends ProjectInterface {
   ids?: Array<number>
+  force_deleted?: boolean
+  with_deleted?: boolean
 }
 
 export default {
-  async addProject(props: ProjectServiceInteface) {
+  async addProject(props: ProjectInterface) {
     try {
       let resInsert = await db.raw(Sqlbricks.insert('projects', {
         name: props.name,
@@ -28,7 +34,7 @@ export default {
       throw ex;
     }
   },
-  async updateProject(props: ProjectServiceInteface) {
+  async updateProject(props: ProjectInterface) {
     try {
       let res = await db.raw(Sqlbricks.update('projects', {
         name: props.name,
@@ -42,27 +48,25 @@ export default {
       throw ex;
     }
   },
-  async getProject(props: ProjectServiceInteface) {
+  async getProject(props: ProjectServiceInterface) {
     try {
       Sqlbricks.aliasExpansions({});
       let query = Sqlbricks.select("*").from("projects");
       if (props.id) {
         query.where("id", props.id);
       }
+      if (props.with_deleted == null) {
+        query.where(Sqlbricks.isNull("pro.deleted_at"));
+      }
       query.limit(1);
       query.offset(0);
-      let _query = query.toString();
-      let _projects: Array<any> = await db.raw(_query.toString());
-      _projects.forEach(el => {
-        return el;
-      });
-      _projects = _projects[0];
+      let _projects = await SqlService.selectOne(query.toString());
       return _projects;
     } catch (ex) {
       throw ex;
     }
   },
-  async getProjects(props: ProjectServiceInteface) {
+  async getProjects(props: ProjectServiceInterface) {
     try {
       Sqlbricks.aliasExpansions({
         "pip_task": "pipeline_tasks",
@@ -74,6 +78,9 @@ export default {
       query = query.where({
         user_id: props.user_id
       })
+      if (props.with_deleted == null) {
+        query.where(Sqlbricks.isNull("pro.deleted_at"));
+      }
       query = query.orderBy("id DESC");
       let resData = await db.raw(query.toString());
       return resData;
@@ -81,18 +88,18 @@ export default {
       throw ex;
     }
   },
-  async deleteProject(props: ProjectServiceInteface) {
+  async deleteProject(props: ProjectServiceInterface) {
     try {
       let _in: Array<any> | string = [
         ...props.ids
       ];
       _in = _in.join(',');
-      let query = Sqlbricks.delete('projects').where(Sqlbricks.in("id", _in)).where("user_id", props.user_id).toString();
-      let deleteData = await db.raw(query.toString());
+      let query = Sqlbricks.delete('projects').where(Sqlbricks.in("id", _in)).where("user_id", props.user_id);
+      let resData = await SqlService.smartDelete(query.toString(), props.force_deleted || false);
       return {
         status: 'success',
         status_code: 200,
-        return: deleteData
+        return: resData
       }
     } catch (ex) {
       throw ex;

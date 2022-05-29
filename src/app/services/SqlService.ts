@@ -43,5 +43,17 @@ export default {
     } catch (ex) {
       throw ex;
     }
+  },
+  smartDelete: async (sql: string, force_deleted = false) => {
+    try {
+      if (force_deleted == false) {
+        sql = sql.replace("DELETE FROM", "UPDATE");
+        sql = sql.replace("WHERE","set deleted_at = '" + new Date().toISOString().slice(0, 19).replace('T', ' ')+"' WHERE");
+      }
+      let resData = await db.raw(sql);
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
   }
 }
