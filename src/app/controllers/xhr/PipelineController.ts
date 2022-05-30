@@ -45,7 +45,10 @@ export default BaseController.extend<PipelineControllerInterface>({
       // ids: JSON []
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
-      let resData = await PipelineService.deletePipelines(ids);
+      let resData = await PipelineService.deletePipelines({
+        ids,
+        force_deleted: req.body.force_deleted || false
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }

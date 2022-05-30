@@ -75,7 +75,10 @@ export default BaseController.extend<PipelineItemControllerInterface>({
       // ids: JSON []
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
-      let resData = await PipelineItemService.deletePipelineItem(ids);
+      let resData = await PipelineItemService.deletePipelineItem({
+        ids,
+        force_deleted: req.body.force_deleted || false
+      });
       res.send({
         status: 'success',
         status_code: 200,

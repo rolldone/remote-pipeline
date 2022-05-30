@@ -8,3 +8,4 @@ docker-compose.yaml
 .env
 storage/
 my.log
+/sessions

@@ -55,9 +55,6 @@ export default {
       if (props.id) {
         query.where("id", props.id);
       }
-      if (props.with_deleted == null) {
-        query.where(Sqlbricks.isNull("pro.deleted_at"));
-      }
       query.limit(1);
       query.offset(0);
       let _projects = await SqlService.selectOne(query.toString());

@@ -181,6 +181,9 @@ export default {
         query = query.orderBy("exe.id DESC");
       }
 
+
+      query = query.where(sqlbricks.isNull("exe.deleted_at"));
+
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));
 

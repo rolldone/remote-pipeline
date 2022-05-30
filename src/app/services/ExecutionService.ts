@@ -34,7 +34,8 @@ export interface Execution {
 }
 
 export interface ExecutionServiceInterface extends Execution {
-
+  ids?: Array<number>
+  force_deleted?: boolean
 }
 
 export default {
@@ -89,13 +90,13 @@ export default {
       throw ex;
     }
   },
-  async deleteExecutions(ids: Array<number>) {
+  async deleteExecutions(props: ExecutionServiceInterface) {
     try {
       let _in: Array<any> | string = [
-        ...ids
+        ...props.ids
       ];
       _in = _in.join(',');
-      let resData = await SqlService.delete(SqlBricks.delete('executions').where(SqlBricks.in("id", _in)).toString());
+      let resData = await SqlService.smartDelete(SqlBricks.delete('executions').where(SqlBricks.in("id", _in)).toString(), props.force_deleted || false);
       return resData;
     } catch (ex) {
       throw ex;
@@ -207,6 +208,12 @@ export default {
       } else {
         query = query.where("exe.mode", props.mode);
       }
+
+      // Need table project deleted_at null
+      query = query.where(SqlBricks.isNull("pro.deleted_at"));
+      query = query.where(SqlBricks.isNull("pip.deleted_at"));
+      query = query.where(SqlBricks.isNull("exe.deleted_at"));
+
       query = query.orderBy("exe.id DESC");
       let resDatas: Array<any> = await db.raw(query.toString());
       for (let a = 0; a < resDatas.length; a++) {
@@ -219,7 +226,7 @@ export default {
         });
         resData.host_ids = JSON.parse(resData.host_ids as any || '[]');
         resData.hosts = await HostService.getHosts({
-          ids : resData.host_ids
+          ids: resData.host_ids
         })
       }
       return resDatas;

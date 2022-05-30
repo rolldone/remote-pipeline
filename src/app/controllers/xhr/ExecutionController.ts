@@ -66,7 +66,10 @@ export default BaseController.extend<ExecutionControllerInterface>({
       // ids: JSON []
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
-      let resData = await ExecutionService.deleteExecutions(ids);
+      let resData = await ExecutionService.deleteExecutions({
+        ids,
+        force_deleted: req.body.force_deleted || false
+      });
       res.send({
         status: 'success',
         status_code: 200,

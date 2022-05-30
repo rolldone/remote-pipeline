@@ -69,7 +69,8 @@ export default BaseController.extend<ProjectControllerInterface>({
       ids = JSON.parse(ids || '[]');
       let resData = await ProjectService.deleteProject({
         ids,
-        user_id: user.id
+        user_id: user.id,
+        force_deleted: req.body.force_deleted
       });
       res.send({
         status: 'success',

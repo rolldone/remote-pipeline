@@ -14,6 +14,8 @@ export interface PipelineServiceInterface {
   repo_name?: string
   source_type?: string
   from_provider?: string
+  force_deleted?: boolean
+  ids?: Array<number>
 }
 
 const returnFactoryColumn = (props: PipelineServiceInterface) => {
@@ -93,6 +95,11 @@ export default {
       if (props.project_id != null) {
         query = query.where("pro.id", props.project_id);
       }
+
+      // Required null for project table deleted_at
+      query = query.where(Sqlbricks.isNull("pro.deleted_at"));
+      query = query.where(Sqlbricks.isNull("pip.deleted_at"));
+
       query = query.orderBy("pip.id DESC");
       let resData: Array<any> = await SqlService.select(query.toString());
       resData.forEach((el) => {
@@ -103,14 +110,14 @@ export default {
       throw ex;
     }
   },
-  async deletePipelines(ids: Array<number>) {
+  async deletePipelines(props: PipelineServiceInterface) {
     try {
       let _in: Array<any> | string = [
-        ...ids
+        ...props.ids
       ];
       _in = _in.join(',');
-      let query = Sqlbricks.delete('users').where(Sqlbricks.in("id", _in)).toString();
-      let deleteUser = await SqlService.delete(query.toString());
+      let query = Sqlbricks.delete('pipelines').where(Sqlbricks.in("id", _in)).toString();
+      let deleteUser = await SqlService.smartDelete(query.toString(), props.force_deleted || false);
       return deleteUser;
     } catch (ex) {
       throw ex;

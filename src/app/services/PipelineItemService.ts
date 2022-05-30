@@ -21,6 +21,7 @@ export interface PipelineItemServiceInterface extends PipelineItemInterface {
   ids?: Array<number>
   order_by_name?: string
   order_by_value?: string
+  force_deleted?: boolean
 }
 
 export default {
@@ -67,6 +68,9 @@ export default {
         "pip_item.pipeline_id": props.pipeline_id,
         "pip_item.id": props.id
       });
+
+      query = query.where(SqlBricks.isNull("pip_item.deleted_at"));
+
       query = query.limit(1);
       // return query.toString();
       let resData = await SqlService.selectOne(query.toString());
@@ -108,6 +112,9 @@ export default {
       if (props.ids != null) {
         query = query.where(SqlBricks.in("pip_item.id", props.ids));
       }
+
+      query = query.where(SqlBricks.isNull("pip_item.deleted_at"));
+
       if (props.order_by_name != null) {
         query = query.orderBy("pip_item." + props.order_by_name + " " + props.order_by_value);
       }
@@ -173,15 +180,15 @@ export default {
       throw ex;
     }
   },
-  async deletePipelineItem(ids: Array<number>) {
+  async deletePipelineItem(props: PipelineItemServiceInterface) {
     try {
       let _in: Array<any> | string = [
-        ...ids
+        ...props.ids
       ];
       _in = _in.join(',');
-      let resData = await SqlService.delete(SqlBricks.delete('pipeline_items').where(SqlBricks.in("id", _in)).toString());
+      let resData = await SqlService.smartDelete(SqlBricks.delete('pipeline_items').where(SqlBricks.in("id", _in)).toString(), props.force_deleted || false);
       // Delete tasks
-      await SqlService.delete(SqlBricks.delete("pipeline_tasks").where(SqlBricks.in("pipeline_item_id", _in)).toString());
+      await SqlService.smartDelete(SqlBricks.delete("pipeline_tasks").where(SqlBricks.in("pipeline_item_id", _in)).toString(), props.force_deleted || false);
       return resData;
     } catch (ex) {
       throw ex;
