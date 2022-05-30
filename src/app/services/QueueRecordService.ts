@@ -40,6 +40,7 @@ const preSelectQuery = () => {
     'qrec': "queue_records",
     'qrec_sch': "queue_schedules",
     'exe': "executions",
+    "pip": "pipelines"
   });
 
   let query = sqlbricks.select(
@@ -162,6 +163,9 @@ export default {
       query = query.leftJoin('exe').on({
         "qrec.execution_id": "exe.id"
       });
+      query = query.leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      })
 
       if (props.status != null) {
         query = query.where("qrec.status", props.status);
@@ -181,8 +185,8 @@ export default {
         query = query.orderBy("exe.id DESC");
       }
 
-
       query = query.where(sqlbricks.isNull("exe.deleted_at"));
+      query = query.where(sqlbricks.isNull("pip.deleted_at"));
 
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));

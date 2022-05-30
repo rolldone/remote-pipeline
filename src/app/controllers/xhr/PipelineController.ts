@@ -49,6 +49,11 @@ export default BaseController.extend<PipelineControllerInterface>({
         ids,
         force_deleted: req.body.force_deleted || false
       });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }

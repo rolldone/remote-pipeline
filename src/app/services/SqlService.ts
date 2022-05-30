@@ -44,12 +44,14 @@ export default {
       throw ex;
     }
   },
-  smartDelete: async (sql: string, force_deleted = false) => {
+  smartDelete: async (sql: string, force_deleted: boolean) => {
     try {
+      force_deleted = JSON.parse(force_deleted as any || "false");
       if (force_deleted == false) {
         sql = sql.replace("DELETE FROM", "UPDATE");
-        sql = sql.replace("WHERE","set deleted_at = '" + new Date().toISOString().slice(0, 19).replace('T', ' ')+"' WHERE");
+        sql = sql.replace("WHERE", "set deleted_at = '" + new Date().toISOString().slice(0, 19).replace('T', ' ') + "' WHERE");
       }
+
       let resData = await db.raw(sql);
       return resData;
     } catch (ex) {
