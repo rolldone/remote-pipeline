@@ -127,7 +127,7 @@ export default {
       throw ex;
     }
   },
-  async getQueueRecord(props) {
+  async getQueueRecord(props: QueueRecordServiceInterface) {
     try {
       let query = preSelectQuery();
       query = query.leftJoin('qrec_sch').on({
@@ -201,7 +201,7 @@ export default {
       query.offset((props.offset || 0) * (props.limit || 50));
 
       let _query = query.toString();
-      
+
       let resQueueRecords: Array<any> = await SqlService.select(_query);
       for (var a = 0; a < resQueueRecords.length; a++) {
         resQueueRecords[a] = resQueueRecords[a] || null;

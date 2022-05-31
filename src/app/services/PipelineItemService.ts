@@ -153,7 +153,9 @@ export default {
           description: props.description
         }).toString());
         resData = await this.getPipelineItem({
-          id: resData
+          id: resData,
+          project_id: props.project_id,
+          pipeline_id: props.pipeline_id
         })
         return resData;
       } else {
