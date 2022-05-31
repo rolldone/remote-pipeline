@@ -17,6 +17,7 @@ export interface Host {
 
 export interface HostServiceInterface extends Host {
   ids?: Array<number>
+  force_deleted?: boolean
 }
 
 export default {
@@ -48,6 +49,9 @@ export default {
       if (props.ids != null) {
         query.where(sqlbricks.in("hos.id", props.ids))
       }
+
+      query = query.where(sqlbricks.isNull("hos.deleted_at"));
+      
       query = query.orderBy("usr.id DESC");
       let resData = await SqlService.select(query.toString());
       resData.filter((el) => {
@@ -85,6 +89,9 @@ export default {
         query = query.where("usr.id", props.user_id);
       }
       query = query.where("hos.id", props.id);
+
+      query = query.where(sqlbricks.isNull("hos.deleted_at"));
+
       query = query.orderBy("usr.id DESC");
       query = query.limit(1);
       let resData = await SqlService.selectOne(query.toString());
@@ -135,13 +142,13 @@ export default {
       throw ex;
     }
   },
-  async deleteHost(ids: Array<number>): Promise<any> {
+  async deleteHost(props: HostServiceInterface): Promise<any> {
     try {
       let _in: Array<any> | string = [
-        ...ids
+        ...props.ids
       ];
       _in = _in.join(',');
-      let resData = await SqlService.delete(sqlbricks.delete('hosts').where(sqlbricks.in("id", _in)).toString());
+      let resData = await SqlService.smartDelete(sqlbricks.delete('hosts').where(sqlbricks.in("id", _in)).toString(), props.force_deleted || false);
       return resData;
     } catch (ex) {
       throw ex;

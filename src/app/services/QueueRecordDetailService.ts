@@ -1,4 +1,5 @@
 import sqlbricks from "@root/tool/SqlBricks";
+import { UpdateStatement } from "@root/tool/SqlBricks/sql-bricks";
 import { Knex } from "knex";
 import SqlService from "./SqlService";
 declare let db: Knex;
@@ -38,7 +39,8 @@ export interface QueueRecordDetailServiceInterface extends QueueRecordDetailInte
   group_by?: string
   limit?: number
   offset?: number
-  user_id?: number
+  user_id?: number,
+  where?: any
 }
 
 const preSelectQuery = () => {
@@ -189,6 +191,20 @@ export default {
         id: props.id
       });
       console.log("addQueueRecordDetail :: ", resData);
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async updateQueueRecordDetailWhere(props: QueueRecordDetailInterface, props2: QueueRecordDetailServiceInterface) {
+    try {
+      console.log("addQueueRecordDetail props :: ", props);
+      let queryUpdate = sqlbricks.update("queue_record_details", {
+        ...props
+      });
+      queryUpdate.where(props2.where);
+      let _query = queryUpdate.toString();
+      let resData = await SqlService.update(_query);
       return resData;
     } catch (ex) {
       throw ex;

@@ -42,6 +42,13 @@ const PipelineLoop = async function (props: {
       id: execution.variable_id
     })
 
+    switch (true) {
+      case execution == null:
+      case queue_record == null:
+      case variable == null:
+        return false;
+    }
+
     // Get var data
     let _var_data = ((datas: any) => {
       let _variable_select = null;
@@ -115,7 +122,7 @@ const PipelineLoop = async function (props: {
             job_id,
             link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record-detail/job/" + job_id
           }
-          
+
           let isnnn = await theTaskTYpeFunc({
             raw_variable: variable,
             sshPromise: props.sshPromise,
@@ -288,6 +295,7 @@ const PipelineLoop = async function (props: {
           break;
       }
     }
+    return true;
   } catch (ex) {
     throw ex;
   }

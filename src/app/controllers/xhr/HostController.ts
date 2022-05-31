@@ -78,6 +78,21 @@ export default BaseController.extend<HostControllerInterface>({
     }
   },
   async deleteHosts(req, res) {
-    try { } catch (ex) { }
+    try {
+      // ids: JSON []
+      let ids = req.body.ids;
+      ids = JSON.parse(ids || '[]');
+      let resData = await HostService.deleteHost({
+        ids,
+        force_deleted: req.body.force_deleted || false
+      });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
 });

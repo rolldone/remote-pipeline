@@ -6,9 +6,12 @@ import QueueRecordService from "@root/app/services/QueueRecordService";
 export default function (next: Function) {
   return new Promise(async (resolve: Function) => {
     try {
+      console.log("StartQueueWorker Called.");
       let queueRecords = await QueueRecordService.getQueueRecords({
-        status: QueueRecordService.STATUS.READY
+        status: QueueRecordService.STATUS.READY,
+        with_deleted: true
       });
+      console.log("queueRecords :: ", queueRecords);
       next();
       for (var a = 0; a < queueRecords.length; a++) {
         let id = queueRecords[a].id;
@@ -27,6 +30,15 @@ export default function (next: Function) {
           })
         }
         await CreateQueue({ id, data, process_mode, process_limit, queue_name });
+      }
+      if (queueRecords.length == 0) {
+        QueueRecordDetailService.updateQueueRecordDetailWhere({
+          "status": QueueRecordDetailService.STATUS.STOPPED,
+        }, {
+          where: {
+            "status": QueueRecordDetailService.STATUS.RUNNING
+          }
+        });
       }
       console.log("StartQueueQorker.ts - execute :: ", "DONE");
       resolve();

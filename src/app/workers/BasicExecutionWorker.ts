@@ -1,18 +1,13 @@
 
-import SqlBricks from "@root/tool/SqlBricks";
 import { Job, Worker } from "bullmq";
-import { Knex } from "knex";
-import { QueueRecordStatus } from "../services/QueueRecordService";
-import QueueRecordDetail from "../services/QueueRecordDetailService";
-import QueueSceduleService from "../services/QueueSceduleService";
 import { onActive, onComplete, onFailed } from "../functions/QueueEvent";
-import ConnectToHost from "../functions/ConnectOnSShPromise";
 import PipelineLoop from "../functions/PipelineLoop";
-import GetOsName from "../functions/GetOsName";
 
-declare let db: Knex;
+export interface BasicExecutionWorkerInterface {
+  queue_name?: string
+}
 
-const BasicExecutionWorker = function (props: any) {
+const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
   const queueEvents = new Worker(props.queue_name, async (job: Job) => {
     try {
       console.log("job ::: ", job.data);
@@ -23,6 +18,9 @@ const BasicExecutionWorker = function (props: any) {
       } = job.data;
       let job_id = job.id;
       let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id });
+      if (resPipelineLoop == false) {
+        console.log(`Job ${job_id} is now canceled; Because some requirement data get null. Maybe some data get deleted?`);
+      }
     } catch (ex) {
       console.log(`${props.queue_name} - ex :: `, ex);
       return 'failed';

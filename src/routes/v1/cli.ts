@@ -12,7 +12,6 @@ export interface QueueRequestInterface {
   queue_name?: string
   data?: any
   callback?: Function
-  process_limit?: number
 }
 
 export interface QueueWebhookInterface {
@@ -43,7 +42,6 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       if (props == null) return;
       if (_basicExecutions[props.queue_name] == null) {
         _basicExecutions[props.queue_name] = BasicExecutionWorker({
-          ...props.data,
           queue_name: props.queue_name,
         });
       }
@@ -59,7 +57,6 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
         _parallelExecutions[props.queue_name] = ParallelExecutionWorker({
           ...props.data,
           queue_name: props.queue_name,
-          concurrency: props.process_limit
         });
       }
       props.callback(_parallelExecutions[props.queue_name]);

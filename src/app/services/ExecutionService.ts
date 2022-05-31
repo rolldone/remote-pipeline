@@ -147,6 +147,12 @@ export default {
         query = query.where("usr.id", props.user_id);
       }
       query = query.where("exe.id", props.id);
+
+      // Need table project deleted_at null
+      query = query.where(SqlBricks.isNull("pro.deleted_at"));
+      query = query.where(SqlBricks.isNull("pip.deleted_at"));
+      query = query.where(SqlBricks.isNull("exe.deleted_at"));
+      
       query = query.orderBy("exe.id DESC");
       query = query.limit(1);
       let resData = await db.raw(query.toString());

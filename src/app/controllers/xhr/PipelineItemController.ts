@@ -45,7 +45,6 @@ export default BaseController.extend<PipelineItemControllerInterface>({
       })
     } catch (ex) {
       return res.status(400).send(ex);
-
     }
   },
   async updatePipline(req, res) {
@@ -70,7 +69,6 @@ export default BaseController.extend<PipelineItemControllerInterface>({
     }
   },
   async deletePipeline(req, res) {
-    // ids: JSON []
     try {
       // ids: JSON []
       let ids = req.body.ids;
@@ -89,7 +87,6 @@ export default BaseController.extend<PipelineItemControllerInterface>({
     }
   },
   async getPipeline(req, res) {
-    // id: int
     try {
       // id: int
       let props = req.query;

@@ -28,6 +28,7 @@ export interface QueueRecordServiceInterface extends QueueRecordInterface {
   order_by?: string
   offset?: number
   user_id?: number
+  with_deleted?: boolean
 }
 
 export const QueueRecordType = {
@@ -135,9 +136,15 @@ export default {
       query = query.leftJoin('exe').on({
         "qrec.execution_id": "exe.id"
       });
+      query = query.leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      })
       query = query.where({
         "qrec.id": props.id
       })
+
+      query = query.where(sqlbricks.isNull("exe.deleted_at"));
+      query = query.where(sqlbricks.isNull("pip.deleted_at"));
 
       query = query.orderBy("exe.id DESC");
       query = query.limit(1);
@@ -185,15 +192,17 @@ export default {
         query = query.orderBy("exe.id DESC");
       }
 
-      query = query.where(sqlbricks.isNull("exe.deleted_at"));
-      query = query.where(sqlbricks.isNull("pip.deleted_at"));
+      if (props.with_deleted == null || props.with_deleted == false) {
+        query = query.where(sqlbricks.isNull("exe.deleted_at"));
+        query = query.where(sqlbricks.isNull("pip.deleted_at"));
+      }
 
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));
 
       let _query = query.toString();
-      let resQueueRecords: Array<any> = await db.raw(_query);
-      if (resQueueRecords == null) return null;
+      
+      let resQueueRecords: Array<any> = await SqlService.select(_query);
       for (var a = 0; a < resQueueRecords.length; a++) {
         resQueueRecords[a] = resQueueRecords[a] || null;
         resQueueRecords[a].qrec_sch_data = JSON.parse(resQueueRecords[a].qrec_sch_data || '{}');

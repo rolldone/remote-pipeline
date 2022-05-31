@@ -26,7 +26,6 @@ const CreateQueue = function (props: any) {
       masterData.saveData("queue.request." + process_mode, {
         queue_name,
         data,
-        process_limit,
         callback: async (worker: Worker) => {
           if (worker.isRunning() == false) {
             worker.resume();
@@ -95,7 +94,8 @@ const CreateQueue = function (props: any) {
               switch (qrec_sch_data.schedule_type) {
                 case QueueSceduleService.schedule_type.REPEATABLE:
                   _processQueue = ProcessScheduleQueue({
-                    queue_name: queue_name
+                    queue_name: queue_name,
+                    process_limit: 1 // process_limit
                   });
                   _repeat = {
                     cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`

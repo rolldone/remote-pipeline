@@ -1,6 +1,7 @@
 import { Queue, QueueScheduler } from "bullmq";
+import { BasicExecutionWorkerInterface } from "../workers/BasicExecutionWorker";
 
-export default function (props) {
+export default function (props: BasicExecutionWorkerInterface) {
   const myQueueScheduler = new QueueScheduler(props.queue_name, {
     connection: global.redis_bullmq,
     // prefix: "bullmq_",
