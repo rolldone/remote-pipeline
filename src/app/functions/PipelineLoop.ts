@@ -131,7 +131,7 @@ const PipelineLoop = async function (props: {
           }
           let extraVar = {
             job_id,
-            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record-detail/job/" + job_id
+            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id
           }
 
           let isnnn = await theTaskTYpeFunc({
