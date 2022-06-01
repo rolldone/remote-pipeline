@@ -94,12 +94,18 @@ export default {
   },
   async updateQueueRecord(props: QueueRecordInterface) {
     try {
+      let existData: QueueRecordInterface = await this.getQueueRecord({
+        id: props.id
+      })
+      if (existData == null) {
+        throw new Error("The Data is not found!");
+      }
       let resData = await SqlService.update(sqlbricks.update('queue_records', {
-        queue_key: props.queue_key,
-        execution_id: props.execution_id,
-        status: props.status,
-        data: JSON.stringify(props.data || {}),
-        type: props.type || 'instant'
+        queue_key: props.queue_key || existData.queue_key,
+        execution_id: props.execution_id || existData.execution_id,
+        status: props.status || existData.status,
+        data: JSON.stringify(props.data || existData.data || {}),
+        type: props.type || existData.type || 'instant'
       }).where("id", props.id).toString());
 
       resData = await this.getQueueRecord({

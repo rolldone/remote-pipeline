@@ -122,6 +122,35 @@ export default {
       throw ex;
     }
   },
+  async getQueueRecordDetailByJobId(job_id: number, queue_record_id: number) {
+    try {
+      let query_record_detail = preSelectQuery();
+      query_record_detail
+        .leftJoin("qrec").on({
+          "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
+        .leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        })
+      query_record_detail.where({
+        "qrec_detail.job_id": job_id,
+        "qrec_detail.queue_record_id": queue_record_id
+      });
+      // query_record_detail.limit(1);
+      let queryString = query_record_detail.toString();
+      console.log("query :: ", queryString);
+      let res_data_record_detail = await SqlService.selectOne(queryString);
+      // If null
+      if (res_data_record_detail == null) return null;
+      res_data_record_detail = transformColumn(res_data_record_detail);
+      return res_data_record_detail;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getQueueRecordDetail(props: QueueRecordDetailServiceInterface) {
     try {
       let query_record_detail = preSelectQuery();
@@ -141,8 +170,7 @@ export default {
       // query_record_detail.limit(1);
       let queryString = query_record_detail.toString();
       console.log("query :: ", queryString);
-      let res_data_record_detail = await db.raw(queryString);
-      res_data_record_detail = res_data_record_detail[0];
+      let res_data_record_detail = await SqlService.selectOne(queryString);
       // If null
       if (res_data_record_detail == null) return null;
       res_data_record_detail = transformColumn(res_data_record_detail);

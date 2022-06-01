@@ -5,7 +5,8 @@ import SSH2Promise from "ssh2-promise";
 import ExecutionService from "../services/ExecutionService";
 import PipelineItemService from "../services/PipelineItemService";
 import PipelineTaskService from "../services/PipelineTaskService";
-import QueueRecordService from "../services/QueueRecordService";
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
+import QueueRecordService, { QueueRecordInterface } from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
 import DownloadRepo from "./DownloadRepo";
@@ -28,9 +29,19 @@ const PipelineLoop = async function (props: {
   } = props;
   try {
     // First get the queue_record
-    let queue_record = await QueueRecordService.getQueueRecord({
+    let queue_record: QueueRecordInterface = await QueueRecordService.getQueueRecord({
       id: queue_record_id
     });
+
+    if (queue_record.status == QueueRecordService.STATUS.STAND_BY) {
+      return false;
+    }
+
+    let queue_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId(job_id, queue_record.id);
+
+    if (queue_record_detail.status == QueueRecordDetailService.STATUS.STOPPED) {
+      return false;
+    }
 
     // Second get the execution
     let execution = await ExecutionService.getExecution({
