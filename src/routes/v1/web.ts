@@ -27,6 +27,9 @@ import RepositoryController from "@root/app/controllers/xhr/RepositoryController
 import GithubAuth from "@root/app/middlewares/GithubAuth";
 import WebHookController from "@root/app/controllers/xhr/WebHookController";
 import WebhookAuth from "@root/app/middlewares/WebhookAuth";
+import PersonalAccessTokenController from "@root/app/controllers/xhr/PersonalAccessTokenController";
+import OutSideController from "@root/app/controllers/xhr/OutSideController";
+import OutSideAuth from "@root/app/middlewares/OutSideAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -57,6 +60,11 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
+    });
+
+    self.use("/xhr/outside", [OutSideAuth], function (route: BaseRouteInterface) {
+      route.post("/queue/:queue_key", "xhr.outside.queue", [upload.any()], OutSideController.binding().createQueue);
+      route.get("/queue-display-process", "xhr.outside.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
     });
 
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
@@ -222,6 +230,14 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/delete", "xhr.webhook.delete", [upload.any(), DashboardAuth], WebHookController.binding().deleteWebHook);
       route.post("/execute/test-item", "xhr.webhook.execute.test_item", [upload.any(), DashboardAuth], WebHookController.binding().executeTestItem)
       route.post("/execute", "xhr.webhook.execute", [upload.any(), WebhookAuth], WebHookController.binding().execute);
+    })
+
+    self.use("/xhr/personal-token", [], function (route: BaseRouteInterface) {
+      route.get("/", "xhr.personal_access_token", [DashboardAuth], PersonalAccessTokenController.binding().getPersonalAccessTokens);
+      route.get("/:id/view", "xhr.personal_access_token.personal_access_token", [DashboardAuth], PersonalAccessTokenController.binding().getPersonalAccessToken);
+      route.post("/add", "xhr.personal_access_token.new", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().addPersonalAccessToken);
+      route.post("/update", "xhr.personal_access_token.update", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().updatePersonalAccessToken);
+      route.post("/delete", "xhr.personal_access_token.delete", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().deletePersonalAccessToken);
     })
   }
 });

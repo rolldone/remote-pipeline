@@ -31,6 +31,18 @@ export interface QueueRecordDetailInterface {
   status?: number
   // aditional
   job_data?: any
+  // Queue record
+  qrec_type?: string
+  qrec_id?: number
+  qrec_data?: any
+  // Queue schedule
+  qrec_sch_schedule_type?: string
+  qrec_sch_data?: any
+  // Execution
+  exe_process_mode?: string
+  exe_process_limit?: number
+  exe_delay?: number
+
 }
 
 export interface QueueRecordDetailServiceInterface extends QueueRecordDetailInterface {
@@ -79,7 +91,8 @@ const preSelectQuery = () => {
     'exe.variable_option as exe_variable_option',
     'exe.pipeline_item_ids as exe_pipeline_item_ids',
     'exe.host_ids as exe_host_ids',
-    'exe.description as exe_description'
+    'exe.description as exe_description',
+    'exe.delay as exe_delay'
   ).from("qrec_detail");
   return query_record_detail;
 }

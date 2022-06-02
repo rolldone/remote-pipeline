@@ -3,7 +3,7 @@ import { Moment } from "@root/tool";
 import { Worker } from "bullmq";
 import ProcessQueue from "../queues/ProcessQueue";
 import ProcessScheduleQueue from "../queues/ProcessScheduleQueue";
-import QueueRecordDetailService from "../services/QueueRecordDetailService";
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
 import QueueRecordService from "../services/QueueRecordService";
 import QueueSceduleService from "../services/QueueSceduleService";
 
@@ -12,7 +12,10 @@ declare let masterData: MasterDataInterface
 const oberserverPath = "queue.request.";
 const oberserverPathGroup = "queue.request.flow.";
 
-const CreateQueueItem = function (props: any) {
+const CreateQueueItem = function (props: {
+  queue_name?: string
+  res_data_record_detail?: QueueRecordDetailInterface
+}) {
 
   let {
     queue_name,
@@ -50,7 +53,7 @@ const CreateQueueItem = function (props: any) {
                 host_data: res_data_record_detail.data.host_data,
               }, {
                 jobId: idJObInstant,// id + "-" + resQueueRecords.exe_host_ids[a],
-                delay: 2000
+                delay: res_data_record_detail.exe_delay
               });
 
               resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
@@ -66,7 +69,7 @@ const CreateQueueItem = function (props: any) {
 
               let qrec_sch_data = res_data_record_detail.qrec_sch_data;
               let _repeat = null;
-              let _timeout = 5000;
+              let _timeout = res_data_record_detail.exe_delay;
 
               switch (qrec_sch_data.schedule_type) {
                 case QueueSceduleService.schedule_type.REPEATABLE:

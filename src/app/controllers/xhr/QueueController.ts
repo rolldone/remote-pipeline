@@ -6,6 +6,7 @@ import QueueRecordDetailService from "@root/app/services/QueueRecordDetailServic
 import CreateQueue from "@root/app/functions/CreateQueue"
 import CreateQueueItem from "@root/app/functions/CreateQueueItem"
 import DeleteQueueItem from "@root/app/functions/DeleteQueueItem"
+import SafeValue from "@root/app/functions/base/SafeValue"
 
 export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueueItem?: { (req: any, res: any): void }
@@ -66,9 +67,10 @@ export default BaseController.extend<QueueControllerInterface>({
       let id = req.body.id;
       let data = JSON.parse(req.body.data || "{}");
       let process_mode = req.body.process_mode;
-      let process_limit = req.body.process_limit || 1;
+      let process_limit = parseInt(SafeValue(req.body.process_limit, 1));
       let queue_name = "queue_" + process_mode + "_" + id;
-      let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name });
+      let delay = parseInt(SafeValue(req.body.delay, 3000));
+      let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay });
       res.send({
         status: 'success',
         status_code: 200,
@@ -122,8 +124,10 @@ export default BaseController.extend<QueueControllerInterface>({
         queue_record_id: id,
         status: QueueRecordDetailService.STATUS.RUNNING
       })
-      _data_queue_record_details.forEach(async (res_data_record_detail) => {
+      _data_queue_record_details.forEach(async (res_data_record_detail, index) => {
         await DeleteQueueItem({
+          index,
+          length: _data_queue_record_details.length,
           queue_record_detail_id: res_data_record_detail.id
         });
       });

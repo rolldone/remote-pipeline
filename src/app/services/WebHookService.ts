@@ -105,16 +105,13 @@ export default {
       throw ex;
     }
   },
-  getWebHookByKey: async function (props: webhook) {
+  getWebHookByKey: async function (key: string) {
     try {
       let query = defineQuery();
       query = query.from("whook");
       query = query.where({
-        "whook.key": props.key
+        "whook.key": key
       });
-      if (props.user_id) {
-        query = query.where("whook.user_id", props.user_id);
-      }
       let resData = await SqlService.selectOne(query.toString());
       if (resData == null) return null;
       resData.data = JSON.parse(resData.data || '{}');
@@ -193,9 +190,7 @@ export default {
             /**
              * Get the webhook data first
              */
-            let webhook_data: webhook = await this.getWebHookByKey({
-              key: key
-            })
+            let webhook_data: webhook = await this.getWebHookByKey(key);
 
             /* Generate webhook queue */
             let _queue = WebhookQueue({

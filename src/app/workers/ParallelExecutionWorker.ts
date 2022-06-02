@@ -2,12 +2,13 @@ import { Job, Worker } from "bullmq";
 import { onActive, onComplete, onFailed } from "../functions/QueueEvent";
 import PipelineLoop from "../functions/PipelineLoop";
 import { BasicExecutionWorkerInterface } from "./BasicExecutionWorker";
+import SafeValue from "../functions/base/SafeValue";
 
 export interface ParallelExecutionWorkerInterface extends BasicExecutionWorkerInterface {
   process_limit?: number
 }
 
-export default function (props: ParallelExecutionWorkerInterface) {
+const ParallelExecutionWorker = function (props: ParallelExecutionWorkerInterface) {
   let queueEvents = new Worker(props.queue_name, async (job: Job) => {
     try {
       console.log("job ::: ", job.data);
@@ -15,20 +16,21 @@ export default function (props: ParallelExecutionWorkerInterface) {
         host_data,
         host_id,
         queue_record_id,
+        extra
       } = job.data;
       let job_id = job.id;
-      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id });
+      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id, extra });
       if (resPipelineLoop == false) {
         console.log(`Job ${job_id} is now canceled; Because some requirement data get null. Maybe some data get deleted?`);
       }
     } catch (ex) {
-      console.log(`mkadfunvlnevrunvajdfvn - ${props.queue_name} - ex :: `, ex);
+      console.log(`ParallelExecutionWorker - ${props.queue_name} - ex :: `, ex);
       return 'failed';
     }
     return 'done';
   }, {
     // autorun: false,
-    concurrency: props.process_limit || 1,
+    concurrency: SafeValue(props.process_limit, 1),
     connection: global.redis_bullmq
   });
 
@@ -50,3 +52,5 @@ export default function (props: ParallelExecutionWorkerInterface) {
 
   return queueEvents;
 }
+
+export default ParallelExecutionWorker;

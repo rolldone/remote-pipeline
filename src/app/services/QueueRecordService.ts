@@ -1,5 +1,6 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import SafeValue from "../functions/base/SafeValue";
 import CreateQueue from "../functions/CreateQueue";
 import SqlService from "./SqlService";
 declare let db: Knex;
@@ -19,6 +20,14 @@ export interface QueueRecordInterface {
   status?: number
   data?: string
   type?: string
+  // join
+  // execution
+  exe_host_ids?: Array<number>
+  exe_process_mode?: string
+  exe_process_limit?: number
+  exe_delay?: number
+  // Schedule
+  qrec_sch_data?: any
 }
 
 export interface QueueRecordServiceInterface extends QueueRecordInterface {
@@ -68,6 +77,7 @@ const preSelectQuery = () => {
     'exe.pipeline_item_ids as exe_pipeline_item_ids',
     'exe.host_ids as exe_host_ids',
     'exe.description as exe_description',
+    'exe.delay as exe_delay'
   ).from("qrec");
   return query;
 }
@@ -97,15 +107,17 @@ export default {
       let existData: QueueRecordInterface = await this.getQueueRecord({
         id: props.id
       })
+
       if (existData == null) {
         throw new Error("The Data is not found!");
       }
+
       let resData = await SqlService.update(sqlbricks.update('queue_records', {
-        queue_key: props.queue_key || existData.queue_key,
-        execution_id: props.execution_id || existData.execution_id,
-        status: props.status || existData.status,
-        data: JSON.stringify(props.data || existData.data || {}),
-        type: props.type || existData.type || 'instant'
+        queue_key: SafeValue(props.queue_key, existData.queue_key),
+        execution_id: SafeValue(props.execution_id, existData.execution_id),
+        status: SafeValue(props.status, existData.status),
+        data: JSON.stringify(SafeValue(props.data, SafeValue(existData.data, {}))),
+        type: SafeValue(props.type, SafeValue(existData.type, 'instant'))
       }).where("id", props.id).toString());
 
       resData = await this.getQueueRecord({
@@ -155,10 +167,40 @@ export default {
       query = query.orderBy("exe.id DESC");
       query = query.limit(1);
 
-      let _query = query.toString();
-      let resQueueRecord = await db.raw(_query);
+      let resQueueRecord = await SqlService.selectOne(query.toString());
       if (resQueueRecord == null) return null;
-      resQueueRecord = resQueueRecord[0] || null;
+      resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
+      resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
+      resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids);
+      return resQueueRecord;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getQueueRecordByKey(key: string) {
+    try {
+      let query = preSelectQuery();
+      query = query.leftJoin('qrec_sch').on({
+        "qrec_sch.queue_record_id": "qrec.id"
+      });
+      query = query.leftJoin('exe').on({
+        "qrec.execution_id": "exe.id"
+      });
+      query = query.leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      })
+      query = query.where({
+        "qrec.queue_key": key
+      })
+
+      query = query.where(sqlbricks.isNull("exe.deleted_at"));
+      query = query.where(sqlbricks.isNull("pip.deleted_at"));
+
+      query = query.orderBy("exe.id DESC");
+      query = query.limit(1);
+
+      let resQueueRecord = await SqlService.selectOne(query.toString());
+      if (resQueueRecord == null) return null;
       resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
       resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
       resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids);
@@ -192,16 +234,17 @@ export default {
         query = query.where("qrec.execution_id", props.execution_id);
       }
 
+      if (props.with_deleted == null || props.with_deleted == false) {
+        query = query.where(sqlbricks.isNull("exe.deleted_at"));
+        query = query.where(sqlbricks.isNull("pip.deleted_at"));
+      }
+
       if (props.order_by != null) {
         query = query.orderBy(props.order_by);
       } else {
         query = query.orderBy("exe.id DESC");
       }
 
-      if (props.with_deleted == null || props.with_deleted == false) {
-        query = query.where(sqlbricks.isNull("exe.deleted_at"));
-        query = query.where(sqlbricks.isNull("pip.deleted_at"));
-      }
 
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));

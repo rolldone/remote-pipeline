@@ -9,6 +9,7 @@ import MkdirReqursive from "../sftp/Mkdir";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import QueueRecordService from "@root/app/services/QueueRecordService";
 import CreateQueue from "../CreateQueue";
+import SafeValue from "../base/SafeValue";
 
 
 declare let masterData: MasterDataInterface;
@@ -47,9 +48,10 @@ const NewQueueCommand = function (props: TaskTypeInterface) {
             let id = _queue_datas[a].id;
             let data = {};
             let process_mode = queue_record.exe_process_mode;
-            let process_limit = queue_record.exe_process_limit || 1;
+            let process_limit = SafeValue(queue_record.exe_process_limit, 1);
+            let delay = SafeValue(queue_record.exe_delay, 2000);
             let queue_name = "queue_" + process_mode + "_" + id;
-            let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name });
+            let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay: delay });
             RecordCommandToFileLog({
               fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
               commandString: "Create queue :: " + _queue_datas[a].name + "\n"

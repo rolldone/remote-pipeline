@@ -50,26 +50,26 @@ Select.prototype.offset = function (val) {
 };
 
 // If get duplicate on toString disble this
-Select.defineClause('limit', function (this, opts) {
-  // console.log("this._limit :: ", this._limit)
-  // console.log("opts :: ", opts);
-  if (this._limit != null) {
-    return "LIMIT " + this._limit;
-  }
-},
-  { after: 'orderBy' }
-);
+// Select.defineClause('limit', function (this, opts) {
+//   // console.log("this._limit :: ", this._limit)
+//   // console.log("opts :: ", opts);
+//   if (this._limit != null) {
+//     return "LIMIT " + this._limit;
+//   }
+// },
+//   { after: 'orderBy' }
+// );
 
-// If get duplicate on toString disble this
-Select.defineClause('offset', function (this, opts) {
-  if (this._offset != null) {
-    return "OFFSET " + this._offset;
-  }
-},
-  {
-    after: 'limit'
-  }
-);
+// // If get duplicate on toString disble this
+// Select.defineClause('offset', function (this, opts) {
+//   if (this._offset != null) {
+//     return "OFFSET " + this._offset;
+//   }
+// },
+//   {
+//     after: 'limit'
+//   }
+// );
 
 
 const Sqlbricks: SqlBricksFn = rr as any;

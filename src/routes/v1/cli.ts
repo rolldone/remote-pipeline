@@ -9,9 +9,9 @@ import WebhookWorker from "@root/app/workers/WebhookWorker";
 declare var masterData: MasterDataInterface;
 
 export interface QueueRequestInterface {
-  queue_name?: string
-  data?: any
-  callback?: Function
+  queue_name: string
+  process_limit: number
+  callback: Function
 }
 
 export interface QueueWebhookInterface {
@@ -55,8 +55,8 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       if (props == null) return;
       if (_parallelExecutions[props.queue_name] == null) {
         _parallelExecutions[props.queue_name] = ParallelExecutionWorker({
-          ...props.data,
           queue_name: props.queue_name,
+          process_limit: props.process_limit
         });
       }
       props.callback(_parallelExecutions[props.queue_name]);
@@ -66,7 +66,6 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       if (props == null) return;
       if (_basicGroupExecutions[props.queue_name] == null) {
         _basicGroupExecutions[props.queue_name] = GroupExecutionWorker({
-          ...props.data,
           queue_name: props.queue_name,
         });
       }

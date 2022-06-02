@@ -109,7 +109,9 @@ export default BaseController.extend<WebHookControllerInterface>({
   },
   async execute(req, res) {
     try {
+      let api_key: string = req.headers.authorization.replace("Bearer ", "");
       let props = req.body;
+      props.key = api_key;
       props.data = JSON.parse(props.data || '{}');
       let resData = await WebHookService.execute(props);
       res.send({

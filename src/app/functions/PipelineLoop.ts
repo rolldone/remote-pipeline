@@ -19,13 +19,15 @@ const PipelineLoop = async function (props: {
   queue_record_id: number
   host_id: number
   host_data: any,
-  job_id: any
+  job_id: any,
+  extra: any
 }) {
   let {
     queue_record_id,
     host_id,
     host_data,
-    job_id
+    job_id,
+    extra
   } = props;
   try {
     // First get the queue_record
@@ -131,7 +133,8 @@ const PipelineLoop = async function (props: {
           }
           let extraVar = {
             job_id,
-            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id
+            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id,
+            ...extra
           }
 
           let isnnn = await theTaskTYpeFunc({

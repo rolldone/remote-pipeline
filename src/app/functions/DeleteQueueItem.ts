@@ -1,22 +1,35 @@
 import { Job, Queue } from "bullmq";
 import ProcessQueue from "../queues/ProcessQueue";
 import ProcessScheduleQueue from "../queues/ProcessScheduleQueue";
-import QueueRecordDetailService from "../services/QueueRecordDetailService";
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
 import QueueRecordService from "../services/QueueRecordService";
 import QueueSceduleService from "../services/QueueSceduleService";
 
-export default async function (props: {
+const DeleteQueueItem = async function (props: {
   queue_record_detail_id: any
+  index?: number
+  length?: number
 }) {
   try {
     let {
-      queue_record_detail_id
+      queue_record_detail_id,
+      index,
+      length
     } = props;
-    let res_data_record_detail = await QueueRecordDetailService.getQueueRecordDetail({
+
+    let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetail({
       id: queue_record_detail_id
     })
+
+    if (index == length - 1) {
+      let queueRecordData = await QueueRecordService.updateQueueRecord({
+        id: res_data_record_detail.qrec_id,
+        status: QueueRecordService.STATUS.STAND_BY
+      })
+    }
+
     let _processQueue: Queue = null;
-    let resDataInsert = null;
+    let resDataUpdate = null;
     console.log("res_data_record_detail.qrec_data :: ", res_data_record_detail.qrec_type)
     let jobs = null;
     switch (res_data_record_detail.qrec_type) {
@@ -33,7 +46,7 @@ export default async function (props: {
         //     break;
         //   }
         // }
-        resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
+        resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
           id: queue_record_detail_id,
           queue_record_id: res_data_record_detail.qrec_id,
           queue_name: res_data_record_detail.queue_name,
@@ -57,7 +70,7 @@ export default async function (props: {
             //     break;
             //   }
             // }
-            resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
+            resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,
               queue_name: res_data_record_detail.queue_name,
@@ -79,7 +92,7 @@ export default async function (props: {
                 break;
               }
             }
-            resDataInsert = await QueueRecordDetailService.updateQueueRecordDetail({
+            resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,
               queue_name: res_data_record_detail.queue_name,
@@ -98,3 +111,5 @@ export default async function (props: {
   }
 
 }
+
+export default DeleteQueueItem;

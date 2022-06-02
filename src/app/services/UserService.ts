@@ -1,6 +1,7 @@
 import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
+import SqlService from "./SqlService";
 
 declare let db: Knex;
 const saltRounds = 10;
@@ -66,7 +67,7 @@ export default {
       query.limit(props.limit || 100);
       query.offset((props.offset * props.limit) || 0);
       let _query = query.toString();
-      let _hosts_datas: Array<any> = await db.raw(_query.toString());
+      let _hosts_datas: Array<any> = await SqlService.select(_query.toString());
       _hosts_datas.forEach(el => {
         el.data = JSON.parse(el.data || '{}');
         el.part_data = JSON.parse(el.part_data || '{}');
@@ -104,15 +105,10 @@ export default {
       }
       query.limit(1);
       query.offset(0);
-      let _query = query.toString();
-      let _hosts_datas: Array<any> = await db.raw(_query.toString());
-      _hosts_datas.forEach(el => {
-        el.data = JSON.parse(el.data || '{}');
-        delete el.password;
-        return el;
-      });
-      _hosts_datas = _hosts_datas[0];
-      return _hosts_datas;
+      let _hosts_data = await SqlService.selectOne(query.toString());
+      _hosts_data.data = JSON.parse(_hosts_data.data || '{}');
+      delete _hosts_data.password;
+      return _hosts_data;
     } catch (ex) {
       throw ex;
     }
@@ -128,11 +124,9 @@ export default {
         data: JSON.stringify(props.data),
         password: _hash
       });
-      let _query = queryInsert.toString();
-      let resData = await db.raw(_query.toString());
-      let id = resData.lastInsertRowid;
-      resData = await this.getUser({
-        id
+      let resDataId = await SqlService.insert(queryInsert.toString());
+      let resData = await this.getUser({
+        id: resDataId
       })
       return resData;
     } catch (ex) {
@@ -141,23 +135,30 @@ export default {
   },
   async updateUser(props: UserServiceInterface) {
     try {
+      let existData: UserServiceInterface = await this.getUser({
+        id: props.id
+      });
+      if (existData == null) {
+        throw new Error("Data not found!");
+      }
       let queryInsert = Sqlbricks.update("users", {
-        email: props.email,
-        first_name: props.first_name,
-        last_name: props.last_name,
-        status: props.status,
-        data: JSON.stringify(props.data),
+        email: props.email || existData.email,
+        first_name: props.first_name || existData.first_name,
+        last_name: props.last_name || existData.last_name,
+        status: props.status || existData.status,
+        data: JSON.stringify(props.data || existData.data || {}),
       }).where("id", props.id);
-      let _query = queryInsert.toString();
-      let updateUser = await db.raw(_query.toString());
+
+      let updateUser = await SqlService.update(queryInsert.toString());
+
       if (props.password) {
         let _hash = await bcrypt.hash(props.password, saltRounds);
         queryInsert = Sqlbricks.update("users", {
           password: props.password,
         }).where("id", props.id);
-        _query = queryInsert.toString();
-        let updatePasword = await db.raw(_query.toString());
+        let updatePasword = await SqlService.update(queryInsert.toString());
       }
+
       return this.getUser({
         id: props.id
       })
@@ -172,12 +173,8 @@ export default {
       ];
       _in = _in.join(',');
       let query = Sqlbricks.delete('users').where(Sqlbricks.in("id", _in)).toString();
-      let deleteUser = await db.raw(query.toString());
-      return {
-        status: 'success',
-        status_code: 200,
-        return: deleteUser
-      }
+      let deleteUser = await SqlService.delete(query.toString());
+      return deleteUser;
     } catch (ex) {
       throw ex;
     }

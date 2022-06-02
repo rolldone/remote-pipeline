@@ -3,15 +3,23 @@ import ProcessScheduleQueue from "@root/app/queues/ProcessScheduleQueue";
 import ExecutionService from "@root/app/services/ExecutionService";
 import HostService from "@root/app/services/HostService";
 import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService";
-import QueueRecordService from "@root/app/services/QueueRecordService";
+import QueueRecordService, { QueueRecordInterface } from "@root/app/services/QueueRecordService";
 import QueueSceduleService from "@root/app/services/QueueSceduleService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { QueueRequestInterface } from "@root/routes/v1/cli";
 import { Moment } from "@root/tool";
 import { Queue, Worker } from "bullmq";
 
 declare let masterData: MasterDataInterface
 
-const CreateQueue = function (props: any) {
+const CreateQueue = function (props: {
+  id: number
+  data: any
+  process_mode: string
+  process_limit: number
+  queue_name: string
+  delay: number
+}) {
 
   let {
     id,
@@ -19,13 +27,15 @@ const CreateQueue = function (props: any) {
     process_mode,
     process_limit,
     queue_name,
+    delay
   } = props;
-
+  console.log("props :: ",props);
   return new Promise((resolve: Function, reject: Function) => {
     try {
-      masterData.saveData("queue.request." + process_mode, {
+
+      masterData.saveData("queue.request." + process_mode, <QueueRequestInterface>{
         queue_name,
-        data,
+        process_limit: process_limit,
         callback: async (worker: Worker) => {
           if (worker.isRunning() == false) {
             worker.resume();
@@ -33,8 +43,19 @@ const CreateQueue = function (props: any) {
           console.log("worker.isRunning() ::: ", worker.isRunning());
 
           // Get queue record by id
-          let resQueueRecord = await QueueRecordService.getQueueRecord({
+          let resQueueRecord: QueueRecordInterface = await QueueRecordService.getQueueRecord({
             id: id
+          });
+
+          console.log("resQueueRecord ::: ", resQueueRecord);
+          if (resQueueRecord == null) {
+            resolve(resQueueRecord);
+            return
+          }
+
+          await QueueRecordService.updateQueueRecord({
+            id: resQueueRecord.id,
+            status: QueueRecordService.STATUS.READY
           });
 
           // Give callback for caller
@@ -68,10 +89,11 @@ const CreateQueue = function (props: any) {
                     index: indexHostItem,
                     total: _total_host_item,
                     host_data: hostDataItem,
+                    extra: data
                   }, {
                     jobId: idJObInstant,//id + "-" + resQueueRecords.exe_host_ids[a],
                     // timeout: 5000,
-                    delay: 2000
+                    delay: delay
                   });
 
                   // Insert to queue record detail 
@@ -80,7 +102,7 @@ const CreateQueue = function (props: any) {
                     queue_name: theJOb.queueName,
                     job_id: idJObInstant,
                     job_data: theJOb.data,
-                    status: QueueRecordDetailService.STATUS.RUNNING
+                    status: QueueRecordDetailService.STATUS.RUNNING,
                   });
 
                   indexHostItem += 1;
@@ -123,6 +145,7 @@ const CreateQueue = function (props: any) {
                     total: _total_host_item,
                     host_data: hostDataItem,
                     schedule_type: qrec_sch_data.schedule_type,
+                    extra: data
                   }, {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
                     jobId: idJobSchedule,

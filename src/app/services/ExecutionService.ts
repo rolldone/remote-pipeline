@@ -30,6 +30,7 @@ export interface Execution {
   host_ids?: Array<number>
   description?: string
   mode?: string
+  delay?: number
   hosts?: Array<Host>
 }
 
@@ -55,7 +56,8 @@ export default {
         pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
         host_ids: JSON.stringify(props.host_ids),
         description: props.description,
-        mode: props.mode
+        mode: props.mode,
+        delay: props.delay
       }).toString());
       resData = await this.getExecution({
         id: resData.id
@@ -81,6 +83,7 @@ export default {
         host_ids: JSON.stringify(props.host_ids),
         description: props.description,
         mode: props.mode,
+        delay: props.delay
       }).where("id", props.id).toString());
       resData = await this.getExecution({
         id: props.id
@@ -127,6 +130,7 @@ export default {
         'exe.host_ids as host_ids',
         'exe.description as description',
         'exe.mode as mode',
+        'exe.delay as delay',
         'pro.name as pro_name',
         'pip.name as pip_name',
         'var.name as var_name'
@@ -152,7 +156,7 @@ export default {
       query = query.where(SqlBricks.isNull("pro.deleted_at"));
       query = query.where(SqlBricks.isNull("pip.deleted_at"));
       query = query.where(SqlBricks.isNull("exe.deleted_at"));
-      
+
       query = query.orderBy("exe.id DESC");
       query = query.limit(1);
       let resData = await db.raw(query.toString());
@@ -190,6 +194,7 @@ export default {
         'exe.host_ids as host_ids',
         'exe.description as description',
         'exe.mode as mode',
+        'exe.delay as delay',
         'pro.name as pro_name',
         'pip.name as pip_name',
         'var.name as var_name'
@@ -303,7 +308,8 @@ export default {
                 let process_mode = resData.process_mode;
                 let process_limit = resData.process_limit || 1;
                 let queue_name = "queue_" + process_mode + "_" + id;
-                let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name });
+                let delay = 2000;
+                let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay });
                 return resolve(resQueueRecord);
               }
               resolve(props);
