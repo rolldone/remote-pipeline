@@ -8,6 +8,7 @@ import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import Sqlbricks from "@root/tool/SqlBricks";
 import BaseController from "base/BaseController";
 import _, { debounce } from "lodash";
+const marked = require("marked");
 
 declare let masterData: MasterDataInterface;
 declare let ws_client: any;
@@ -18,6 +19,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getDisplayProcess: { (req: any, res: any): void }
   getIdsStatus: { (req: any, res: any): void }
   getDirectories: { (req: any, res: any): void }
+  getFile: { (req: any, res: any): void }
 }
 
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
@@ -164,6 +166,34 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
         status_code: 200,
         return: resData
       });
+    } catch (ex) {
+      console.log(ex);
+      return res.status(400).send(ex);
+    }
+  },
+  async getFile(req, res) {
+    try {
+      let user = GetAuthUser(req);
+      let path = req.query.path;
+      let job_id = req.params.job_id;
+      let resData = await QueueRecordDetailService.getFile(path, job_id, user.id);
+      if (resData.mime != false) {
+        res.contentType(resData.mime);
+      } else {
+        res.contentType(resData.full_path);
+      }
+      console.log(marked);
+      switch (resData.mime) {
+        case 'text/markdown':
+          res.contentType("text/html");
+          return res.send(marked.parse(resData.data.toString()));
+      }
+      res.send(resData.data);
+      // return res.send({
+      //   status: 'success',
+      //   status_code: 200,
+      //   return: resData
+      // });
     } catch (ex) {
       console.log(ex);
       return res.status(400).send(ex);

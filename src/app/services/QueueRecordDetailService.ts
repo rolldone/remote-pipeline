@@ -3,6 +3,8 @@ import { UpdateStatement } from "@root/tool/SqlBricks/sql-bricks";
 import { Knex } from "knex";
 import SqlService from "./SqlService";
 import dirToJson from 'dir-to-json';
+import mimeType from 'mime-types';
+import { readFileSync } from "fs";
 
 declare let db: Knex;
 
@@ -322,6 +324,28 @@ export default {
       // If you prefer, you can also use promises
       let resData = await dirToJson(process.cwd() + "/storage/app/jobs/" + job_id + "/download");
       return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  getFile: async function (path: string, job_id: string, user_id: number): Promise<{
+    mime: string | boolean
+    data: Buffer,
+    full_path: string
+  }> {
+    try {
+      let queueDetailData = await this.getQueueRecordDetailByJobIdAndUserId(job_id, user_id);
+      if (queueDetailData == null) {
+        throw new Error("Job is not found!");
+      }
+      // If you prefer, you can also use promises
+      let _mimeType = mimeType.lookup(process.cwd() + "/storage/app/jobs/" + job_id + "/download/" + path);
+      let _file = readFileSync(process.cwd() + "/storage/app/jobs/" + job_id + "/download/" + path);
+      return {
+        mime: _mimeType,
+        data: _file,
+        full_path: process.cwd() + "/storage/app/jobs/" + job_id + "/download/" + path
+      }
     } catch (ex) {
       throw ex;
     }
