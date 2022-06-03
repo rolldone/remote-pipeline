@@ -17,6 +17,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getQueueRecordDetail: { (req: any, res: any): void }
   getDisplayProcess: { (req: any, res: any): void }
   getIdsStatus: { (req: any, res: any): void }
+  getDirectories: { (req: any, res: any): void }
 }
 
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
@@ -143,6 +144,21 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       props.ids = JSON.parse(props.ids || '[]' as any);
       props.user_id = user.id;
       let resData = await QueueRecordDetailService.getQueueIdsStatus(props);
+      return res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      console.log(ex);
+      return res.status(400).send(ex);
+    }
+  },
+  async getDirectories(req, res) {
+    try {
+      let user = GetAuthUser(req);
+      let job_id = req.params.job_id;
+      let resData = await QueueRecordDetailService.getDirectories(job_id, user.id);
       return res.send({
         status: 'success',
         status_code: 200,

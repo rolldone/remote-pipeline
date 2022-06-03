@@ -50,9 +50,9 @@
 - [QueueScheduler] : Create add new queue as next periode "For One time scheduler only" [Pending]
 - [User] : Create personal access token [Alpha]
 - [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [OnProgress]
+- [QueueRecordDetail] : Display queue process for guest with id job as token with expired [OnProgress]
 
 ## Phase 2
-- [QueueRecordDetail] : Display queue process for guest with id job as token with expired [Waiting]
 - [User] : Manage join group share project [Waiting]
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 
 - [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Waiting]

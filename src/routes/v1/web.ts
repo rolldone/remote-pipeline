@@ -115,6 +115,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
     });
     self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {
+      route.get("/directories/:job_id", "xhr.queue_record_detail.directories", [], QueueRecordDetailController.binding().getDirectories);
       route.get("/queue-record-details", "xhr.queue_record_detail.queue_record_details", [], QueueRecordDetailController.binding().getQueueRecordDetails);
       route.get("/ids/status", "xhr.queue_record_detail.ids.status", [], QueueRecordDetailController.binding().getIdsStatus);
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);

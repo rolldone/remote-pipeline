@@ -19,7 +19,7 @@ const PipelineLoop = async function (props: {
   queue_record_id: number
   host_id: number
   host_data: any,
-  job_id: any,
+  job_id: string,
   extra: any
 }) {
   let {

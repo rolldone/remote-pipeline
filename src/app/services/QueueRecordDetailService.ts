@@ -2,6 +2,8 @@ import sqlbricks from "@root/tool/SqlBricks";
 import { UpdateStatement } from "@root/tool/SqlBricks/sql-bricks";
 import { Knex } from "knex";
 import SqlService from "./SqlService";
+import dirToJson from 'dir-to-json';
+
 declare let db: Knex;
 
 const STATUS = {
@@ -135,7 +137,7 @@ export default {
       throw ex;
     }
   },
-  async getQueueRecordDetailByJobId(job_id: number, queue_record_id: number) {
+  async getQueueRecordDetailByJobId(job_id: string, queue_record_id: number) {
     try {
       let query_record_detail = preSelectQuery();
       query_record_detail
@@ -151,6 +153,35 @@ export default {
       query_record_detail.where({
         "qrec_detail.job_id": job_id,
         "qrec_detail.queue_record_id": queue_record_id
+      });
+      // query_record_detail.limit(1);
+      let queryString = query_record_detail.toString();
+      console.log("query :: ", queryString);
+      let res_data_record_detail = await SqlService.selectOne(queryString);
+      // If null
+      if (res_data_record_detail == null) return null;
+      res_data_record_detail = transformColumn(res_data_record_detail);
+      return res_data_record_detail;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getQueueRecordDetailByJobIdAndUserId(job_id: string, user_id: number) {
+    try {
+      let query_record_detail = preSelectQuery();
+      query_record_detail
+        .leftJoin("qrec").on({
+          "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
+        .leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        })
+      query_record_detail.where({
+        "qrec_detail.job_id": job_id,
+        "exe.user_id": user_id
       });
       // query_record_detail.limit(1);
       let queryString = query_record_detail.toString();
@@ -277,6 +308,19 @@ export default {
       query_record_detail.where(sqlbricks.in("qrec_detail.id", props.ids || []));
       query_record_detail.where("exe.user_id", props.user_id);
       let resData = await SqlService.select(query_record_detail.toString());
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getDirectories(job_id: string, user_id: number) {
+    try {
+      let queueDetailData = await this.getQueueRecordDetailByJobIdAndUserId(job_id, user_id);
+      if (queueDetailData == null) {
+        throw new Error("Job is not found!");
+      }
+      // If you prefer, you can also use promises
+      let resData = await dirToJson(process.cwd() + "/storage/app/jobs/" + job_id + "/download");
       return resData;
     } catch (ex) {
       throw ex;

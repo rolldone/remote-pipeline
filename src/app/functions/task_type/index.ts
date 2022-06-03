@@ -19,7 +19,7 @@ export interface TaskTypeInterface {
   execution: any
   resolve: Function
   rejected: Function
-  job_id: number
+  job_id: string
   extra_var: any
 }
 

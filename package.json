@@ -61,6 +61,7 @@
     "db-migrate": "^0.11.13",
     "db-migrate-sqlite3": "^0.4.0",
     "death": "^1.1.0",
+    "dir-to-json": "0.0.3",
     "dotenv": "^8.2.0",
     "eventemitter2": "^6.4.4",
     "execa": "^6.1.0",
