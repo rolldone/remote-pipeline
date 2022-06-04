@@ -1,3 +1,4 @@
+import SafeValue from "@root/app/functions/base/SafeValue"
 import PipelineItemService from "@root/app/services/PipelineItemService"
 import BaseController from "@root/base/BaseController"
 
@@ -114,6 +115,7 @@ export default BaseController.extend<PipelineItemControllerInterface>({
       // limit: int
       let user = req.session.user;
       let props = req.query;
+      props.ids = props.ids == null ? null : JSON.parse(props.ids);
       let resData = await PipelineItemService.getPipelineItems({
         ...props,
         user_id: user.id
