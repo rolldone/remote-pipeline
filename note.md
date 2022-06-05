@@ -49,7 +49,7 @@
 - [Queue] : Create link for call as api service [Alpha]
 - [QueueScheduler] : Create add new queue as next periode "For One time scheduler only" [Pending]
 - [User] : Create personal access token [Alpha]
-- [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [OnProgress]
+- [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [alpha]
 - [QueueRecordDetail] : Display queue process with id job [Alpha]
 
 ## Phase 2
