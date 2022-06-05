@@ -16,12 +16,13 @@ const ParallelExecutionWorker = function (props: ParallelExecutionWorkerInterfac
         host_data,
         host_id,
         queue_record_id,
-        extra
+        extra,
+        job_id
       } = job.data;
-      let job_id = job.id;
-      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id, extra });
+
+      let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id: job_id, extra });
       if (resPipelineLoop == false) {
-        console.log(`Job ${job_id} is now canceled; Because some requirement data get null. Maybe some data get deleted?`);
+        console.log(`Job ${job_id} alias from ${job.id} is now canceled; Because some requirement data get null. Maybe some data get deleted?`);
       }
     } catch (ex) {
       console.log(`ParallelExecutionWorker - ${props.queue_name} - ex :: `, ex);
@@ -34,19 +35,50 @@ const ParallelExecutionWorker = function (props: ParallelExecutionWorkerInterfac
     connection: global.redis_bullmq
   });
 
+  queueEvents.on('drained', () => {
+    // Queue is drained, no more jobs left
+    console.log(`Queue ${props.queue_name} is drained, no more jobs left`);
+  });
+
   queueEvents.on('active', (job) => {
-    console.log(`Job ${job.id} is now active; previous status was ${job.id}`);
+    let {
+      host_data,
+      host_id,
+      queue_record_id,
+      job_id,
+      extra
+    } = job.data;
+
+    console.log(`Job ${job_id} alias from ${job.id} is now active; previous status was ${job_id}`);
     onActive({ job });
   });
 
   queueEvents.on('completed', async (job) => {
-    console.log(`${job.id} has completed and returned ${job.returnvalue}`);
+    
+    let {
+      host_data,
+      host_id,
+      queue_record_id,
+      job_id,
+      extra
+    } = job.data;
+
+    console.log(`${job_id} alias from ${job.id} has completed and returned ${job.returnvalue}`);
     job.remove();
     onComplete({ job });
   });
 
   queueEvents.on('failed', async (job) => {
-    console.log(`${job.id} has failed with reason ${job.failedReason}`);
+
+    let {
+      host_data,
+      host_id,
+      queue_record_id,
+      job_id,
+      extra
+    } = job.data;
+
+    console.log(`${job_id} alias from ${job.id} has failed with reason ${job.failedReason}`);
     onFailed({ job });
   });
 

@@ -1,9 +1,10 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Job } from "bullmq";
-import QueueRecordDetailService from "../services/QueueRecordDetailService";
-import { QueueRecordStatus } from "../services/QueueRecordService";
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
+import QueueRecordService, { QueueRecordStatus } from "../services/QueueRecordService";
 import QueueSceduleService from "../services/QueueSceduleService";
 import { Knex } from "knex";
+import DeleteQueueItem from "./DeleteQueueItem";
 
 declare let db: Knex;
 
@@ -13,34 +14,40 @@ export const onComplete = async (props: {
   let {
     job
   } = props;
-  let queryUpdate = sqlbricks.update("queue_record_details", {
+
+  console.log("Job onComplete :: ", job)
+
+  let {
+    job_id
+  } = job.data;
+  let qurateUpdateData: Array<QueueRecordDetailInterface> = await QueueRecordDetailService.updateQueueRecordDetailWhere({
     status: QueueRecordDetailService.STATUS.COMPLETED
-  }).where({
-    job_id: job.id
-  }).toString();
-  await db.raw(queryUpdate.toString());
+  }, {
+    job_id: job_id
+  });
+
   // If last process
   if ((job.data.total - 1) == job.data.index) {
     let _schedule_type = job.data.schedule_type;
     switch (_schedule_type) {
       case QueueSceduleService.schedule_type.REPEATABLE:
-        queryUpdate = sqlbricks.update("queue_records", {
-          status: QueueRecordStatus.READY
-        }).where({
+        qurateUpdateData = await QueueRecordService.updateQueueRecord({
+          status: QueueRecordStatus.READY,
           id: job.data.queue_record_id
-        }).toString();
+        });
         break;
       case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
       default:
-        queryUpdate = sqlbricks.update("queue_records", {
-          status: QueueRecordStatus.COMPLETED
-        }).where({
-          id: job.data.queue_record_id
-        }).toString();
+        await DeleteQueueItem({
+          index: 0,
+          length: 1,
+          queue_record_id: qurateUpdateData[0].qrec_id,
+          queue_record_detail_id: qurateUpdateData[0].id,
+          queue_record_status: QueueRecordService.STATUS.COMPLETED,
+          queue_record_detail_status: QueueRecordDetailService.STATUS.COMPLETED
+        });
         break;
     }
-    console.log("queryUpdate :: ", queryUpdate.toString());
-    await db.raw(queryUpdate.toString());
   }
 }
 
@@ -50,12 +57,19 @@ export const onActive = (props: {
   let {
     job
   } = props;
+
+  console.log("Job onActive :: ", job)
+
+  let {
+    job_id
+  } = job.data;
+
   // Use set timeout for waiting complete on conCOmplete event on repeatable queue
   setTimeout(async () => {
     let queryUpdate = sqlbricks.update("queue_record_details", {
       status: QueueRecordDetailService.STATUS.RUNNING
     }).where({
-      job_id: job.id
+      job_id: job_id
     }).toString();
     await db.raw(queryUpdate.toString());
   }, 3000);
@@ -68,32 +82,40 @@ export const onFailed = async (props: {
   let {
     job
   } = props;
-  let queryUpdate = sqlbricks.update("queue_record_details", {
+  let queryUpdate = null;
+
+  let {
+    job_id
+  } = job.data;
+
+  let qurateUpdateData: Array<QueueRecordDetailInterface> = await QueueRecordDetailService.updateQueueRecordDetailWhere({
     status: QueueRecordDetailService.STATUS.FAILED
-  }).where({
-    job_id: job.id
-  }).toString();
-  await db.raw(queryUpdate.toString());
+  }, {
+    job_id: job_id
+  });
+
+  await DeleteQueueItem({
+    index: 0,
+    length: 1,
+    queue_record_id: qurateUpdateData[0].qrec_id,
+    queue_record_detail_id: qurateUpdateData[0].id,
+    queue_record_status: null,
+    queue_record_detail_status: QueueRecordDetailService.STATUS.FAILED
+  });
+
   // If last process
   if ((job.data.total - 1) == job.data.index) {
     let _schedule_type = job.data.schedule_type;
     switch (_schedule_type) {
       case QueueSceduleService.schedule_type.REPEATABLE:
-        queryUpdate = sqlbricks.update("queue_records", {
-          status: QueueRecordStatus.FAILED
-        }).where({
-          id: job.data.queue_record_id
-        }).toString();
-        break;
       case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
       default:
-        queryUpdate = sqlbricks.update("queue_records", {
-          status: QueueRecordStatus.FAILED
-        }).where({
-          id: job.data.queue_record_id
-        }).toString();
+
+        // qurateUpdateData = await QueueRecordService.updateQueueRecord({
+        //   status: QueueRecordStatus.FAILED,
+        //   id: job.data.queue_record_id
+        // });
         break;
     }
-    await db.raw(queryUpdate.toString());
   }
 }

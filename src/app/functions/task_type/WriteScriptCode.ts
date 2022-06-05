@@ -67,14 +67,14 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
             commandString: "Write File :: " + _write_to + "\n"
           })
         }
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+        masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
           parent: pipeline_task.temp_id
         })
       } catch (ex) {
         console.log("sftp - ex :: ", ex);
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+        masterData.saveData("data_pipeline_" + job_id + "_error", {
           pipeline_task_id: pipeline_task.id,
           command: command,
           parent: pipeline_task.temp_id
@@ -82,7 +82,7 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
       }
     };
 
-    masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, async (props) => {
+    masterData.setOnListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         console.log("props.parent ", props.parent);
         console.log("_parent_order_temp_ids[a]", _parent_order_temp_ids[a]);

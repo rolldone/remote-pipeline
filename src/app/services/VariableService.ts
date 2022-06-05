@@ -3,7 +3,7 @@ import { Knex } from "knex";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
-export interface variable {
+export interface variableInterface {
   id?: number
   pipeline_id?: number
   project_id?: number
@@ -14,8 +14,13 @@ export interface variable {
   description?: string
 }
 
+export interface VariableServiceInterface extends variableInterface {
+  project_ids?: Array<number>
+  pipeline_ids?: Array<number>
+}
+
 export default {
-  async addVariable(props: variable): Promise<any> {
+  async addVariable(props: variableInterface): Promise<any> {
     try {
       let query = SqlBricks.insert("variables", {
         id: props.id,
@@ -36,7 +41,7 @@ export default {
       throw ex;
     }
   },
-  async updateVariable(props: variable): Promise<any> {
+  async updateVariable(props: variableInterface): Promise<any> {
     try {
       let query = SqlBricks.update("variables", {
         pipeline_id: props.pipeline_id,
@@ -97,7 +102,7 @@ export default {
       if (props.user_id) {
         query = query.where("vari.user_id", props.user_id);
       }
-      
+
       // Where segment
       if (props.pipeline_id != null) {
         query = query.where("pip.id", props.pipeline_id);
@@ -173,4 +178,40 @@ export default {
       throw ex;
     }
   },
+  async deleteFrom(props?: VariableServiceInterface) {
+    try {
+      SqlBricks.aliasExpansions({
+        "vari": "variables",
+        "pip": "pipelines",
+        "pro": "projects"
+      });
+
+      let selectQuery = SqlBricks.select(
+        "vari.id"
+      ).from("vari");
+
+      selectQuery = selectQuery.leftJoin("pip").on({
+        "pip.id": "vari.pipeline_id"
+      }).leftJoin("pro").on({
+        "pro.id": "vari.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pro.id", props.project_ids));
+      }
+
+      if (props.pipeline_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pip.id", props.pipeline_ids));
+      }
+
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM variables WHERE id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
+    } catch (ex) {
+      throw ex;
+    }
+  }
 }

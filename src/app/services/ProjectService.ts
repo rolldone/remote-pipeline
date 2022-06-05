@@ -1,7 +1,15 @@
 
 import Sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import ExecutionService from "./ExecutionService";
+import PipelineItemService from "./PipelineItemService";
+import PipelineService from "./PipelineService";
+import PipelineTaskService from "./PipelineTaskService";
+import QueueRecordDetailService from "./QueueRecordDetailService";
+import QueueRecordService from "./QueueRecordService";
+import QueueSceduleService from "./QueueSceduleService";
 import SqlService from "./SqlService";
+import VariableService from "./VariableService";
 declare let db: Knex;
 
 export interface ProjectInterface {
@@ -91,12 +99,41 @@ export default {
         ...props.ids
       ];
       _in = _in.join(',');
+
       let query = Sqlbricks.delete('projects').where(Sqlbricks.in("id", _in)).where("user_id", props.user_id);
+
+      if (props.force_deleted == true) {
+        let resDeleteQueueRecordDetail = await QueueRecordDetailService.deleteFrom({
+          project_ids: props.ids
+        })
+        let resDeleteQueueSchedule = await QueueSceduleService.deleteFrom({
+          project_ids: props.ids
+        })
+        let resDeleteQueueRecord = await QueueRecordService.deleteFrom({
+          project_ids: props.ids
+        })
+        let resDeleteExecution = await ExecutionService.deleteFrom({
+          project_ids: props.ids
+        })
+        let resDeletePipelineTask = await PipelineTaskService.deleteFrom({
+          project_ids: props.ids
+        });
+        let resDeleteVariable = await VariableService.deleteFrom({
+          project_ids: props.ids
+        });
+        let resDeletePipelineItem = await PipelineItemService.deleteFrom({
+          project_ids: props.ids
+        });
+        let pipeLineExecution = await PipelineService.deleteFrom({
+          project_ids: props.ids
+        })
+      }
+
       let resData = await SqlService.smartDelete(query.toString(), props.force_deleted || false);
       return {
         status: 'success',
         status_code: 200,
-        return: resData
+        return: []
       }
     } catch (ex) {
       throw ex;

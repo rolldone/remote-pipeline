@@ -1,3 +1,5 @@
+import BoolearParse from "@root/app/functions/base/BoolearParse"
+import SafeValue from "@root/app/functions/base/SafeValue"
 import ExecutionService from "@root/app/services/ExecutionService"
 import BaseController from "@root/base/BaseController"
 
@@ -68,7 +70,7 @@ export default BaseController.extend<ExecutionControllerInterface>({
       ids = JSON.parse(ids || '[]');
       let resData = await ExecutionService.deleteExecutions({
         ids,
-        force_deleted: req.body.force_deleted || false
+        force_deleted: BoolearParse(SafeValue(req.body.force_deleted, "false"))
       });
       res.send({
         status: 'success',

@@ -16,6 +16,13 @@ export interface QueueItemInterface {
   host_id?: any
 }
 
+export interface QueueScheduleServiceInterface extends QueueScheduleInterface {
+  project_ids?: Array<number>
+  pipeline_ids?: Array<number>
+  execution_ids?: Array<number>
+  queue_record_ids?: Array<number>
+}
+
 const preSelect = () => {
   SqlBricks.aliasExpansions({
     'q_sch': "queue_schedules",
@@ -150,6 +157,56 @@ export default {
       _in = _in.join(',');
       let resData = await SqlService.delete(SqlBricks.delete('queue_schedules').where(SqlBricks.in("id", _in)).toString());
       return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteFrom(props: QueueScheduleServiceInterface) {
+    try {
+      SqlBricks.aliasExpansions({
+        'q_sch': "queue_schedules",
+        'qrec': "queue_records",
+        'exe': "executions",
+        'pip': "pipelines",
+        'pro': "projects"
+      });
+
+      let selectQuery = SqlBricks.select(
+        "q_sch.queue_record_id"
+      ).from("q_sch");
+
+      selectQuery = selectQuery.leftJoin("qrec").on({
+        "q_sch.queue_record_id": "qrec.id"
+      }).leftJoin("exe").on({
+        "exe.id": "q_sch.execution_id"
+      }).leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      }).leftJoin("pro").on({
+        "pro.id": "exe.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pro.id", props.project_ids));
+      }
+
+      if (props.pipeline_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pip.id", props.pipeline_ids));
+      }
+
+      if (props.execution_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("exe.id", props.execution_ids));
+      }
+
+      if (props.queue_record_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("qrec.id", props.queue_record_ids));
+      }
+
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM queue_schedules WHERE queue_record_id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
     } catch (ex) {
       throw ex;
     }

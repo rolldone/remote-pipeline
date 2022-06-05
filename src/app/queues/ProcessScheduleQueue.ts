@@ -9,7 +9,7 @@ export default function (props) {
     connection: global.redis_bullmq,
     // prefix: "bullmq_",
     defaultJobOptions: {
-      removeOnComplete: true, removeOnFail: 1000
+      // removeOnComplete: true, removeOnFail: 1000
     }
   });
   return _queue;

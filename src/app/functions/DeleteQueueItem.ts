@@ -4,56 +4,72 @@ import ProcessScheduleQueue from "../queues/ProcessScheduleQueue";
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
 import QueueRecordService from "../services/QueueRecordService";
 import QueueSceduleService from "../services/QueueSceduleService";
+import SafeValue from "./base/SafeValue";
 
 const DeleteQueueItem = async function (props: {
-  queue_record_detail_id: any
+  queue_record_id?: number
+  queue_record_detail_id?: number
   index?: number
-  length?: number
+  length?: number,
+  queue_record_status: number,
+  queue_record_detail_status: number
 }) {
   try {
     let {
+      queue_record_id,
       queue_record_detail_id,
       index,
-      length
+      length,
+      queue_record_status,
+      queue_record_detail_status
     } = props;
 
     let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetail({
       id: queue_record_detail_id
     })
 
+
     if (index == length - 1) {
       let queueRecordData = await QueueRecordService.updateQueueRecord({
-        id: res_data_record_detail.qrec_id,
-        status: QueueRecordService.STATUS.STAND_BY
+        id: queue_record_id,
+        status: SafeValue(queue_record_status, null)
       })
     }
 
+    if (res_data_record_detail == null) {
+      return;
+    }
+    
     let _processQueue: Queue = null;
     let resDataUpdate = null;
-    console.log("res_data_record_detail.qrec_data :: ", res_data_record_detail.qrec_type)
-    let jobs = null;
+    console.log("DeleteQueueItem - queue_record_details data :: ", res_data_record_detail.qrec_type)
+
     switch (res_data_record_detail.qrec_type) {
       case QueueRecordService.TYPE.INSTANT:
         _processQueue = ProcessQueue({
           queue_name: res_data_record_detail.queue_name
         })
-        _processQueue.remove(res_data_record_detail.job_id);
-        // jobs = await _processQueue.getRepeatableJobs();
-        // for (let i = 0; i < jobs.length; i++) {
-        //   const job = jobs[i];
-        //   if (res_data_record_detail.job_id == job.id) {
-        //     await _processQueue.removeRepeatableByKey(job.key);
-        //     break;
-        //   }
-        // }
+        // _processQueue.remove(res_data_record_detail.job_id);
+        let jobs: Array<Job> = await _processQueue.getJobs();
+
+        for (let i = 0; i < jobs.length; i++) {
+          const job = jobs[i];
+          if (res_data_record_detail.job_id == job.id) {
+            console.log("DeleteQueueItem - found get job id to deleted :: ", job.id);
+            await job.remove();
+            break;
+          }
+        }
+
         resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
           id: queue_record_detail_id,
           queue_record_id: res_data_record_detail.qrec_id,
           queue_name: res_data_record_detail.queue_name,
           job_id: res_data_record_detail.job_id,
           job_data: res_data_record_detail.data,
-          status: QueueRecordDetailService.STATUS.STOPPED
+          status: SafeValue(queue_record_detail_status, QueueRecordDetailService.STATUS.STOPPED)
         });
+        
         break;
       case QueueRecordService.TYPE.SCHEDULE:
         switch (res_data_record_detail.qrec_sch_schedule_type) {
@@ -61,15 +77,16 @@ const DeleteQueueItem = async function (props: {
             _processQueue = ProcessQueue({
               queue_name: res_data_record_detail.queue_name
             })
-            _processQueue.remove(res_data_record_detail.job_id);
-            // jobs = await _processQueue.getRepeatableJobs();
-            // for (let i = 0; i < jobs.length; i++) {
-            //   const job = jobs[i];
-            //   if (res_data_record_detail.job_id == job.id) {
-            //     await _processQueue.removeRepeatableByKey(job.key);
-            //     break;
-            //   }
-            // }
+            // _processQueue.remove(res_data_record_detail.job_id);
+            let re_jobs = await _processQueue.getRepeatableJobs();
+            for (let i = 0; i < re_jobs.length; i++) {
+              const job = re_jobs[i];
+              if (res_data_record_detail.job_id == job.id) {
+                console.log("DeleteQueueItem ::: found one time schedule job to deleted :: ", job);
+                await _processQueue.removeRepeatableByKey(job.key);
+                break;
+              }
+            }
             resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,
@@ -84,10 +101,11 @@ const DeleteQueueItem = async function (props: {
               queue_name: res_data_record_detail.queue_name
             })
             let _resRepeatable = await _processQueue.getRepeatableJobs();
-            jobs = await _processQueue.getRepeatableJobs();
-            for (let i = 0; i < jobs.length; i++) {
-              const job = jobs[i];
+            let re_jobs_re = await _processQueue.getRepeatableJobs();
+            for (let i = 0; i < re_jobs_re.length; i++) {
+              const job = re_jobs_re[i];
               if (res_data_record_detail.job_id == job.id) {
+                console.log("DeleteQueueItem ::: found repeatable job to deleted :: ", job);
                 await _processQueue.removeRepeatableByKey(job.key);
                 break;
               }
@@ -98,7 +116,7 @@ const DeleteQueueItem = async function (props: {
               queue_name: res_data_record_detail.queue_name,
               job_id: res_data_record_detail.job_id,
               job_data: res_data_record_detail.data,
-              status: QueueRecordDetailService.STATUS.STOPPED
+              status: SafeValue(queue_record_detail_status, QueueRecordDetailService.STATUS.STOPPED)
             });
             break;
         }

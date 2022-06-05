@@ -41,7 +41,15 @@ const PipelineLoop = async function (props: {
 
     let queue_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId(job_id, queue_record.id);
 
+    console.log("job_id :: ", job_id);
+    console.log("queue_record_id :: ", queue_record.id);
+    console.log("queue_record_detail :: ", queue_record_detail);
+    
     if (queue_record_detail.status == QueueRecordDetailService.STATUS.STOPPED) {
+      return false;
+    }
+
+    if (queue_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED) {
       return false;
     }
 
@@ -197,13 +205,19 @@ const PipelineLoop = async function (props: {
           let pipeline_task_id = null;
           let command_history = "";
           let debounceee: DebouncedFunc<any> = null;
-          masterData.setOnListener("data_pipeline_" + _pipeline_item.id + "_error", (props) => {
+          masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
             pipeline_task_id = props.pipeline_task_id;
             socket.write("echo " + props.message + "\r");
             socket.write("echo error-error\r");
+
+            // Remove the listener
+            masterData.removeListener("write_pipeline_" + job_id);
+            masterData.removeListener("data_pipeline_" + job_id);
+            masterData.removeListener("data_pipeline_" + job_id + "_error");
+
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
-          masterData.setOnListener("data_pipeline_" + _pipeline_item.id, (props) => {
+          masterData.setOnListener("data_pipeline_" + job_id, (props) => {
             who_parent = props.parent;
             socket.write(props.command);
             pipeline_task_id = props.pipeline_task_id;
@@ -273,7 +287,7 @@ const PipelineLoop = async function (props: {
             }
             if (_isDone == true) {
               debounceee = debounce((_command_history: string, dataString: string) => {
-                masterData.saveData("write_pipeline_" + _pipeline_item.id, {
+                masterData.saveData("write_pipeline_" + job_id, {
                   parent: who_parent,
                   data: _command_history
                 })
@@ -281,6 +295,9 @@ const PipelineLoop = async function (props: {
                 if (lastStartParent == who_parent) {
                   console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
                   console.log("resolveDone::", resolveDone);
+                  masterData.removeListener("write_pipeline_" + job_id);
+                  masterData.removeListener("data_pipeline_" + job_id);
+                  masterData.removeListener("data_pipeline_" + job_id + "_error");
                   resolveDone();
                 }
               }, 2000);
@@ -288,7 +305,7 @@ const PipelineLoop = async function (props: {
             } else {
               debounceee = debounce((_command_history: string, dataString: string) => {
                 socket.write('echo done-done\r');
-              }, 4000);
+              }, 2000);
               debounceee(command_history, data.toString());
             }
           });

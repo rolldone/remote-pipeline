@@ -39,7 +39,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
 
       if (execution.branch == null) {
         // Ignore it
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+        masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
           parent: pipeline_task.temp_id
@@ -82,7 +82,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
             break;
           case data.includes('total size'):
             ptyProcess.write('exit' + '\r')
-            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+            masterData.saveData("data_pipeline_" + job_id, {
               pipeline_task_id: pipeline_task.id,
               command: command,
               parent: pipeline_task.temp_id
@@ -91,7 +91,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
           case data.includes('No such file or directory'):
           case data.includes('rsync error:'):
             ptyProcess.write('exit' + '\r')
-            masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+            masterData.saveData("data_pipeline_" + job_id + "_error", {
               pipeline_task_id: pipeline_task.id,
               command: command,
               parent: pipeline_task.temp_id
@@ -131,7 +131,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
     }
 
     // console.log("command :::: ", command);
-    masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, async (props) => {
+    masterData.setOnListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           processWait();

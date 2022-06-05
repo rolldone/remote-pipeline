@@ -15,7 +15,8 @@ export default function (props: TaskTypeInterface) {
     socket,
     resolve,
     rejected,
-    extra_var
+    extra_var,
+    job_id
   } = props;
   try {
     let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
@@ -24,11 +25,11 @@ export default function (props: TaskTypeInterface) {
 
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
-    masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
+    masterData.setOnListener("write_pipeline_" + job_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           console.log("Basic command ::  Called ");
-          masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+          masterData.saveData("data_pipeline_" + job_id, {
             pipeline_task_id: pipeline_task.id,
             command: command,
             parent: pipeline_task.temp_id

@@ -1,6 +1,15 @@
 import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
+import BoolearParse from "../functions/base/BoolearParse";
+import SafeValue from "../functions/base/SafeValue";
+import ExecutionService from "./ExecutionService";
+import PipelineItemService from "./PipelineItemService";
+import PipelineTaskService from "./PipelineTaskService";
+import QueueRecordDetailService from "./QueueRecordDetailService";
+import QueueRecordService from "./QueueRecordService";
+import QueueSceduleService from "./QueueSceduleService";
 import SqlService from "./SqlService";
+import VariableService from "./VariableService";
 
 declare let db: Knex;
 
@@ -16,6 +25,7 @@ export interface PipelineServiceInterface {
   from_provider?: string
   force_deleted?: boolean
   ids?: Array<number>
+  project_ids?: Array<number>
 }
 
 const returnFactoryColumn = (props: PipelineServiceInterface) => {
@@ -116,9 +126,65 @@ export default {
         ...props.ids
       ];
       _in = _in.join(',');
+
       let query = Sqlbricks.delete('pipelines').where(Sqlbricks.in("id", _in)).toString();
+
+      if (BoolearParse(SafeValue(props.force_deleted, "false")) == true) {
+        let resDeleteQueueRecordDetail = await QueueRecordDetailService.deleteFrom({
+          pipeline_ids: props.ids
+        })
+        let resDeleteQueueSchedule = await QueueSceduleService.deleteFrom({
+          pipeline_ids: props.ids
+        })
+        let resDeleteQueueRecord = await QueueRecordService.deleteFrom({
+          pipeline_ids: props.ids
+        })
+        let resDeleteExecution = await ExecutionService.deleteFrom({
+          pipeline_ids: props.ids
+        })
+        let resDeletePipelineTask = await PipelineTaskService.deleteFrom({
+          pipeline_ids: props.ids
+        });
+        let resDeleteVariable = await VariableService.deleteFrom({
+          pipeline_ids: props.ids
+        });
+        let resDeletePipelineItem = await PipelineItemService.deleteFrom({
+          pipeline_ids: props.ids
+        });
+      }
+
       let deleteUser = await SqlService.smartDelete(query.toString(), props.force_deleted || false);
-      return deleteUser;
+
+      return null;//deleteUser;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteFrom(props?: PipelineServiceInterface) {
+    try {
+      Sqlbricks.aliasExpansions({
+        "pip": "pipelines",
+        'pro': "projects"
+      });
+
+      let selectQuery = Sqlbricks.select(
+        "pip.id"
+      ).from("pip");
+
+      selectQuery = selectQuery.leftJoin("pro").on({
+        "pro.id": "pip.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(Sqlbricks.in("pro.id", props.project_ids));
+      }
+
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM pipelines WHERE id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
     } catch (ex) {
       throw ex;
     }

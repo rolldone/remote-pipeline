@@ -1,7 +1,10 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import BoolearParse from "../functions/base/BoolearParse";
 import SafeValue from "../functions/base/SafeValue";
 import CreateQueue from "../functions/CreateQueue";
+import QueueRecordDetailService from "./QueueRecordDetailService";
+import QueueSceduleService from "./QueueSceduleService";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
@@ -38,6 +41,12 @@ export interface QueueRecordServiceInterface extends QueueRecordInterface {
   offset?: number
   user_id?: number
   with_deleted?: boolean
+
+  force_deleted?: boolean
+  // Many to many relation
+  project_ids?: Array<number>
+  pipeline_ids?: Array<number>
+  execution_ids?: Array<number>
 }
 
 export const QueueRecordType = {
@@ -129,18 +138,23 @@ export default {
       throw ex;
     }
   },
-  async deleteQueueRecord(ids: Array<number>) {
+  async deleteQueueRecord(props: QueueRecordServiceInterface) {
     try {
-      // let _in: Array<any> | string = [
-      //   ...ids
-      // ];
-      // _in = _in.join(',');
-      let resData = await SqlService.delete(sqlbricks.delete('queue_records').where(sqlbricks.in("id", ids)).toString());
-      return {
-        status: 'success',
-        status_code: 200,
-        return: resData
+
+      let _force_deleted = BoolearParse(SafeValue(props.force_deleted, "false"));
+
+      if (_force_deleted == true) {
+        let resDeleteQueueRecordDetail = await QueueRecordDetailService.deleteFrom({
+          queue_record_ids: props.ids
+        })
+        let resDeleteQueueSchedule = await QueueSceduleService.deleteFrom({
+          queue_record_ids: props.ids
+        })
       }
+
+      let resData = await SqlService.smartDelete(sqlbricks.delete('queue_records').where(sqlbricks.in("id", props.ids)).toString(), _force_deleted);
+
+      return null;
     } catch (ex) {
       throw ex;
     }
@@ -291,6 +305,49 @@ export default {
       let resData = await SqlService.select(query.toString());
       return resData;
 
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteFrom(props?: QueueRecordServiceInterface) {
+    try {
+      sqlbricks.aliasExpansions({
+        'qrec': "queue_records",
+        'exe': "executions",
+        'pip': "pipelines",
+        'pro': "projects"
+      });
+
+      let selectQuery = sqlbricks.select(
+        "qrec.id"
+      ).from("qrec");
+
+      selectQuery = selectQuery.leftJoin("exe").on({
+        "exe.id": "qrec.execution_id"
+      }).leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      }).leftJoin("pro").on({
+        "pro.id": "exe.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("pro.id", props.project_ids));
+      }
+
+      if (props.pipeline_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("pip.id", props.pipeline_ids));
+      }
+
+      if (props.execution_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("exe.id", props.execution_ids));
+      }
+
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM queue_records WHERE id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
     } catch (ex) {
       throw ex;
     }

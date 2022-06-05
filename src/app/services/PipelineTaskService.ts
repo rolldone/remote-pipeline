@@ -28,6 +28,8 @@ export interface PipelineTaskServiceInterface extends PipelineTaskInterface {
   parent?: string
   order_by?: string
   force_deleted?: boolean
+  project_ids?: Array<number>
+  pipeline_ids?: Array<number>
 }
 
 export default {
@@ -246,4 +248,40 @@ export default {
       throw ex;
     }
   },
+  async deleteFrom(props?: PipelineTaskServiceInterface) {
+    try {
+      SqlBricks.aliasExpansions({
+        "pip_task": "pipeline_tasks",
+        "pip": "pipelines",
+        "pro": "projects"
+      });
+
+      let selectQuery = SqlBricks.select(
+        "pip_task.id"
+      ).from("pip_task");
+
+      selectQuery = selectQuery.leftJoin("pip").on({
+        "pip.id": "pip_task.pipeline_id"
+      }).leftJoin("pro").on({
+        "pro.id": "pip_task.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pro.id", props.project_ids));
+      }
+
+      if (props.pipeline_ids != null) {
+        selectQuery = selectQuery.where(SqlBricks.in("pip.id", props.pipeline_ids));
+      }
+
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM pipeline_tasks WHERE id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
+    } catch (ex) {
+      throw ex;
+    }
+  }
 }

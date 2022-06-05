@@ -1,3 +1,5 @@
+import BoolearParse from "@root/app/functions/base/BoolearParse"
+import SafeValue from "@root/app/functions/base/SafeValue"
 import PipelineService from "@root/app/services/PipelineService"
 import BaseController from "@root/base/BaseController"
 
@@ -47,7 +49,7 @@ export default BaseController.extend<PipelineControllerInterface>({
       ids = JSON.parse(ids || '[]');
       let resData = await PipelineService.deletePipelines({
         ids,
-        force_deleted: req.body.force_deleted || false
+        force_deleted: BoolearParse(SafeValue(req.body.force_deleted, "false"))
       });
       res.send({
         status: 'success',

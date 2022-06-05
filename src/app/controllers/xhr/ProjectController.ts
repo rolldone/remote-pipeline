@@ -1,3 +1,5 @@
+import BoolearParse from "@root/app/functions/base/BoolearParse"
+import SafeValue from "@root/app/functions/base/SafeValue"
 import GetAuthUser from "@root/app/functions/GetAuthUser"
 import ProjectService from "@root/app/services/ProjectService"
 import BaseController from "@root/base/BaseController"
@@ -70,7 +72,7 @@ export default BaseController.extend<ProjectControllerInterface>({
       let resData = await ProjectService.deleteProject({
         ids,
         user_id: user.id,
-        force_deleted: req.body.force_deleted
+        force_deleted: BoolearParse(SafeValue(req.body.force_deleted, "false"))
       });
       res.send({
         status: 'success',

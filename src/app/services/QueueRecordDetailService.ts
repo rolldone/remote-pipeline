@@ -57,6 +57,11 @@ export interface QueueRecordDetailServiceInterface extends QueueRecordDetailInte
   offset?: number
   user_id?: number,
   where?: any
+  // id many 2 many relation
+  project_ids?: Array<number>
+  pipeline_ids?: Array<number>
+  execution_ids?: Array<number>
+  queue_record_ids?: Array<number>
 }
 
 const preSelectQuery = () => {
@@ -125,6 +130,8 @@ export default {
       }
       if (props.order_by != null) {
         query_record_detail.orderBy(props.order_by);
+      } else {
+        query_record_detail.orderBy("qrec_detail.id DESC");
       }
       query_record_detail.limit(props.limit || 50);
       query_record_detail.offset((props.offset || 0) * (props.limit || 50));
@@ -270,15 +277,42 @@ export default {
       throw ex;
     }
   },
-  async updateQueueRecordDetailWhere(props: QueueRecordDetailInterface, props2: QueueRecordDetailServiceInterface) {
+  async updateQueueRecordDetailWhere(props: QueueRecordDetailInterface, propsCondition: QueueRecordDetailServiceInterface) {
     try {
       console.log("addQueueRecordDetail props :: ", props);
       let queryUpdate = sqlbricks.update("queue_record_details", {
         ...props
       });
-      queryUpdate.where(props2.where);
+      for (var key in propsCondition) {
+        queryUpdate = queryUpdate.where(key, propsCondition[key]);
+      }
       let _query = queryUpdate.toString();
       let resData = await SqlService.update(_query);
+
+      let _querSelect = preSelectQuery();
+      _querSelect = _querSelect
+        .leftJoin("qrec").on({
+          "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
+        .leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        })
+      for (var key in propsCondition) {
+        switch (key) {
+          case 'id':
+          case 'job_id':
+          case 'status':
+            _querSelect = _querSelect.where("qrec_detail." + key, propsCondition[key]);
+            break;
+          default:
+            _querSelect = _querSelect.where(key, propsCondition[key]);
+            break;
+        }
+      }
+      resData = await SqlService.select(_querSelect.toString());
       return resData;
     } catch (ex) {
       throw ex;
@@ -346,6 +380,57 @@ export default {
         data: _file,
         full_path: process.cwd() + "/storage/app/jobs/" + job_id + "/download/" + path
       }
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteFrom(props: QueueRecordDetailServiceInterface) {
+    try {
+      sqlbricks.aliasExpansions({
+        "qrec_detail": "queue_record_details",
+        'qrec': "queue_records",
+        'exe': "executions",
+        'pip': "pipelines",
+        'pro': "projects"
+      });
+
+      let selectQuery = sqlbricks.select(
+        "qrec_detail.queue_record_id"
+      ).from("qrec_detail");
+
+      selectQuery = selectQuery.leftJoin("qrec").on({
+        "qrec_detail.queue_record_id": "qrec.id"
+      }).leftJoin("exe").on({
+        "exe.id": "qrec.execution_id"
+      }).leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      }).leftJoin("pro").on({
+        "pro.id": "exe.project_id"
+      });
+
+      if (props.project_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("pro.id", props.project_ids));
+      }
+
+      if (props.pipeline_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("pip.id", props.pipeline_ids));
+      }
+
+      if (props.execution_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("exe.id", props.execution_ids));
+      }
+
+      if (props.queue_record_ids != null) {
+        selectQuery = selectQuery.where(sqlbricks.in("qrec.id", props.queue_record_ids));
+      }
+
+      console.log("kkkkkkkkkkkkkkkkkkkkkkkk", selectQuery.toString())
+      let resDeleteQuery = await SqlService.delete(`
+        DELETE FROM queue_record_details WHERE queue_record_id IN (
+          ${selectQuery.toString()}
+        )
+      `);
+      return resDeleteQuery;
     } catch (ex) {
       throw ex;
     }

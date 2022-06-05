@@ -2,11 +2,11 @@ import BaseController from "@root/base/BaseController"
 import { Knex } from "knex"
 import { Queue, Worker } from 'bullmq'
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData"
-import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService"
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "@root/app/services/QueueRecordDetailService"
 import CreateQueue from "@root/app/functions/CreateQueue"
-import CreateQueueItem from "@root/app/functions/CreateQueueItem"
 import DeleteQueueItem from "@root/app/functions/DeleteQueueItem"
 import SafeValue from "@root/app/functions/base/SafeValue"
+import QueueRecordService from "@root/app/services/QueueRecordService"
 
 export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueueItem?: { (req: any, res: any): void }
@@ -30,7 +30,9 @@ export default BaseController.extend<QueueControllerInterface>({
     try {
       let queue_record_detail_id = req.body.id;
       let res_data_record_detail = await DeleteQueueItem({
-        queue_record_detail_id
+        queue_record_detail_id,
+        queue_record_status: QueueRecordService.STATUS.STAND_BY,
+        queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
       });
       res.send(res_data_record_detail.queue_name + " with Job id : " + res_data_record_detail.job_id + " :: deleted!")
     } catch (ex) {
@@ -41,12 +43,20 @@ export default BaseController.extend<QueueControllerInterface>({
     try {
       let queue_record_detail_id = req.body.id;
 
-      let res_data_record_detail = await QueueRecordDetailService.getQueueRecordDetail({
+      let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetail({
         id: queue_record_detail_id
       })
       console.log('res_data_record_detail :: ', res_data_record_detail);
       let queue_name = "queue_" + res_data_record_detail.exe_process_mode + "_" + res_data_record_detail.qrec_id;
-      let resData = await CreateQueueItem({ queue_name, res_data_record_detail });
+      // let resData = await CreateQueueItem({ queue_name, res_data_record_detail });
+      let resData = await CreateQueue({
+        data: res_data_record_detail.data,
+        delay: res_data_record_detail.exe_delay,
+        id: res_data_record_detail.queue_record_id,
+        process_mode: res_data_record_detail.exe_process_mode,
+        process_limit: res_data_record_detail.exe_process_limit,
+        queue_name: res_data_record_detail.queue_name
+      })
       res.send({
         status: 'success',
         status_code: 200,
@@ -128,9 +138,22 @@ export default BaseController.extend<QueueControllerInterface>({
         await DeleteQueueItem({
           index,
           length: _data_queue_record_details.length,
-          queue_record_detail_id: res_data_record_detail.id
+          queue_record_id: id,
+          queue_record_detail_id: res_data_record_detail.id,
+          queue_record_status: QueueRecordService.STATUS.STAND_BY,
+          queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
         });
       });
+      if (_data_queue_record_details.length == 0) {
+        await DeleteQueueItem({
+          index: 0,
+          length: 1,
+          queue_record_id: id,
+          queue_record_detail_id: null,
+          queue_record_status: QueueRecordService.STATUS.STAND_BY,
+          queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
+        });
+      }
       res.send("Deleted!");
     } catch (ex) {
       return res.status(400).send(ex);

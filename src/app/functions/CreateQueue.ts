@@ -29,7 +29,7 @@ const CreateQueue = function (props: {
     queue_name,
     delay
   } = props;
-  console.log("props :: ",props);
+  console.log("props :: ", props);
   return new Promise((resolve: Function, reject: Function) => {
     try {
 
@@ -83,9 +83,10 @@ const CreateQueue = function (props: {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
                   let idJObInstant = (Math.random() + 1).toString(36).substring(7);
-                  let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
+                  let theJOb = await _processQueue.add("host_" + idJObInstant + "_" + hostDataItem.ip_address, {
                     queue_record_id: id,
                     host_id: _hosts_datas[a].id,
+                    job_id: idJObInstant,
                     index: indexHostItem,
                     total: _total_host_item,
                     host_data: hostDataItem,
@@ -138,10 +139,12 @@ const CreateQueue = function (props: {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
                   let idJobSchedule = (Math.random() + 1).toString(36).substring(7);
+                  // Repeatable is different, you cannot keep fixed the jobId it still create new every loop
                   let theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
                     queue_record_id: id,
                     host_id: _hosts_datas[a].id,
                     index: indexHostItem,
+                    job_id: idJobSchedule,
                     total: _total_host_item,
                     host_data: hostDataItem,
                     schedule_type: qrec_sch_data.schedule_type,
@@ -152,6 +155,7 @@ const CreateQueue = function (props: {
                     delay: _timeout,
                     repeat: _repeat
                   });
+                  // console.log("theJOB ::: ", theJOb.);
                   // Insert to queue record detail 
                   let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
                     queue_record_id: id,

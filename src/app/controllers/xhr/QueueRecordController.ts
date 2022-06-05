@@ -1,3 +1,5 @@
+import BoolearParse from "@root/app/functions/base/BoolearParse";
+import SafeValue from "@root/app/functions/base/SafeValue";
 import GetAuthUser from "@root/app/functions/GetAuthUser";
 import QueueRecordService from "@root/app/services/QueueRecordService";
 import Sqlbricks from "@root/tool/SqlBricks";
@@ -46,8 +48,11 @@ const QueueRecordController = BaseController.extend<QueueRecordControllerInterfa
       // ids: JSON []
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
-      let resData = await QueueRecordService.deleteQueueRecord(ids);
-      return res.send({
+      let resData = await QueueRecordService.deleteQueueRecord({
+        ids,
+        force_deleted: BoolearParse(SafeValue(req.body.force_deleted, "false"))
+      });
+      res.send({
         status: 'success',
         status_code: 200,
         return: resData

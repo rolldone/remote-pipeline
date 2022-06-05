@@ -57,7 +57,7 @@ export default function (props: TaskTypeInterface) {
           command = `cd ${working_dir} && ${command}`;
         }
 
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id, {
+        masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
           parent: pipeline_task.temp_id
@@ -65,7 +65,7 @@ export default function (props: TaskTypeInterface) {
 
       } catch (ex) {
         console.log("sftp - ex :: ", ex);
-        masterData.saveData("data_pipeline_" + pipeline_task.pipeline_item_id + "_error", {
+        masterData.saveData("data_pipeline_" + job_id + "_error", {
           pipeline_task_id: pipeline_task.id,
           command: command,
           parent: pipeline_task.temp_id
@@ -74,7 +74,7 @@ export default function (props: TaskTypeInterface) {
     };
 
     // console.log("command :::: ", command);
-    masterData.setOnListener("write_pipeline_" + pipeline_task.pipeline_item_id, (props) => {
+    masterData.setOnListener("write_pipeline_" + job_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           processWait();
