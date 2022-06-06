@@ -2,7 +2,6 @@ import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
 import BoolearParse from "../functions/base/BoolearParse";
 import SafeValue from "../functions/base/SafeValue";
-import CreateQueue from "../functions/CreateQueue";
 import QueueRecordDetailService from "./QueueRecordDetailService";
 import QueueSceduleService from "./QueueSceduleService";
 import SqlService from "./SqlService";
@@ -89,6 +88,14 @@ const preSelectQuery = () => {
     'exe.delay as exe_delay'
   ).from("qrec");
   return query;
+}
+
+const returnFactoryColumn = (props: QueueRecordInterface) => {
+  let resQueueRecord = props;
+  resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
+  resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
+  resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids as any);
+  return resQueueRecord;
 }
 
 export default {
@@ -183,9 +190,7 @@ export default {
 
       let resQueueRecord = await SqlService.selectOne(query.toString());
       if (resQueueRecord == null) return null;
-      resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
-      resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
-      resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids);
+      resQueueRecord = returnFactoryColumn(resQueueRecord);
       return resQueueRecord;
     } catch (ex) {
       throw ex;
@@ -215,9 +220,7 @@ export default {
 
       let resQueueRecord = await SqlService.selectOne(query.toString());
       if (resQueueRecord == null) return null;
-      resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
-      resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
-      resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids);
+      resQueueRecord = returnFactoryColumn(resQueueRecord);
       return resQueueRecord;
     } catch (ex) {
       throw ex;
@@ -248,7 +251,8 @@ export default {
         query = query.where("qrec.execution_id", props.execution_id);
       }
 
-      if (props.with_deleted == null || props.with_deleted == false) {
+      let _with_deleted = BoolearParse(SafeValue(props.with_deleted, false));
+      if (_with_deleted == null || _with_deleted == false) {
         query = query.where(sqlbricks.isNull("exe.deleted_at"));
         query = query.where(sqlbricks.isNull("pip.deleted_at"));
       }
@@ -259,7 +263,6 @@ export default {
         query = query.orderBy("exe.id DESC");
       }
 
-
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));
 
@@ -267,10 +270,7 @@ export default {
 
       let resQueueRecords: Array<any> = await SqlService.select(_query);
       for (var a = 0; a < resQueueRecords.length; a++) {
-        resQueueRecords[a] = resQueueRecords[a] || null;
-        resQueueRecords[a].qrec_sch_data = JSON.parse(resQueueRecords[a].qrec_sch_data || '{}');
-        resQueueRecords[a].data = JSON.parse(resQueueRecords[a].data || '{}');
-        resQueueRecords[a].exe_host_ids = JSON.parse(resQueueRecords[a].exe_host_ids);
+        resQueueRecords[a] = returnFactoryColumn(resQueueRecords[a]);
       }
       return resQueueRecords;
     } catch (ex) {

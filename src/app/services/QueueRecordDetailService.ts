@@ -424,7 +424,6 @@ export default {
         selectQuery = selectQuery.where(sqlbricks.in("qrec.id", props.queue_record_ids));
       }
 
-      console.log("kkkkkkkkkkkkkkkkkkkkkkkk", selectQuery.toString())
       let resDeleteQuery = await SqlService.delete(`
         DELETE FROM queue_record_details WHERE queue_record_id IN (
           ${selectQuery.toString()}

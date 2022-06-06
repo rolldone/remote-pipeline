@@ -41,6 +41,14 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       props.repo_name = req.params.repo_name;
+      if (props.repo_name == null) {
+        res.send({
+          status: "success",
+          status_code: 200,
+          return: []
+        });
+        return;
+      }
       let resData = null;
       switch (props.from_provider) {
         case 'github':
@@ -89,7 +97,7 @@ export default BaseController.extend<RepositoryControllerInterface>({
         status: "success",
         status_code: 200,
         return: resData
-      }); 
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }

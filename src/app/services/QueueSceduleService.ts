@@ -7,6 +7,10 @@ export interface QueueScheduleInterface {
   execution_id?: any
   schedule_type?: string
   data?: any
+
+  qrec_data?: any
+  exe_pipeline_item_ids?: Array<number>
+  exe_host_ids?: Array<number>
 }
 
 export interface QueueItemInterface {
@@ -57,6 +61,15 @@ const preSelect = () => {
   ).from("q_sch");
 
   return query;
+}
+
+const returnFactoryColumn = (props: QueueScheduleInterface) => {
+  let resData = props;
+  resData.qrec_data = JSON.parse(resData.qrec_data || '{}');
+  resData.data = JSON.parse(resData.data || '{}')
+  resData.exe_pipeline_item_ids = JSON.parse(resData.exe_pipeline_item_ids as any || '[]');
+  resData.exe_host_ids = JSON.parse(resData.exe_host_ids as any || '[]');
+  return resData;
 }
 
 export default {
@@ -110,11 +123,7 @@ export default {
       query = query.orderBy("q_sch.id DESC");
       let resDatas: Array<any> = await SqlService.select(query.toString());
       resDatas.forEach((resData) => {
-        resData.qrec_data = JSON.parse(resData.qrec_data || '{}');
-        resData.data = JSON.parse(resData.data || '{}')
-        resData.exe_pipeline_item_ids = JSON.parse(resData.exe_pipeline_item_ids || '[]');
-        resData.exe_host_ids = JSON.parse(resData.exe_host_ids || '[]');
-        return resData;
+        return returnFactoryColumn(resData);
       })
       return resDatas;
     } catch (ex) {
@@ -143,10 +152,7 @@ export default {
     }
     let resData = await SqlService.selectOne(query.toString());
     if (resData == null) return null;
-    resData.qrec_data = JSON.parse(resData.qrec_data || '{}');
-    resData.data = JSON.parse(resData.data || '{}')
-    resData.exe_pipeline_item_ids = JSON.parse(resData.exe_pipeline_item_ids || '[]');
-    resData.exe_host_ids = JSON.parse(resData.exe_host_ids || '[]');
+    resData = returnFactoryColumn(resData);
     return resData;
   },
   async deleteQueueSchedule(ids: Array<number>) {

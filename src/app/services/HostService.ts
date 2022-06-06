@@ -51,7 +51,7 @@ export default {
       }
 
       query = query.where(sqlbricks.isNull("hos.deleted_at"));
-      
+
       query = query.orderBy("usr.id DESC");
       let resData = await SqlService.select(query.toString());
       resData.filter((el) => {
@@ -104,7 +104,7 @@ export default {
   },
   async addHost(props: Host): Promise<any> {
     try {
-      let resData = await SqlService.insert(sqlbricks.insert('hosts', {
+      let resDataId = await SqlService.insert(sqlbricks.insert('hosts', {
         name: props.name,
         description: props.description,
         data: JSON.stringify(props.data),
@@ -114,8 +114,8 @@ export default {
         password: props.password,
         user_id: props.user_id
       }).toString());
-      resData = await this.getHost({
-        id: resData.id
+      let resData = await this.getHost({
+        id: resDataId
       })
       return resData;
     } catch (ex) {

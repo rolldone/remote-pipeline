@@ -243,6 +243,14 @@ export default {
         query = query.where("exe.mode", props.mode);
       }
 
+      if (props.pipeline_id != null) {
+        query = query.where("pip.id", props.pipeline_id);
+      }
+
+      if (props.project_id != null) {
+        query = query.where("pro.id", props.project_id);
+      }
+
       // Need table project deleted_at null
       query = query.where(SqlBricks.isNull("pro.deleted_at"));
       query = query.where(SqlBricks.isNull("pip.deleted_at"));

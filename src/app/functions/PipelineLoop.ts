@@ -305,7 +305,7 @@ const PipelineLoop = async function (props: {
             } else {
               debounceee = debounce((_command_history: string, dataString: string) => {
                 socket.write('echo done-done\r');
-              }, 2000);
+              }, 1000);
               debounceee(command_history, data.toString());
             }
           });

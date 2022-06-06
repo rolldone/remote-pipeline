@@ -49,8 +49,16 @@
 - [Queue] : Create link for call as api service [Alpha]
 - [QueueScheduler] : Create add new queue as next periode "For One time scheduler only" [Pending]
 - [User] : Create personal access token [Alpha]
-- [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [alpha]
+- [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [Alpha]
 - [QueueRecordDetail] : Display queue process with id job [Alpha]
+
+## Revision phase 1
+- change order numbering pipeline task [Alpha]
+- when try to going execution test the exist execution not display new pipeline item [Done]
+- when display page process get sort by execution pipline ordering number [Done]
+- when try add more new pipeline and save the current setting [Done]
+- Improvement host page after add new [Done]
+- Listen back state [Done]
 
 ## Phase 2
 - [User] : Manage join group share project [Waiting]
@@ -61,3 +69,5 @@
 - [AdminMenu] : Enable interactive menu on side menu admin [Waiting]
 - [Pipeline] : Write file use echo with array method without sftp - if possible [Waiting]
 - [UserExperience] : Improvement all experience like validation, user navigation [Waiting]
+- [PipelineItem] : can clone pipeline item 
+- [PipelineItem] : can download pipeline item
