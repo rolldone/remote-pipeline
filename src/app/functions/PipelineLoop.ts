@@ -44,7 +44,7 @@ const PipelineLoop = async function (props: {
     console.log("job_id :: ", job_id);
     console.log("queue_record_id :: ", queue_record.id);
     console.log("queue_record_detail :: ", queue_record_detail);
-    
+
     if (queue_record_detail.status == QueueRecordDetailService.STATUS.STOPPED) {
       return false;
     }
@@ -66,11 +66,17 @@ const PipelineLoop = async function (props: {
     switch (true) {
       case execution == null:
       case queue_record == null:
-      case variable == null:
+        // case variable == null:
         return false;
     }
 
     // Get var data
+    if (variable == null) {
+      variable = {
+        data: [],
+        schema: {}
+      };
+    }
     let _var_data = ((datas: any) => {
       let _variable_select = null;
       for (var a = 0; a < datas.length; a++) {

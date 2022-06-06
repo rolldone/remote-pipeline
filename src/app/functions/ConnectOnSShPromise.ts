@@ -35,7 +35,7 @@ const ConnectOnSShPromise = async function (props: {
           passphrase: resHostData.passphrase
         };
         sshconfig = {
-          host: auth_value.ip_address,
+          host: auth_value.host,
           port: auth_value.port,
           username: auth_value.username,
           privateKey: auth_value.private_key,
