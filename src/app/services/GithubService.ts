@@ -28,7 +28,7 @@ export default {
   },
   async getCurrentRepositories(props: GithubServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/users/${props.owner}/repos`, {
+      let resData = await axios.get(`https://api.github.com/users/${props.owner}/repos?per_page=500`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
