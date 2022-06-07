@@ -1,4 +1,4 @@
-import SqlBricks from "@root/tool/SqlBricks/sql-bricks"
+import SqlBricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
 import SqlService from "./SqlService";
