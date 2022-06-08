@@ -9,6 +9,7 @@ export interface UserControllerInterface extends BaseControllerInterface {
   deleteUser: { (req: any, res: any): void }
   getUser: { (req: any, res: any): void }
   getUsers: { (req: any, res: any): void }
+  getSelfUser: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<UserControllerInterface>({
@@ -129,4 +130,19 @@ export default BaseController.extend<UserControllerInterface>({
       return res.status(400).send(ex);
     }
   },
+  async getSelfUser(req, res) {
+    try {
+      let user = req.session.user;
+      let resData = await UserService.getUser({
+        id: user.id
+      });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  }
 });

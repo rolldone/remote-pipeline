@@ -145,7 +145,10 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       let props: QueueRecordDetailServiceInterface = req.query;
       props.ids = JSON.parse(props.ids || '[]' as any);
       props.user_id = user.id;
-      let resData = await QueueRecordDetailService.getQueueIdsStatus(props);
+      let resData = await QueueRecordDetailService.getQueueIdsStatus({
+        ids: props.ids,
+        user_id: props.user_id
+      });
       return res.send({
         status: 'success',
         status_code: 200,

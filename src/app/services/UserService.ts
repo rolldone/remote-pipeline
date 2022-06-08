@@ -21,33 +21,38 @@ export interface UserServiceInterface {
   user_id?: number
 }
 
+const preSelectQuery = () => {
+  Sqlbricks.aliasExpansions({
+    'usr': "users",
+    'part': "user_partners",
+    'usr_part': "users"
+  });
+  let query = Sqlbricks.select(
+    "usr.id as id",
+    "usr.first_name as first_name",
+    "usr.last_name as last_name",
+    "usr.email as email",
+    "usr.password as password",
+    "usr.status as status",
+    "usr.data as data",
+    "part.user_id as part_user_id",
+    "part.partner_user_id as part_partner_user_id",
+    "part.data as part_data",
+    "usr_part.id as usr_part_id",
+    "usr_part.first_name as usr_part_first_name",
+    "usr_part.last_name as usr_part_last_name",
+    "usr_part.email as usr_part_email",
+    "usr_part.password as usr_part_password",
+    "usr_part.status as usr_part_status",
+    "usr_part.data as usr_part_data",
+  ).from("usr");
+  return query;
+}
+
 export default {
   async getUsers(props: UserServiceInterface) {
     try {
-      Sqlbricks.aliasExpansions({
-        'usr': "users",
-        'part': "user_partners",
-        'usr_part': "users"
-      });
-      let query = Sqlbricks.select(
-        "usr.id as id",
-        "usr.first_name as first_name",
-        "usr.last_name as last_name",
-        "usr.email as email",
-        "usr.password as password",
-        "usr.status as status",
-        "usr.data as data",
-        "part.user_id as part_user_id",
-        "part.partner_user_id as part_partner_user_id",
-        "part.data as part_data",
-        "usr_part.id as usr_part_id",
-        "usr_part.first_name as usr_part_first_name",
-        "usr_part.last_name as usr_part_last_name",
-        "usr_part.email as usr_part_email",
-        "usr_part.password as usr_part_password",
-        "usr_part.status as usr_part_status",
-        "usr_part.data as usr_part_data",
-      ).from("usr");
+      let query = preSelectQuery();
       query.leftJoin("part").on({
         "part.user_id": "usr.id"
       });
@@ -82,18 +87,13 @@ export default {
   },
   async getUser(props: UserServiceInterface) {
     try {
-      Sqlbricks.aliasExpansions({
-        'usr': "users",
+      let query = preSelectQuery();
+      query.leftJoin("part").on({
+        "part.user_id": "usr.id"
       });
-      let query = Sqlbricks.select(
-        "usr.id as id",
-        "usr.first_name as first_name",
-        "usr.last_name as last_name",
-        "usr.email as email",
-        "usr.password as password",
-        "usr.status as status",
-        "usr.data as data"
-      ).from("usr");
+      query.leftJoin("usr_part").on({
+        "part.partner_user_id": "usr_part.id"
+      });
       if (props.id) {
         query.where("usr.id", props.id);
       }
@@ -154,7 +154,7 @@ export default {
       if (props.password) {
         let _hash = await bcrypt.hash(props.password, saltRounds);
         queryInsert = Sqlbricks.update("users", {
-          password: props.password,
+          password: _hash,
         }).where("id", props.id);
         let updatePasword = await SqlService.update(queryInsert.toString());
       }
