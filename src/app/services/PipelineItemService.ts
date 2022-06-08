@@ -15,6 +15,8 @@ export interface PipelineItemInterface {
   type?: string
   order_number?: number
   description?: string
+  
+  pipeline_tasks?: Array<any>
 }
 
 export interface PipelineItemServiceInterface extends PipelineItemInterface {
@@ -22,6 +24,7 @@ export interface PipelineItemServiceInterface extends PipelineItemInterface {
   order_by_name?: string
   order_by_value?: string
   force_deleted?: boolean
+  
   // Relation
   project_ids?: Array<number>
   pipeline_ids?: Array<number>

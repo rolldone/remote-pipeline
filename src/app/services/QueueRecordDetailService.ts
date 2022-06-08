@@ -318,7 +318,10 @@ export default {
       throw ex;
     }
   },
-  async getQueueIdsStatus(props: QueueRecordDetailServiceInterface) {
+  async getQueueIdsStatus(props: {
+    ids: Array<number>
+    user_id: number
+  }) {
     try {
       sqlbricks.aliasExpansions({
         "qrec_detail": "queue_record_details",

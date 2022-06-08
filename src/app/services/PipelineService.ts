@@ -3,8 +3,8 @@ import { Knex } from "knex";
 import BoolearParse from "../functions/base/BoolearParse";
 import SafeValue from "../functions/base/SafeValue";
 import ExecutionService from "./ExecutionService";
-import PipelineItemService from "./PipelineItemService";
-import PipelineTaskService from "./PipelineTaskService";
+import PipelineItemService, { PipelineItemInterface } from "./PipelineItemService";
+import PipelineTaskService, { PipelineTaskInterface } from "./PipelineTaskService";
 import QueueRecordDetailService from "./QueueRecordDetailService";
 import QueueRecordService from "./QueueRecordService";
 import QueueSceduleService from "./QueueSceduleService";
@@ -26,10 +26,26 @@ export interface PipelineServiceInterface {
   force_deleted?: boolean
   ids?: Array<number>
   project_ids?: Array<number>
+
+  pipeline_items?: Array<PipelineItemInterface>
+  pipeline_tasks?: Array<PipelineTaskInterface>
 }
 
-const returnFactoryColumn = (props: PipelineServiceInterface) => {
+const returnFactoryColumn = async (props: PipelineServiceInterface) => {
   props.repo_data = JSON.parse(props.repo_data || '{}');
+  props.pipeline_items = await PipelineItemService.getPipelineItems({
+    pipeline_id: props.id,
+    project_id: props.project_id
+  });
+  props.pipeline_tasks = [];
+  for (var a = 0; a < props.pipeline_items.length; a++) {
+    let _pipeline_tasks = await PipelineTaskService.getPipelineTasks({
+      pipeline_item_id: props.pipeline_items[a].id,
+      pipeline_id: props.id
+    });
+    props.pipeline_tasks = _pipeline_tasks;
+    props.pipeline_items[a].pipeline_tasks = _pipeline_tasks;
+  }
   return props;
 }
 
@@ -112,9 +128,9 @@ export default {
 
       query = query.orderBy("pip.id DESC");
       let resData: Array<any> = await SqlService.select(query.toString());
-      resData.forEach((el) => {
-        return returnFactoryColumn(el);
-      })
+      for (var a = 0; a < resData.length; a++) {
+        resData[a] = await returnFactoryColumn(resData[a]);
+      }
       return resData;
     } catch (ex) {
       throw ex;

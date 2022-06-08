@@ -23,6 +23,9 @@ export interface ProjectServiceInterface extends ProjectInterface {
   ids?: Array<number>
   force_deleted?: boolean
   with_deleted?: boolean
+
+  pipelines?: Array<any>
+  pipeline_items?: Array<any>
 }
 
 export default {
@@ -87,7 +90,23 @@ export default {
         query.where(Sqlbricks.isNull("pro.deleted_at"));
       }
       query = query.orderBy("id DESC");
-      let resData = await db.raw(query.toString());
+      let resData: Array<ProjectServiceInterface> = await SqlService.select(query.toString());
+      for (var a = 0; a < resData.length; a++) {
+        resData[a].pipelines = await PipelineService.getPipelines({
+          project_id: resData[a].id
+        });
+        resData[a].pipeline_items = [];
+        for (var b = 0; b < resData[a].pipelines.length; b++) {
+          let _pipelineItems = await PipelineItemService.getPipelineItems({
+            project_id: resData[a].id,
+            pipeline_id: resData[a].pipelines[b].id
+          });
+          resData[a].pipelines[b].pipeline_items = _pipelineItems
+          for (var c = 0; c < _pipelineItems.length; c++) {
+            resData[a].pipeline_items.push(_pipelineItems[c]);
+          }
+        }
+      }
       return resData;
     } catch (ex) {
       throw ex;

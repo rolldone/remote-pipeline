@@ -142,6 +142,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/update", "xhr.user.update", [upload.any()], UserController.binding().updateUser);
       route.post("/update/self", "xhr.user.update_current", [upload.any()], UserController.binding().updateCurrentUser);
       route.post("/delete", "xhr.user.delete", [upload.any()], UserController.binding().deleteUser);
+      route.get("/self", "xhr.user.self", [], UserController.binding().getSelfUser);
       route.get("/users", "xhr.user.users", [], UserController.binding().getUsers);
       route.get("/:id/view", "xhr.user.user", [], UserController.binding().getUser);
     });
