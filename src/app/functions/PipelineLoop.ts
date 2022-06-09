@@ -126,14 +126,18 @@ const PipelineLoop = async function (props: {
             pendingCallCommand.cancel();
           }
           pendingCallCommand = debounce(() => {
-            resolveDone = props.resolve;
-            resolveReject = props.rejected;
-            lastStartParent = props.parent
-            if (typeof firstStart.command !== 'function') {
-              masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
-              return;
+            try{
+              resolveDone = props.resolve;
+              resolveReject = props.rejected;
+              lastStartParent = props.parent
+              if (typeof firstStart.command !== 'function') {
+                masterData.saveData("data_pipeline_" + props.pipeline_item_id, firstStart);
+                return;
+              }
+              firstStart.command();
+            }catch(ex){
+              resolveReject("You get problem first start task queue - ex :: ",ex);
             }
-            firstStart.command();
           }, 3000);
           pendingCallCommand();
           return;
