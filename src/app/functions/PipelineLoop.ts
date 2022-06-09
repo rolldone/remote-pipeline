@@ -126,7 +126,7 @@ const PipelineLoop = async function (props: {
             pendingCallCommand.cancel();
           }
           pendingCallCommand = debounce(() => {
-            try{
+            try {
               resolveDone = props.resolve;
               resolveReject = props.rejected;
               lastStartParent = props.parent
@@ -210,11 +210,13 @@ const PipelineLoop = async function (props: {
             pipeline_id: execution.pipeline_id,
             execution_id: execution.id
           })
+          
           let socket = await sshPromise.shell();
           let who_parent = null;
           let pipeline_task_id = null;
           let command_history = "";
           let debounceee: DebouncedFunc<any> = null;
+
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
             pipeline_task_id = props.pipeline_task_id;
             socket.write("echo " + props.message + "\r");
@@ -227,7 +229,29 @@ const PipelineLoop = async function (props: {
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
+          masterData.setOnListener("data_pipeline_" + job_id + "_ignore", (props) => {
+            RecordCommandToFileLog({
+              fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id,
+              commandString: props.message
+            })
+            who_parent = props.parent;
+            socket.write("\n");
+            pipeline_task_id = props.pipeline_task_id;
+            // Because event ignore nothing to do if this is last task return resolveDOne();
+            if (lastStartParent == who_parent) {
+              masterData.removeListener("write_pipeline_" + job_id);
+              masterData.removeListener("data_pipeline_" + job_id);
+              masterData.removeListener("data_pipeline_" + job_id + "_error");
+              resolveDone();
+            }
+          });
           masterData.setOnListener("data_pipeline_" + job_id, (props) => {
+            if (props.message != null) {
+              RecordCommandToFileLog({
+                fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id,
+                commandString: props.message + "\n"
+              })
+            }
             who_parent = props.parent;
             socket.write(props.command);
             pipeline_task_id = props.pipeline_task_id;

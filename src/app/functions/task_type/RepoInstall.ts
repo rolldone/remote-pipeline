@@ -131,7 +131,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
     }
 
     // console.log("command :::: ", command);
-    masterData.setOnListener("write_pipeline_" + job_id, async (props) => {
+    masterData.setOnMultiSameListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           processWait();

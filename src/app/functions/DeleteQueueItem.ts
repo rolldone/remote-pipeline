@@ -56,7 +56,12 @@ const DeleteQueueItem = async function (props: {
           const job = jobs[i];
           if (res_data_record_detail.job_id == job.id) {
             console.log("DeleteQueueItem - found get job id to deleted :: ", job.id);
-            await job.remove();
+            try{
+              _processQueue.remove(job.id);
+              // await job.remove();
+            }catch(ex){
+              console.log("Job removed not succesfully :: ",ex);
+            }
             break;
           }
         }

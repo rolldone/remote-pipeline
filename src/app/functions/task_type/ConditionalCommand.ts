@@ -24,13 +24,15 @@ export default async function (props: TaskTypeInterface) {
     let _condition_values = _data.condition_values;
     let isPassed = [];
     let evalString = "";
-
+    
     let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+    
     if (working_dir != null) {
       command = `cd ${working_dir} && ${command}`;
     }
-    masterData.setOnListener("write_pipeline_" + job_id, (props) => {
+
+    masterData.setOnMultiSameListener("write_pipeline_" + job_id, (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           // console.log("Conditional command :: Called ");
@@ -70,15 +72,17 @@ export default async function (props: TaskTypeInterface) {
               masterData.saveData("data_pipeline_" + job_id, {
                 pipeline_task_id: pipeline_task.id,
                 command: command,
-                parent: pipeline_task.temp_id
+                parent: pipeline_task.temp_id,
+                message: "Catch the condition!"
               })
             } else {
-              // throw it
-              masterData.saveData("data_pipeline_" + job_id + "_error", {
+              // ignore it
+              console.log("IGNORE IT!!");
+              masterData.saveData("data_pipeline_" + job_id + "_ignore", {
                 pipeline_task_id: pipeline_task.id,
                 command: command,
                 parent: pipeline_task.temp_id,
-                message: "On Pipeline Task " + pipeline_task.name + " :: There is no match the result with your conditions"
+                message: "On Pipeline Task " + pipeline_task.name + " :: There is no match the result with your conditions \n"
               })
             }
           } catch (ex) {
