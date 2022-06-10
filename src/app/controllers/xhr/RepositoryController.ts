@@ -32,6 +32,9 @@ export default BaseController.extend<RepositoryControllerInterface>({
             return: resData
           });
           break;
+        case 'gitlab':
+
+          break;
       }
     } catch (ex) {
       return res.status(400).send(ex);
@@ -65,6 +68,9 @@ export default BaseController.extend<RepositoryControllerInterface>({
             return: resData
           });
           break;
+        case 'gitlab':
+
+          break;
       }
     } catch (ex) {
       return res.status(400).send(ex);
@@ -91,6 +97,9 @@ export default BaseController.extend<RepositoryControllerInterface>({
             status_code: 200,
             return: resData
           });
+          break;
+        case 'gitlab':
+
           break;
       }
       return res.send({
@@ -121,6 +130,9 @@ export default BaseController.extend<RepositoryControllerInterface>({
             return: resData
           });
           break;
+        case 'gitlab':
+
+          break;
       }
     } catch (ex) {
       return res.status(400).send(ex);
@@ -144,6 +156,9 @@ export default BaseController.extend<RepositoryControllerInterface>({
             status_code: 200,
             return: resData
           });
+          break;
+        case 'gitlab':
+
           break;
       }
     } catch (ex) {
