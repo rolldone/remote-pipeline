@@ -72,7 +72,15 @@ export default BaseController.extend<AuthControllerInterface>({
   },
   logout(req, res) {
     // Session only
-    res.send("Empty");
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Check again the session :: ", req.session);
+      }
+      res.end();
+    });
   },
   forgotPassword(req, res) {
     // email: string
