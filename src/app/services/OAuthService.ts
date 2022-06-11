@@ -4,42 +4,83 @@ import querystring from 'querystring';
 import FormData from 'form-data';
 import Sqlbricks from "@root/tool/SqlBricks";
 import SqlService from "./SqlService";
+import { randomBytes } from "crypto";
 
 export interface OauthInterface {
   id?: number
   user_id?: number
   oauth_id?: number
   access_token?: string
+  refresh_token?: string
   repo_from?: string
   token_type?: string
   scope?: string
   data?: any
 }
 
+
 export default {
-  generateOAuthUrl(props) {
+  generateOAuthUrl(props: {
+    call_query: string
+    from_provider: "github" | "gitlab" | "bitbucket",
+    code_challenge?: string
+    code_challenge_method?: string | "S256"
+    state?: string
+  }) {
     try {
-      let redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + props.call_query
-      let queryProps = {
-        client_id: OAuth.GITHUB_CLIENT_ID,
-        redirect_uri: redirect_uri,
-        scope: 'user,email,repo',
+      let redirect_uri = null;
+      let queryProps = null;
+      let queryUrl = null;
+      let url = null;
+      switch (props.from_provider) {
+        case 'bitbucket':
+          break;
+        case 'github':
+          redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + props.call_query
+          queryProps = {
+            client_id: OAuth.GITHUB_CLIENT_ID,
+            redirect_uri: redirect_uri,
+            scope: 'user,email,repo',
+          }
+          queryUrl = new URLSearchParams(queryProps);
+          url = 'https://github.com/login/oauth/authorize?' + queryUrl;
+          return url;
+          break;
+        case 'gitlab':
+          redirect_uri = OAuth.GITLAB_REDIRECT_URI + '?' + props.call_query
+          queryProps = {
+            client_id: OAuth.GITLAB_CLIENT_ID,
+            redirect_uri: redirect_uri,
+            scope: 'api',
+            response_type: 'code',
+            state: props.state,
+            // code_challenge_method: props.code_challenge_method || "S256",
+            // code_challenge: props.code_challenge
+          }
+          queryUrl = new URLSearchParams(queryProps);
+          url = 'https://gitlab.com/oauth/authorize?' + queryUrl;
+          console.log("url :: ", url);
+          return url;
       }
-      let queryUrl = new URLSearchParams(queryProps);
-      let url = 'https://github.com/login/oauth/authorize?' + queryUrl;
-      return url;
     } catch (ex) {
       throw ex;
     }
   },
-  async getOAuthToken(props) {
+  async getOAuthToken(props: {
+    code: string
+    forward_to: string
+    from_provider: "github" | "gitlab" | "bitbucket"
+    code_challenge?: string,
+    code_verifier?: string
+  }) {
     let code = props.code;
     let forward_to = props.forward_to;
     let from_provider = props.from_provider;
     let resData = null;
+    let formData = new FormData();
+    let parseQuery = null;
     switch (from_provider) {
       case 'github':
-        let formData = new FormData();
         formData.append("client_id", OAuth.GITHUB_CLIENT_ID);
         formData.append("client_secret", OAuth.GITHUB_SECRET_ID);
         formData.append("code", code);
@@ -52,7 +93,30 @@ export default {
             // 'Content-Type': `multipart/form-data;`,
           }
         });
-        let parseQuery = querystring.parse(resData.data);
+        parseQuery = querystring.parse(resData.data);
+        parseQuery = {
+          ...parseQuery,
+          forward_to,
+          from_provider
+        };
+        console.log("parseQuery :: ", parseQuery);
+        return parseQuery as any;
+      case 'gitlab':
+        console.log("oauth :: ", OAuth);
+        let formDataJSON = {};
+        formDataJSON["client_id"] = OAuth.GITLAB_CLIENT_ID;
+        formDataJSON["client_secret"] = OAuth.GITLAB_SECRET_ID;
+        formDataJSON["code"] = code;
+        formDataJSON["grant_type"] = "authorization_code";
+        formDataJSON["redirect_uri"] = OAuth.GITLAB_REDIRECT_URI;
+        let jsonString = JSON.stringify(formDataJSON);
+        resData = await axios.post('https://gitlab.com/oauth/token', jsonString, {
+          headers: {
+            // Overwrite Axios's automatically set Content-Type
+            'Content-Type': 'application/json'
+          }
+        });
+        parseQuery = querystring.parse(resData.data);
         parseQuery = {
           ...parseQuery,
           forward_to,
@@ -70,6 +134,7 @@ export default {
         access_token: props.access_token,
         repo_from: props.repo_from,
         token_type: props.token_type,
+        refresh_token: props.refresh_token,
         scope: props.scope,
         data: props.data,
       }).toString())

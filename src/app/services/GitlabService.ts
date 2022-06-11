@@ -15,7 +15,7 @@ export interface GitlabServiceInterface {
 export default {
   async getCurrentUser(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get("https://api.github.com/user", {
+      let resData = await axios.get("https://gitlab.com/api/v4/user", {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -28,7 +28,7 @@ export default {
   },
   async getCurrentRepositories(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/users/${props.owner}/repos?per_page=500`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/users/${props.owner}/repos?per_page=500`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -41,7 +41,7 @@ export default {
   },
   async getCurrentRepository(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/repos/${props.owner}/${props.repo_name}`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -54,7 +54,7 @@ export default {
   },
   async getCurrentOrgRepositories(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/org/${props.orgName}/repos`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/org/${props.orgName}/repos`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -67,7 +67,7 @@ export default {
   },
   async getCurrentBranchRepository(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/repos/${props.owner}/${props.repo_name}/branches`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/branches`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -80,7 +80,7 @@ export default {
   },
   async getCommits(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/repos/${props.owner}/${props.repo_name}/commits`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/commits`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -93,7 +93,7 @@ export default {
   },
   async getCommit(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/repos/${props.owner}/${props.repo_name}/commits/${props.branch}`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/commits/${props.branch}`, {
         headers: {
           "Accept": "application/vnd.github.v3+sha",
           'Authorization': 'Bearer ' + props.access_token
@@ -127,7 +127,7 @@ export default {
             return resolve(props.download_path + "/" + props.branch);
           }
         }
-        let url = `https://api.github.com/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
+        let url = `https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
         axios.get(url, {
           headers: {
             "Accept": "application/vnd.github.v3+json",

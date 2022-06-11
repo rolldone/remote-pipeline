@@ -1,7 +1,9 @@
+import StoreValue from "@root/app/functions/base/StoreValue"
 import AuthService from "@root/app/services/AuthService"
 import OAuthService from "@root/app/services/OAuthService"
 import BaseController from "@root/base/BaseController"
 import OAuth from "@root/config/OAuth"
+import { createHash, randomBytes } from "crypto"
 
 export interface AuthControllerInterface extends BaseControllerInterface {
   oAuthGenerate: { (req: any, res: any): void }
@@ -10,6 +12,18 @@ export interface AuthControllerInterface extends BaseControllerInterface {
   logout: { (req: any, res: any): void }
   forgotPassword: { (req: any, res: any): void }
   getAuth: { (req: any, res: any): void }
+}
+
+
+function base64URLEncode(str) {
+  return str.toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+function sha256(buffer) {
+  return createHash('sha256').update(buffer).digest();
 }
 
 export default BaseController.extend<AuthControllerInterface>({
@@ -23,19 +37,29 @@ export default BaseController.extend<AuthControllerInterface>({
     if (from_provider == null) {
       return res.send("There is no provider page here");
     }
-    switch (from_provider) {
-      case 'github':
-        let url = OAuthService.generateOAuthUrl({
-          call_query,
-        })
-        return res.send({
-          status: "success",
-          status_code: 200,
-          return: url
-        });
-        break;
-    }
-    return res.send("There is no process");
+    let url = null;
+
+    // Like gitlab need code challenge, github still dont need it
+    // var verifier = base64URLEncode(randomBytes(36));
+    // var challenge = base64URLEncode(sha256(verifier));
+    var state = base64URLEncode(randomBytes(5));
+    // StoreValue.set(req, "pkce_verifier", verifier);
+    // StoreValue.set(req, "pkce_challenge", challenge)
+    StoreValue.set(req, "state", state);
+
+    url = OAuthService.generateOAuthUrl({
+      call_query,
+      from_provider,
+      // code_challenge: challenge,
+      // code_challenge_method: "S256",
+      state: state
+    })
+
+    return res.send({
+      status: "success",
+      status_code: 200,
+      return: url
+    });
   },
   async login(req, res) {
     try {
