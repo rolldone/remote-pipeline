@@ -43,6 +43,28 @@ export default BaseController.extend<DashboardControllerInterface>({
       let resAddData = null;
 
       switch (resData.from_provider) {
+        case 'bitbucket':
+          // STILL TESTING GET TOKEN FIRST
+          res.send(resData);
+          return;
+          oauthUserData = await GithubService.getCurrentUser({
+            access_token: resData.access_token,
+          })
+
+          resAddData = await OAuthService.addOrUpdateOAuthToken({
+            user_id: user.id,
+            oauth_id: oauthUserData.id,
+            access_token: resData.access_token,
+            repo_from: resData.from_provider,
+            token_type: resData.token_type,
+            scope: resData.scope,
+            data: JSON.stringify({})
+          })
+
+          // Add oauth_user_id to resdata
+          resData.oauth_user_id = resAddData.id;
+          resData.query_string_callback = "from_provider=" + resData.from_provider + "&oauth_user_id=" + resData.oauth_user_id;
+          break;
         case 'github':
           oauthUserData = await GithubService.getCurrentUser({
             access_token: resData.access_token,

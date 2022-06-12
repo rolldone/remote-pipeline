@@ -1,10 +1,7 @@
 // Update with your config settings.
 require('dotenv').config();
-/**
- * @type { Object.<string, import("knex").Knex.Config> }
- */
-module.exports = {
 
+const config = {
   work: {
     client: 'sqlite3',
     connection: {
@@ -16,9 +13,8 @@ module.exports = {
     seeds: {
       directory: './seeds',
     },
-    useNullAsDefault: process.env.APP_ENV == 'work' ? true : false
-  },
-
+    useNullAsDefault: true
+  }
   // staging: {
   //   client: 'mysql',
   //   connection: {
@@ -57,5 +53,8 @@ module.exports = {
   //   //   tableName: 'knex_migrations'
   //   // }
   // }
-
-};
+}
+/**
+ * @type { Object.<string, import("knex").Knex.Config> }
+ */
+module.exports = config[process.env.APP_ENV];

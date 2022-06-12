@@ -8,6 +8,7 @@ import { randomBytes } from "crypto";
 
 export interface OauthInterface {
   id?: number
+  name?: string
   user_id?: number
   oauth_id?: number
   access_token?: string
@@ -34,7 +35,16 @@ export default {
       let url = null;
       switch (props.from_provider) {
         case 'bitbucket':
-          break;
+          redirect_uri = OAuth.BITBUCKET_REDIRECT_URI + '?' + props.call_query
+          queryProps = {
+            client_id: OAuth.BITBUCKET_CLIENT_ID,
+            redirect_uri: redirect_uri,
+            response_type: 'code',
+            scope: 'repository'
+          }
+          queryUrl = new URLSearchParams(queryProps);
+          url = 'https://bitbucket.org/site/oauth2/authorize?' + queryUrl;
+          return url;
         case 'github':
           redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + props.call_query
           queryProps = {
@@ -45,7 +55,6 @@ export default {
           queryUrl = new URLSearchParams(queryProps);
           url = 'https://github.com/login/oauth/authorize?' + queryUrl;
           return url;
-          break;
         case 'gitlab':
           redirect_uri = OAuth.GITLAB_REDIRECT_URI + '?' + props.call_query
           queryProps = {
@@ -114,6 +123,32 @@ export default {
           headers: {
             // Overwrite Axios's automatically set Content-Type
             'Content-Type': 'application/json'
+          }
+        });
+        parseQuery = querystring.parse(resData.data);
+        parseQuery = {
+          ...parseQuery,
+          forward_to,
+          from_provider
+        };
+        console.log("parseQuery :: ", parseQuery);
+        return parseQuery as any;
+      case 'bitbucket':
+        formData.append("client_id", OAuth.BITBUCKET_CLIENT_ID);
+        formData.append("client_secret", OAuth.BITBUCKET_SECRET_ID);
+        formData.append("code", code);
+        formData.append("grant_type", "authorization_code");
+        formData.append("redirect_uri", OAuth.BITBUCKET_REDIRECT_URI);
+        resData = await axios({
+          method: "post",
+          auth: {
+            username: OAuth.BITBUCKET_CLIENT_ID,
+            password: OAuth.BITBUCKET_SECRET_ID
+          },
+          url: 'https://bitbucket.org/site/oauth2/access_token',
+          data: formData,
+          headers: {
+            // 'Content-Type': `multipart/form-data;`,
           }
         });
         parseQuery = querystring.parse(resData.data);

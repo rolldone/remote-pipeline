@@ -30,6 +30,7 @@ import WebhookAuth from "@root/app/middlewares/WebhookAuth";
 import PersonalAccessTokenController from "@root/app/controllers/xhr/PersonalAccessTokenController";
 import OutSideController from "@root/app/controllers/xhr/OutSideController";
 import OutSideAuth from "@root/app/middlewares/OutSideAuth";
+import OAuthUserController from "@root/app/controllers/xhr/OAuthUserController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -136,6 +137,13 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/register", "xhr.auth.register", [upload.any()], AuthController.binding().register);
       route.post("/logout", "xhr.auth.logout", [], AuthController.binding().logout);
       route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
+    })
+    self.use('/xhr/oauth-user', [DashboardAuth], function (route: BaseRouteInterface) {
+      route.get('/oauth-users', 'xhr.oauth-user.oauth-users', [], OAuthUserController.binding().getOAuthUsers);
+      route.get('/:id/view', 'xhr.oauth-user.oauth-user', [], OAuthUserController.binding().getOAuthUser);
+      route.post('/add', 'xhr.oauth-user.add', [upload.any()], OAuthUserController.binding().addOAuthUser);
+      route.post('/update', 'xhr.oauth-user.update', [upload.any()], OAuthUserController.binding().updateOAuthUser);
+      route.post('/delete', 'xhr.oauth-user.delete', [upload.any()], OAuthUserController.binding().deleteOAuthUsers);
     })
     self.use("/xhr/user", [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.user.add", [upload.any()], UserController.binding().addUser);
