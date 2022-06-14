@@ -21,6 +21,7 @@ export interface PipelineServiceInterface {
   oauth_user_id?: number
   repo_data?: any
   repo_name?: string
+  repo_id?: number
   source_type?: string
   from_provider?: string
   force_deleted?: boolean
@@ -58,6 +59,7 @@ export default {
         project_id: props.project_id,
         oauth_user_id: props.oauth_user_id,
         repo_name: props.repo_name,
+        repo_id: props.repo_id,
         from_provider: props.from_provider,
         source_type: props.source_type,
         repo_data: JSON.stringify(props.repo_data),
@@ -80,6 +82,7 @@ export default {
         oauth_user_id: props.oauth_user_id,
         repo_data: JSON.stringify(props.repo_data),
         repo_name: props.repo_name,
+        repo_id: props.repo_id,
         from_provider: props.from_provider,
         source_type: props.source_type,
       }).where("id", props.id).toString());
@@ -114,6 +117,7 @@ export default {
         "pip.from_provider as from_provider",
         "pip.name as name",
         "pip.repo_data as repo_data",
+        "pip.repo_id as repo_id",
         "pro.id as pro_id",
         "pro.name as pro_name"
       ).from("pip");

@@ -2,14 +2,17 @@ import axios from "axios"
 import { createWriteStream, existsSync, mkdirSync, writeFileSync } from "fs"
 import { pipeline } from "stream"
 import shelljs from 'shelljs';
+import StaticType from "base/StaticType";
 
 export interface GitlabServiceInterface {
+  id?: number
   access_token?: string,
   owner?: string
   orgName?: string
   repo_name?: string
   branch?: string
   download_path?: string
+  sha?: string
 }
 
 export default {
@@ -28,7 +31,7 @@ export default {
   },
   async getCurrentRepositories(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/users/${props.owner}/repos?per_page=500`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects?owned=true`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -40,8 +43,10 @@ export default {
     }
   },
   async getCurrentRepository(props: GitlabServiceInterface) {
+    StaticType(props.id, [Number,String]);
+    StaticType(props.access_token, [String]);
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -54,7 +59,7 @@ export default {
   },
   async getCurrentOrgRepositories(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/org/${props.orgName}/repos`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -66,8 +71,10 @@ export default {
     }
   },
   async getCurrentBranchRepository(props: GitlabServiceInterface) {
+    StaticType(props.id, [Number,String]);
+    StaticType(props.access_token, [String]);
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/branches`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/branches`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -79,8 +86,10 @@ export default {
     }
   },
   async getCommits(props: GitlabServiceInterface) {
+    StaticType(props.id, [Number,String]);
+    StaticType(props.access_token, [String]);
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/commits`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/commits`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -92,8 +101,11 @@ export default {
     }
   },
   async getCommit(props: GitlabServiceInterface) {
+    StaticType(props.id, [Number,String]);
+    StaticType(props.sha, [String]);
+    StaticType(props.access_token, [String]);
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/commits/${props.branch}`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/commits/${props.sha}`, {
         headers: {
           "Accept": "application/vnd.github.v3+sha",
           'Authorization': 'Bearer ' + props.access_token

@@ -1,5 +1,11 @@
 import GithubService from "@root/app/services/GithubService"
+import GitlabService from "@root/app/services/GitlabService"
 import BaseController from "@root/base/BaseController"
+import GitCommit from "@root/transformer/GitCommit"
+import GitCommitList from "@root/transformer/GitCommitList"
+import GitRepository from "@root/transformer/GitRepository"
+import GitRepositoryList from "@root/transformer/GitRepositoryList"
+import GitUserInformation from "@root/transformer/GitUserInformation"
 import { Knex } from "knex"
 
 export interface RepositoryControllerInterface extends BaseControllerInterface {
@@ -18,24 +24,32 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
+      let oauthRepoUser = null;
+      let repoAccessToken = null;
       switch (props.from_provider) {
         case 'github':
-          let githubUser = req.github_user;
-          let githubAccessToken = req.github_access_token;
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCurrentRepositories({
-            owner: githubUser.login,
-            access_token: githubAccessToken
-          })
-          res.send({
-            status: "success",
-            status_code: 200,
-            return: resData
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken
           });
           break;
         case 'gitlab':
-
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
+          resData = await GitlabService.getCurrentRepositories({
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken
+          });
           break;
       }
+      resData = GitRepositoryList(props.from_provider, resData)
+      res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }
@@ -53,25 +67,33 @@ export default BaseController.extend<RepositoryControllerInterface>({
         return;
       }
       let resData = null;
+      let oauthRepoUser = null;
+      let repoAccessToken = null;
       switch (props.from_provider) {
         case 'github':
-          let githubUser = req.github_user;
-          let githubAccessToken = req.github_access_token;
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCurrentRepository({
-            owner: githubUser.login,
-            access_token: githubAccessToken,
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken,
             repo_name: props.repo_name
           })
-          res.send({
-            status: "success",
-            status_code: 200,
-            return: resData
-          });
           break;
         case 'gitlab':
-
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
+          resData = await GitlabService.getCurrentRepository({
+            access_token: repoAccessToken,
+            id: props.id
+          })
           break;
       }
+      resData = GitRepository(props.from_provider, resData);
+      res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }
@@ -83,23 +105,25 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
+      let oauthRepoUser = null;
+      let repoAccessToken = null;
       switch (props.from_provider) {
         case 'github':
-          let githubUser = req.github_user;
-          let githubAccessToken = req.github_access_token;
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCurrentBranchRepository({
-            owner: githubUser.login,
-            access_token: githubAccessToken,
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken,
             repo_name: props.repo_name
           })
-          res.send({
-            status: "success",
-            status_code: 200,
-            return: resData
-          });
           break;
         case 'gitlab':
-
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
+          resData = await GitlabService.getCurrentBranchRepository({
+            access_token: repoAccessToken,
+            id: props.id
+          })
           break;
       }
       return res.send({
@@ -115,25 +139,32 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
+      let oauthRepoUser = null;
+      let repoAccessToken = null;
       switch (props.from_provider) {
         case 'github':
-          let githubUser = req.github_user;
-          let githubAccessToken = req.github_access_token;
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCurrentUser({
-            owner: githubUser.login,
-            access_token: githubAccessToken,
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken,
             repo_name: props.repo_name
           })
-          res.send({
-            status: "success",
-            status_code: 200,
-            return: resData
-          });
           break;
         case 'gitlab':
-
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
+          resData = await GitlabService.getCurrentUser({
+            access_token: repoAccessToken
+          })
           break;
       }
+      resData = GitUserInformation(props.from_provider, resData);
+      res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }
@@ -142,25 +173,33 @@ export default BaseController.extend<RepositoryControllerInterface>({
     try {
       let props = req.query;
       let resData = null;
+      let oauthRepoUser = null;
+      let repoAccessToken = null;
       switch (props.from_provider) {
         case 'github':
-          let githubUser = req.github_user;
-          let githubAccessToken = req.github_access_token;
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCommits({
-            owner: githubUser.login,
-            access_token: githubAccessToken,
+            owner: oauthRepoUser.login,
+            access_token: repoAccessToken,
             repo_name: props.repo_name
           })
-          res.send({
-            status: "success",
-            status_code: 200,
-            return: resData
-          });
           break;
         case 'gitlab':
-
+          oauthRepoUser = req.repo_auth_user;
+          repoAccessToken = req.repo_auth_access_token;
+          resData = await GitlabService.getCommits({
+            access_token: repoAccessToken,
+            id: props.id
+          })
           break;
       }
+      resData = GitCommitList(props.from_provider, resData);
+      res.send({
+        status: "success",
+        status_code: 200,
+        return: resData
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }

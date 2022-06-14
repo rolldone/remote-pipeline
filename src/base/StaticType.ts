@@ -22,7 +22,7 @@ var typeVariable = function(){
   };
 };
 /* Static Type check allowed type data */
-let staticType = function (inVariable : any, typeDatas : any = [],debug=false) {
+let StaticType = function (inVariable : any, typeDatas : any = [],debug=false) {
   var isWRong = true;
   var closureCondition = function (theVariable : any, arrayRecordTypeOf : Array<any>) {
     return function (typeDataItem :any) {
@@ -138,4 +138,4 @@ let staticType = function (inVariable : any, typeDatas : any = [],debug=false) {
   }
 };
 
-export default staticType;
+export default StaticType;
