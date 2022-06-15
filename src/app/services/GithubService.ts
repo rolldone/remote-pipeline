@@ -114,12 +114,22 @@ export default {
         } catch (ex) {
           infoJSON = null;
         }
-        let commitData = await this.getCommit(props);
-        if (infoJSON != null && commitData.sha == infoJSON.sha) {
-          if (existsSync(props.download_path + "/" + props.branch) == true) {
-            console.log("GithubService ::: Branch " + props.branch + " is exist");
-            return resolve(props.download_path + "/" + props.branch);
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", props);
+        let commitData = null;
+        try {
+          commitData = await this.getCommit(props);
+        } catch (ex) {
+          console.log("error - ", ex);
+        }
+        try{
+          if (infoJSON != null && commitData.sha == infoJSON.sha) {
+            if (existsSync(props.download_path + "/" + props.branch) == true) {
+              console.log("GithubService ::: Branch " + props.branch + " is exist");
+              return resolve(props.download_path + "/" + props.branch);
+            }
           }
+        }catch(ex){
+          return reject(ex);
         }
         let url = `https://api.github.com/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
         axios.get(url, {
