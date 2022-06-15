@@ -144,7 +144,7 @@ export default {
         } catch (ex) {
           return reject(ex);
         }
-        let url = `https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
+        let url = `https://gitlab.com/api/v4/projects/${props.id}/repository/archive.zip?sha=${commitData.id}`;
         axios.get(url, {
           headers: {
             "Accept": "application/vnd.github.v3+json",
