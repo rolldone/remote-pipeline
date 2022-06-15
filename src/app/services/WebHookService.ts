@@ -25,7 +25,7 @@ export interface SubmitExecuteInterfaceTest {
   }
   type?: string
   webhook_id?: number
-  item_key?: string
+  key?: string
 }
 
 export interface SubmitExecuteInterface {
@@ -229,7 +229,7 @@ export default {
           data,
           type,
           webhook_id,
-          item_key
+          key
         } = props;
         let queue_name = "webhook_queue_execute_test";
         masterData.saveData("queue.webhook.execute.item.test", {
@@ -249,14 +249,15 @@ export default {
              * Loop the webhook datas to get the right use
              */
             let webHookItems = webhook_data.webhook_datas;
+            console.log("wehookItems :: ",webHookItems, ' == ',props);
             let isFound = false;
             for (var a = 0; a < webHookItems.length; a++) {
-              if (webHookItems[a].key == item_key) {
+              if (webHookItems[a].key == key) {
                 let idJObInstant = (Math.random() + 1).toString(36).substring(7);
                 let _queue = WebhookQueue({
                   queue_name,
                 });
-                let job_name = item_key + "_" + type;
+                let job_name = key + "_" + type;
                 await _queue.add(job_name, {
                   data,
                   type,
