@@ -50,7 +50,7 @@ const PipelineLoop = async function (props: {
     }
 
     if (queue_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED) {
-      return false;
+      return true;
     }
 
     // Second get the execution

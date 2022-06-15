@@ -113,7 +113,7 @@ const CreateQueue = function (props: {
             case QueueRecordService.TYPE.SCHEDULE:
               let qrec_sch_data = resQueueRecord.qrec_sch_data;
               let _repeat = null;
-              let _timeout = 5000;
+              let _timeout = 0;
               switch (qrec_sch_data.schedule_type) {
                 case QueueSceduleService.schedule_type.REPEATABLE:
                   _processQueue = ProcessScheduleQueue({
@@ -121,7 +121,7 @@ const CreateQueue = function (props: {
                     process_limit: 1 // process_limit
                   });
                   _repeat = {
-                    cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
+                    cron: `* ${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
                   };
                   break;
                 case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
