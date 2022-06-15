@@ -15,7 +15,9 @@ const MkdirReqursive = async (sftp: SFTP, pathString: string): Promise<void> => 
       ret = upath.normalize("/" + ret);
       console.log("MkdirReqursive - stat ::: ", upath.normalize("/" + ret));
       try {
-        await sftp.stat(ret)
+        if(ret != "/"){
+          await sftp.stat(ret)
+        }
       } catch (e: any) {
         console.log("MkdirReqursive - ex ::: ", e);
         if (e.code === 2) {

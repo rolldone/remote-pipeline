@@ -43,7 +43,7 @@ export default {
     }
   },
   async getCurrentRepository(props: GitlabServiceInterface) {
-    StaticType(props.id, [Number,String]);
+    StaticType(props.id, [Number, String]);
     StaticType(props.access_token, [String]);
     try {
       let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}`, {
@@ -71,7 +71,7 @@ export default {
     }
   },
   async getCurrentBranchRepository(props: GitlabServiceInterface) {
-    StaticType(props.id, [Number,String]);
+    StaticType(props.id, [Number, String]);
     StaticType(props.access_token, [String]);
     try {
       let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/branches`, {
@@ -86,7 +86,7 @@ export default {
     }
   },
   async getCommits(props: GitlabServiceInterface) {
-    StaticType(props.id, [Number,String]);
+    StaticType(props.id, [Number, String]);
     StaticType(props.access_token, [String]);
     try {
       let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/commits`, {
@@ -101,11 +101,12 @@ export default {
     }
   },
   async getCommit(props: GitlabServiceInterface) {
-    StaticType(props.id, [Number,String]);
-    StaticType(props.sha, [String]);
+    console.log("props :::: ", props);
+    StaticType(props.id, [Number, String]);
+    StaticType(props.branch, [String]);
     StaticType(props.access_token, [String]);
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/commits/${props.sha}`, {
+      let resData = await axios.get(`https://gitlab.com/api/v4/projects/${props.id}/repository/commits/${props.branch}`, {
         headers: {
           "Accept": "application/vnd.github.v3+sha",
           'Authorization': 'Bearer ' + props.access_token
@@ -147,7 +148,7 @@ export default {
           },
           responseType: 'arraybuffer'
         }).then(async (response: any) => {
-          let file_zip = props.owner + '-' + props.repo_name + ".zip";
+          let file_zip = props.branch + ".zip";
           let place_save_file = props.download_path + '/' + file_zip;
           // First delete all data and folder on target 
           // ! attempts to expand history event. In BASH you can enable extglob using:
@@ -162,7 +163,7 @@ export default {
           }));
           // Then unzip the file from root project path as point
           shelljs.exec("unzip -o " + props.download_path + "/" + file_zip + " -d " + props.download_path + " && rm " + props.download_path + "/" + file_zip);
-          shelljs.exec("mv " + props.download_path + "/" + props.owner + "* " + props.download_path + "/" + props.branch);
+          shelljs.exec("mv " + props.download_path + "/" + (props.repo_name.split(" ").join("_").toLowerCase()) + "* " + props.download_path + "/" + props.branch);
           console.log("GitlabService ::: Shelljs is done");
           resolve(place_save_file);
         }).catch((err) => {

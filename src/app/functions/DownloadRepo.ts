@@ -1,5 +1,6 @@
 import ExecutionService, { Execution } from "../services/ExecutionService";
 import GithubService from "../services/GithubService";
+import GitlabService from "../services/GitlabService";
 import OAuthService, { OauthInterface } from "../services/OAuthService";
 import PipelineService, { PipelineServiceInterface } from "../services/PipelineService";
 
@@ -27,25 +28,37 @@ const DownloadRepo = async (props: {
 
     console.log("execution_data ::: ", execution_data);
     let response = null;
+    let oauthGitData = null;
     switch (pipeline_data.from_provider) {
       case 'github':
-        let githubAuthData = await GithubService.getCurrentUser({
+        oauthGitData = await GithubService.getCurrentUser({
           access_token: oauth_user_data.access_token
         })
         response = await GithubService.downloadRepo({
           access_token: oauth_user_data.access_token,
-          owner: githubAuthData.login,
+          owner: oauthGitData.login,
           branch: execution_data.branch,
           repo_name: pipeline_data.repo_name,
           download_path: "./storage/app/executions/" + execution_data.id + '/repo'
         });
-        console.log("file download :: ", response);
         break;
       case 'gitlab':
+        oauthGitData = await GitlabService.getCurrentUser({
+          access_token: oauth_user_data.access_token
+        })
+        response = await GitlabService.downloadRepo({
+          id: pipeline_data.repo_id,
+          access_token: oauth_user_data.access_token,
+          owner: oauthGitData.login,
+          branch: execution_data.branch,
+          repo_name: pipeline_data.repo_name,
+          download_path: "./storage/app/executions/" + execution_data.id + '/repo'
+        });
         break;
       case 'bitbucket':
         break;
     }
+    console.log("file download :: ", response);
   } catch (ex) {
     throw ex;
   }
