@@ -134,11 +134,15 @@ export default {
         } catch (ex) {
           console.log("error - ", ex);
         }
-        if (infoJSON != null && commitData.sha == infoJSON.sha) {
-          if (existsSync(props.download_path + "/" + props.branch) == true) {
-            console.log("GitlabService ::: Branch " + props.branch + " is exist");
-            return resolve(props.download_path + "/" + props.branch);
+        try {
+          if (infoJSON != null && commitData.sha == infoJSON.sha) {
+            if (existsSync(props.download_path + "/" + props.branch) == true) {
+              console.log("GitlabService ::: Branch " + props.branch + " is exist");
+              return resolve(props.download_path + "/" + props.branch);
+            }
           }
+        } catch (ex) {
+          return reject(ex);
         }
         let url = `https://gitlab.com/api/v4/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
         axios.get(url, {

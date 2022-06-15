@@ -21,11 +21,10 @@ export const onComplete = async (props: {
     job_id
   } = job.data;
   let qurateUpdateData: Array<QueueRecordDetailInterface> = await QueueRecordDetailService.updateQueueRecordDetailWhere({
-    status: QueueRecordDetailService.STATUS.COMPLETED
+    status: job.returnvalue == "failed" ? QueueRecordDetailService.STATUS.FAILED : QueueRecordDetailService.STATUS.COMPLETED
   }, {
     job_id: job_id
   });
-
   // If last process
   if ((job.data.total - 1) == job.data.index) {
     let _schedule_type = job.data.schedule_type;
@@ -44,14 +43,14 @@ export const onComplete = async (props: {
           queue_record_id: qurateUpdateData[0].qrec_id,
           queue_record_detail_id: qurateUpdateData[0].id,
           queue_record_status: QueueRecordService.STATUS.COMPLETED,
-          queue_record_detail_status: QueueRecordDetailService.STATUS.COMPLETED
+          queue_record_detail_status: qurateUpdateData[0].status
         });
         break;
     }
   }
 }
 
-export const onActive = (props: {
+export const onActive = async (props: {
   job: Job
 }) => {
   let {
@@ -60,12 +59,21 @@ export const onActive = (props: {
 
   console.log("Job onActive :: ", job)
 
-  let {
-    job_id
-  } = job.data;
-
-  // Use set timeout for waiting complete on conCOmplete event on repeatable queue
   setTimeout(async () => {
+    let {
+      job_id,
+      queue_record_id
+    } = job.data;
+    let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId(job_id, queue_record_id)
+    // Use set timeout for waiting complete on conCOmplete event on repeatable queue
+    switch (res_data_record_detail.status) {
+      case QueueRecordDetailService.STATUS.FAILED:
+      case QueueRecordDetailService.STATUS.COMPLETED:
+      case QueueRecordDetailService.STATUS.STOPPED:
+      case QueueRecordDetailService.STATUS.DELAYED:
+        return;
+    }
+    console.log("aaaaaaaaaaaaaaaaaaaaaa ::", res_data_record_detail);
     let queryUpdate = sqlbricks.update("queue_record_details", {
       status: QueueRecordDetailService.STATUS.RUNNING
     }).where({

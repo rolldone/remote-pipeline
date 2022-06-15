@@ -135,8 +135,8 @@ const PipelineLoop = async function (props: {
                 return;
               }
               firstStart.command();
-            }catch(ex){
-              resolveReject("You get problem first start task queue - ex :: ",ex);
+            } catch (ex) {
+              resolveReject("You get problem first start task queue - ex :: ", ex);
             }
           }, 3000);
           pendingCallCommand();
@@ -206,11 +206,16 @@ const PipelineLoop = async function (props: {
 
           // Download repository from pipeline and branch on execution
           // If there is no repo on pipeline return null
-          let downloadInfo = await DownloadRepo({
-            pipeline_id: execution.pipeline_id,
-            execution_id: execution.id
-          })
-          
+          try {
+            let downloadInfo = await DownloadRepo({
+              pipeline_id: execution.pipeline_id,
+              execution_id: execution.id
+            })
+          } catch (ex) {
+            console.log("DownloadRepo - ex :: ", ex);
+            throw ex;
+          }
+
           let socket = await sshPromise.shell();
           let who_parent = null;
           let pipeline_task_id = null;
@@ -362,7 +367,8 @@ const PipelineLoop = async function (props: {
     }
     return true;
   } catch (ex) {
-    throw ex;
+    console.log("PipelineLoop - ex  :: ", ex)
+    return false;
   }
 }
 

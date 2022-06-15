@@ -19,10 +19,11 @@ const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
         job_id,
         extra
       } = job.data;
-  
+
       let resPipelineLoop = await PipelineLoop({ queue_record_id, host_id, host_data, job_id, extra });
       if (resPipelineLoop == false) {
         console.log(`Job ${job_id} is now canceled; Because some requirement data get null. Maybe some data get deleted?`);
+        return 'failed';
       }
     } catch (ex) {
       console.log(`BasicExecutionWorker - ${props.queue_name} - ex :: `, ex);
@@ -55,7 +56,7 @@ const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
   });
 
   queueEvents.on('completed', async (job) => {
-    
+
     let {
       host_data,
       host_id,

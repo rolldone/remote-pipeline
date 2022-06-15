@@ -5,6 +5,7 @@ import SqlService from "./SqlService";
 import dirToJson from 'dir-to-json';
 import mimeType from 'mime-types';
 import { readFileSync } from "fs";
+import SafeValue from "../functions/base/SafeValue";
 
 declare let db: Knex;
 
@@ -255,13 +256,19 @@ export default {
   },
   async updateQueueRecordDetail(props: QueueRecordDetailInterface) {
     try {
+      let queueData: QueueRecordDetailInterface = await this.getQueueRecordDetail({
+        id: props.id
+      })
+      if (queueData == null) {
+        throw new Error("Not found data");
+      }
       console.log("addQueueRecordDetail props :: ", props);
       let queryUpdate = sqlbricks.update("queue_record_details", {
-        queue_record_id: props.queue_record_id,
-        queue_name: props.queue_name,
-        job_id: props.job_id,
-        data: JSON.stringify(props.job_data),
-        status: props.status
+        queue_record_id: SafeValue(props.queue_record_id, queueData.queue_record_id),
+        queue_name: SafeValue(props.queue_name, queueData.queue_name),
+        job_id: SafeValue(props.job_id, queueData.job_id),
+        data: JSON.stringify(SafeValue(props.job_data, queueData.data)),
+        status: SafeValue(props.status, queueData.status)
       });
       queryUpdate.where({
         "id": props.id
