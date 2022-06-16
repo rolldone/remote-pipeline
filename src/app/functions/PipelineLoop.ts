@@ -6,7 +6,7 @@ import ExecutionService from "../services/ExecutionService";
 import PipelineItemService from "../services/PipelineItemService";
 import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
-import QueueRecordService, { QueueRecordInterface } from "../services/QueueRecordService";
+import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
 import DownloadRepo from "./DownloadRepo";
@@ -48,9 +48,11 @@ const PipelineLoop = async function (props: {
     if (queue_record_detail.status == QueueRecordDetailService.STATUS.STOPPED) {
       return false;
     }
-
-    if (queue_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED) {
-      return true;
+    
+    if(queue_record.type == QueueRecordType.INSTANT){
+      if (queue_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED) {
+        return true;
+      }
     }
 
     // Second get the execution

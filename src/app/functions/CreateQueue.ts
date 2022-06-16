@@ -121,7 +121,7 @@ const CreateQueue = function (props: {
                     process_limit: 1 // process_limit
                   });
                   _repeat = {
-                    cron: `* ${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
+                    cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
                   };
                   break;
                 case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:

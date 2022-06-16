@@ -14,6 +14,7 @@ export interface QueueControllerInterface extends BaseControllerInterface {
   createQueue?: { (req: any, res: any): void }
   createQueueGroup?: { (req: any, res: any): void }
   deleteQueue?: { (req: any, res: any): void }
+  deleteQueueScheduler?: { (req: any, res: any): void }
   updateQueue?: { (req: any, res: any): void }
   getQueues?: { (req: any, res: any): void }
   getQueue?: { (req: any, res: any): void }
@@ -152,6 +153,47 @@ export default BaseController.extend<QueueControllerInterface>({
           queue_record_detail_id: null,
           queue_record_status: QueueRecordService.STATUS.STAND_BY,
           queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
+        });
+      }
+      res.send("Deleted!");
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async deleteQueueScheduler(req, res) {
+    try {
+      let id = req.body.id;
+      let _data_queue_record_details = await QueueRecordDetailService.getQueueRecordDetails({
+        queue_record_id: id,
+        status: QueueRecordDetailService.STATUS.RUNNING
+      })
+      _data_queue_record_details.forEach(async (res_data_record_detail, index) => {
+        await DeleteQueueItem({
+          index,
+          length: _data_queue_record_details.length,
+          queue_record_id: id,
+          queue_record_detail_id: res_data_record_detail.id,
+          queue_record_status: QueueRecordService.STATUS.STAND_BY,
+          queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
+        });
+      });
+      if (_data_queue_record_details.length == 0) {
+        _data_queue_record_details = await QueueRecordDetailService.getQueueRecordDetails({
+          queue_record_id: id,
+          limit: 1
+        });
+        if (_data_queue_record_details.length == 0) {
+          return res.send("Empty!");
+        }
+        let queue_r_detail_data: QueueRecordDetailInterface = _data_queue_record_details[0];
+        console.log("queue_r_detail_data :: ", queue_r_detail_data);
+        await DeleteQueueItem({
+          index: 0,
+          length: 1,
+          queue_record_id: id,
+          queue_record_detail_id: queue_r_detail_data.id,
+          queue_record_status: QueueRecordService.STATUS.STAND_BY,
+          queue_record_detail_status: queue_r_detail_data.status
         });
       }
       res.send("Deleted!");

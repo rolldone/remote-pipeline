@@ -30,10 +30,12 @@ export const onComplete = async (props: {
     let _schedule_type = job.data.schedule_type;
     switch (_schedule_type) {
       case QueueSceduleService.schedule_type.REPEATABLE:
-        qurateUpdateData = await QueueRecordService.updateQueueRecord({
-          status: QueueRecordStatus.READY,
-          id: job.data.queue_record_id
-        });
+
+        // qurateUpdateData = await QueueRecordService.updateQueueRecord({
+        //   status: QueueRecordStatus.READY,
+        //   id: job.data.queue_record_id
+        // });
+        
         break;
       case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
       default:
