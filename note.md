@@ -61,12 +61,14 @@
 - Listen back state [Done]
 
 ## Phase 2
-- [User] : Manage join group share project [Waiting]
+- [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
+- [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
+- [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Waiting]
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 
+- [User] : Manage join group share project [Waiting]
 - [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Waiting]
 - [Webhook] :Create manage webhook history [Waiting]
 - [Webhook] : Create template every webhook [Waiting]
-- [AdminMenu] : Enable interactive menu on side menu admin [Waiting]
 - [Pipeline] : Write file use echo with array method without sftp - if possible [Waiting]
 - [UserExperience] : Improvement all experience like validation, user navigation [Waiting]
 - [PipelineItem] : can clone pipeline item 
