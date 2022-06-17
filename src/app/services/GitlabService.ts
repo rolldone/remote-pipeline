@@ -158,16 +158,22 @@ export default {
           // ! attempts to expand history event. In BASH you can enable extglob using:
           shelljs.exec("shopt -s extglob");
           // Then use this rm command to delete all but these 2 listed files:
-          shelljs.exec("rm -R " + props.download_path + "/!(info.json)");
+          // shelljs.exec("rm -R " + props.download_path + "/!(info.json)");
+          shelljs.exec("rm -R " + props.download_path + "/*");
+          shelljs.exec("touch " + props.download_path + "/info.json");
+          
           // Then save new file
           writeFileSync(place_save_file, response.data);
+          
+          // Then unzip the file from root project path as point
+          shelljs.exec("unzip -o " + props.download_path + "/" + file_zip + " -d " + props.download_path + " && rm " + props.download_path + "/" + file_zip);
+          shelljs.exec("mv " + props.download_path + "/" + (props.repo_name.split(" ").join("_").toLowerCase()) + "* " + props.download_path + "/" + props.branch);
+          
           writeFileSync(props.download_path + "/info.json", JSON.stringify({
             sha: commitData.sha,
             branch: props.branch,
           }));
-          // Then unzip the file from root project path as point
-          shelljs.exec("unzip -o " + props.download_path + "/" + file_zip + " -d " + props.download_path + " && rm " + props.download_path + "/" + file_zip);
-          shelljs.exec("mv " + props.download_path + "/" + (props.repo_name.split(" ").join("_").toLowerCase()) + "* " + props.download_path + "/" + props.branch);
+
           console.log("GitlabService ::: Shelljs is done");
           resolve(place_save_file);
         }).catch((err) => {
