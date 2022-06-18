@@ -120,6 +120,15 @@ const CreateQueue = function (props: {
                     queue_name: queue_name,
                     process_limit: 1 // process_limit
                   });
+                  /**
+                   * For this queue delete first and create new one
+                   */
+                  let _existJObs = await _processQueue.getRepeatableJobs();
+                  for (var a234 = 0; a234 < _existJObs.length; a234++) {
+                    const job = _existJObs[a234];
+                    await _processQueue.removeRepeatableByKey(job.key);
+                  }
+                  await _processQueue.drain();
                   _repeat = {
                     cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
                   };
