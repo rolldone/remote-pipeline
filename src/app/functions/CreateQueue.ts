@@ -113,7 +113,7 @@ const CreateQueue = function (props: {
             case QueueRecordService.TYPE.SCHEDULE:
               let qrec_sch_data = resQueueRecord.qrec_sch_data;
               let _repeat = null;
-              let _timeout = 0;
+              let _delay = 3000;
               switch (qrec_sch_data.schedule_type) {
                 case QueueSceduleService.schedule_type.REPEATABLE:
                   _processQueue = ProcessScheduleQueue({
@@ -139,8 +139,8 @@ const CreateQueue = function (props: {
                   });
                   let _startDate = Moment();
                   let _endDate = Moment(qrec_sch_data.date + " " + qrec_sch_data.time, "YYYY-MM-DD HH:mm:ss");
-                  _timeout = _endDate.diff(_startDate, "milliseconds");
-                  console.log("_timeout :: ", _timeout);
+                  _delay = _endDate.diff(_startDate, "milliseconds");
+                  console.log("_timeout :: ", _delay);
                   break;
               }
               console.log("resQueueRecord :: ", resQueueRecord);
@@ -161,7 +161,7 @@ const CreateQueue = function (props: {
                   }, {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
                     jobId: idJobSchedule,
-                    delay: _timeout,
+                    delay: _delay,
                     repeat: _repeat
                   });
                   // console.log("theJOB ::: ", theJOb.);
