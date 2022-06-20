@@ -5,7 +5,6 @@ import BaseStart, { BaseStartInterface } from './base/BaseStart';
 import bootstrap from './bootstrap';
 import { MasterDataInterface } from './bootstrap/StartMasterData';
 import { Cli, Web } from './routes/v1';
-import os from 'os';
 
 declare var masterData: MasterDataInterface;
 
