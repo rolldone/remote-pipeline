@@ -1,5 +1,7 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
@@ -13,6 +15,8 @@ export interface Host {
   username?: string
   private_key?: string
   user_id?: number
+  created_at?: string
+  updated_at?: string
 }
 
 export interface HostServiceInterface extends Host {
@@ -80,7 +84,9 @@ export default {
         'hos.username as username',
         'hos.password as password',
         'hos.auth_type as auth_type',
-        'hos.private_key as private_key'
+        'hos.private_key as private_key',
+        'hos.created_at as created_at',
+        'hos.updated_at as updated_at'
       ).from("hos");
       query = query.leftJoin('usr').on({
         "usr.id": "hos.user_id"
@@ -104,7 +110,7 @@ export default {
   },
   async addHost(props: Host): Promise<any> {
     try {
-      let resDataId = await SqlService.insert(sqlbricks.insert('hosts', {
+      let resDataId = await SqlService.insert(sqlbricks.insert('hosts', CreateDate({
         name: props.name,
         description: props.description,
         data: JSON.stringify(props.data),
@@ -113,7 +119,7 @@ export default {
         username: props.username,
         password: props.password,
         user_id: props.user_id
-      }).toString());
+      })).toString());
       let resData = await this.getHost({
         id: resDataId
       })
@@ -124,16 +130,23 @@ export default {
   },
   async updateHost(props: Host): Promise<any> {
     try {
-      let resData = await SqlService.update(sqlbricks.update('hosts', {
-        name: props.name,
-        description: props.description,
-        data: JSON.stringify(props.data),
-        auth_type: props.auth_type,
-        private_key: props.private_key,
-        username: props.username,
-        password: props.password,
-        user_id: props.user_id
-      }).where("id", props.id).toString());
+      let hostData: Host = await this.getHost({
+        id: props.id
+      });
+      if (hostData == null) {
+        throw new Error("Host Data not found!");
+      }
+      let resData = await SqlService.update(sqlbricks.update('hosts', CreateDate({
+        name: SafeValue(props.name, hostData.name),
+        description: SafeValue(props.description, hostData.description),
+        data: JSON.stringify(SafeValue(props.data, hostData.data)),
+        auth_type: SafeValue(props.auth_type, hostData.auth_type),
+        private_key: SafeValue(props.private_key, hostData.private_key),
+        username: SafeValue(props.username, hostData.username),
+        password: SafeValue(props.password, hostData.password),
+        user_id: SafeValue(props.user_id, hostData.user_id),
+        created_at: SafeValue(hostData.created_at, null)
+      })).where("id", props.id).toString());
       resData = await this.getHost({
         id: props.id
       });

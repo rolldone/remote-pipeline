@@ -1,6 +1,7 @@
 import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import BoolearParse from "../functions/base/BoolearParse";
+import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import ExecutionService from "./ExecutionService";
 import PipelineItemService, { PipelineItemInterface } from "./PipelineItemService";
@@ -22,6 +23,8 @@ export interface PipelineServiceInterface {
   repo_data?: any
   repo_name?: string
   repo_id?: number
+  created_at?: string
+  updated_at?: string
   source_type?: string
   from_provider?: string
   force_deleted?: boolean
@@ -53,7 +56,7 @@ const returnFactoryColumn = async (props: PipelineServiceInterface) => {
 export default {
   async addPipeline(props: PipelineServiceInterface): Promise<any> {
     try {
-      let resData = await db.raw(Sqlbricks.insert('pipelines', {
+      let resData = await db.raw(Sqlbricks.insert('pipelines', CreateDate({
         name: props.name,
         description: props.description,
         project_id: props.project_id,
@@ -63,7 +66,7 @@ export default {
         from_provider: props.from_provider,
         source_type: props.source_type,
         repo_data: JSON.stringify(props.repo_data),
-      }).toString());
+      })).toString());
       let id = resData.lastInsertRowid
       resData = await this.getPipeline({
         id
@@ -75,17 +78,24 @@ export default {
   },
   async updatePipeline(props: PipelineServiceInterface): Promise<any> {
     try {
-      let resData = await SqlService.update(Sqlbricks.update('pipelines', {
-        name: props.name,
-        description: props.description,
-        project_id: props.project_id,
-        oauth_user_id: props.oauth_user_id,
-        repo_data: JSON.stringify(props.repo_data),
-        repo_name: props.repo_name,
-        repo_id: props.repo_id,
-        from_provider: props.from_provider,
-        source_type: props.source_type,
-      }).where("id", props.id).toString());
+      let pipelineData: PipelineServiceInterface = await this.getPipeline({
+        id: props.id
+      })
+      if (pipelineData == null) {
+        throw new Error("Pipeline not found!");
+      }
+      let resData = await SqlService.update(Sqlbricks.update('pipelines', CreateDate({
+        name: SafeValue(props.name, pipelineData.name),
+        description: SafeValue(props.description, pipelineData.description),
+        project_id: SafeValue(props.project_id, pipelineData.project_id),
+        oauth_user_id: SafeValue(props.oauth_user_id, pipelineData.oauth_user_id),
+        repo_data: JSON.stringify(SafeValue(props.repo_data, pipelineData.repo_data)),
+        repo_name: SafeValue(props.repo_name, pipelineData.repo_name),
+        repo_id: SafeValue(props.repo_id, pipelineData.repo_id),
+        from_provider: SafeValue(props.from_provider, pipelineData.from_provider),
+        source_type: SafeValue(props.source_type, pipelineData.source_type),
+        created_at: SafeValue(pipelineData.created_at, null)
+      })).where("id", props.id).toString());
       resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());
       return resData;
     } catch (ex) {
@@ -118,6 +128,8 @@ export default {
         "pip.name as name",
         "pip.repo_data as repo_data",
         "pip.repo_id as repo_id",
+        "pip.created_at as created_at",
+        "pip.updated_at as updated_at",
         "pro.id as pro_id",
         "pro.name as pro_name"
       ).from("pip");

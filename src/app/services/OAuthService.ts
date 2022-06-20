@@ -5,6 +5,7 @@ import FormData from 'form-data';
 import Sqlbricks from "@root/tool/SqlBricks";
 import SqlService from "./SqlService";
 import { randomBytes } from "crypto";
+import CreateDate from "../functions/base/CreateDate";
 
 export interface OauthInterface {
   id?: number
@@ -163,7 +164,7 @@ export default {
   },
   async addOAuthToken(props: OauthInterface) {
     try {
-      let id = await SqlService.insert(Sqlbricks.insert("oauth_users", {
+      let id = await SqlService.insert(Sqlbricks.insert("oauth_users", CreateDate({
         user_id: props.user_id,
         oauth_id: props.oauth_id,
         access_token: props.access_token,
@@ -172,7 +173,7 @@ export default {
         refresh_token: props.refresh_token,
         scope: props.scope,
         data: props.data,
-      }).toString())
+      })).toString())
       let resData = await SqlService.selectOne(Sqlbricks.select("*").from("oauth_users").where("id", id).toString());
       return resData;
     } catch (ex) {
@@ -188,9 +189,9 @@ export default {
       if (oauthData == null) {
         return this.addOAuthToken(props);
       }
-      let datStatus = await SqlService.update(Sqlbricks.update("oauth_users", {
+      let datStatus = await SqlService.update(Sqlbricks.update("oauth_users", CreateDate({
         access_token: props.access_token
-      }).where({
+      })).where({
         "oauth_id": props.oauth_id,
         "user_id": props.user_id
       }).toString())

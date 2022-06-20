@@ -1,6 +1,7 @@
 import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
+import CreateDate from "../functions/base/CreateDate";
 
 const saltRounds = 10;
 
@@ -25,7 +26,7 @@ export default {
   async registerService(props: AuthInterface) {
     try {
       let _hash = await bcrypt.hash(props.password, saltRounds);
-      let query = Sqlbricks.insert("users", {
+      let _data = CreateDate({
         first_name: props.first_name,
         last_name: props.last_name,
         email: props.email,
@@ -33,6 +34,7 @@ export default {
         status: props.status || AuthStatus.ACTIVE,
         data: JSON.stringify(props.data || {})
       });
+      let query = Sqlbricks.insert("users", _data);
       let _query = query.toString();
       let resQueueRecord = await db.raw(_query);
       return true;

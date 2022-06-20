@@ -1,5 +1,6 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import { OauthInterface } from "./OAuthService";
 import SqlService from "./SqlService";
@@ -95,7 +96,7 @@ export default {
   },
   async addOAuthUser(props: OauthInterface): Promise<any> {
     try {
-      let resDataId = await SqlService.insert(sqlbricks.insert('oauth_users', {
+      let resDataId = await SqlService.insert(sqlbricks.insert('oauth_users', CreateDate({
         user_id: props.user_id,
         name: props.name,
         oauth_id: props.oauth_id,
@@ -105,7 +106,7 @@ export default {
         scope: props.scope,
         data: JSON.stringify(props.data),
         refresh_token: props.refresh_token,
-      }).toString());
+      })).toString());
       let resData = await this.getOAuthUser({
         id: resDataId
       })
@@ -123,7 +124,7 @@ export default {
       if (oauthUserData == null) {
         throw new Error("Data is not found!");
       }
-      let resData = await SqlService.update(sqlbricks.update('oauth_users', {
+      let resData = await SqlService.update(sqlbricks.update('oauth_users', CreateDate({
         user_id: SafeValue(props.user_id, oauthUserData.user_id),
         name: SafeValue(props.name, oauthUserData.name),
         oauth_id: SafeValue(props.oauth_id, oauthUserData.oauth_id),
@@ -133,7 +134,7 @@ export default {
         scope: SafeValue(props.scope, oauthUserData.scope),
         data: SafeValue(JSON.stringify(props.data || {}), oauthUserData.data),
         refresh_token: SafeValue(props.refresh_token, oauthUserData.refresh_token),
-      }).where("id", props.id).toString());
+      })).where("id", props.id).toString());
       resData = await this.getOAuthUser({
         id: props.id
       });

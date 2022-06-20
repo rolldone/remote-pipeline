@@ -1,5 +1,6 @@
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
@@ -15,6 +16,8 @@ export interface PipelineTaskInterface {
   temp_id?: string
   parent_order_temp_ids?: Array<string>
   is_active?: boolean | number
+  created_at?: string
+  updated_at?: string
   data?: {
     parent_condition_type?: string
     condition_values?: string
@@ -57,7 +60,7 @@ export default {
       for (var a = 0; a < props.length; a++) {
         // Insert again
         let _command_data = props[a];
-        let resDataId = await SqlService.insert(SqlBricks.insert("pipeline_tasks", {
+        let resDataId = await SqlService.insert(SqlBricks.insert("pipeline_tasks", CreateDate({
           pipeline_id: _command_data.pipeline_id,
           project_id: _command_data.project_id,
           pipeline_item_id: _command_data.pipeline_item_id,
@@ -69,7 +72,7 @@ export default {
           parent_order_temp_ids: _command_data.parent_order_temp_ids == null ? null : JSON.stringify(_command_data.parent_order_temp_ids),
           is_active: _command_data.is_active,
           data: JSON.stringify(_command_data.data)
-        }).toString());
+        })).toString());
         // Select the data
         resData.push(await SqlService.selectOne(SqlBricks.select("*").from("pipeline_tasks").where("id", resDataId).toString()));
       }
@@ -100,6 +103,8 @@ export default {
         "pip_task.temp_id as temp_id",
         "pip_task.is_active as is_active",
         "pip_task.data as data",
+        "pip_task.created_at as created_at",
+        "pip_task.updated_at as updated_at",
         "pip_item.id as pip_item_id",
         "pip_item.name as pip_item_name",
         "pip_item.is_active as pip_item_is_active",
@@ -179,6 +184,8 @@ export default {
         "pip_task.parent_order_temp_ids as parent_order_temp_ids",
         "pip_task.is_active as is_active",
         "pip_task.data as data",
+        "pip_task.created_at as created_at",
+        "pip_task.updated_at as updated_at",
         "pip_item.id as pip_item_id",
         "pip_item.name as pip_item_name",
         "pip_item.is_active as pip_item_is_active",

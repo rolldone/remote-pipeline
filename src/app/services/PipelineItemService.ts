@@ -1,4 +1,6 @@
 import SqlBricks from "@root/tool/SqlBricks";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
 
 const TYPE = {
@@ -15,7 +17,9 @@ export interface PipelineItemInterface {
   type?: string
   order_number?: number
   description?: string
-  
+  created_at?: string
+  updated_at?: string
+
   pipeline_tasks?: Array<any>
 }
 
@@ -24,7 +28,7 @@ export interface PipelineItemServiceInterface extends PipelineItemInterface {
   order_by_name?: string
   order_by_value?: string
   force_deleted?: boolean
-  
+
   // Relation
   project_ids?: Array<number>
   pipeline_ids?: Array<number>
@@ -63,7 +67,9 @@ export default {
         "pro.user_id as pro_user_id",
         "pip.name as pip_name",
         "pip.id as pip_id",
-        "pip.description as pip_description"
+        "pip.description as pip_description",
+        "pip.created_at as created_at",
+        "pip.updated_at as updated_at"
       ).from("pip_item").leftJoin("pro").on({
         "pro.id": "pip_item.project_id"
       }).leftJoin("pip").on({
@@ -105,7 +111,9 @@ export default {
         "pro.user_id as pro_user_id",
         "pip.name as pip_name",
         "pip.id as pip_id",
-        "pip.description as pip_description"
+        "pip.description as pip_description",
+        "pip.created_at as created_at",
+        "pip.updated_at as updated_at"
       ).from("pip_item").leftJoin("pro").on({
         "pro.id": "pip_item.project_id"
       }).leftJoin("pip").on({
@@ -149,7 +157,7 @@ export default {
       let existData = await SqlService.selectOne(query.toString());
       let resData = null;
       if (existData == "" || existData == null) {
-        resData = await SqlService.insert(SqlBricks.insert('pipeline_items', {
+        resData = await SqlService.insert(SqlBricks.insert('pipeline_items', CreateDate({
           pipeline_id: props.pipeline_id,
           project_id: props.project_id,
           name: props.name,
@@ -157,7 +165,7 @@ export default {
           type: props.type,
           order_number: props.order_number,
           description: props.description
-        }).toString());
+        })).toString());
         resData = await this.getPipelineItem({
           id: resData,
           project_id: props.project_id,
@@ -173,15 +181,24 @@ export default {
   },
   async updatePipelineItem(props: PipelineItemServiceInterface) {
     try {
-      await SqlService.update(SqlBricks.update('pipeline_items', {
-        pipeline_id: props.pipeline_id,
+      let pipelineItemData: PipelineItemInterface = await this.getPipelineItem({
+        id: props.id,
         project_id: props.project_id,
-        name: props.name,
-        is_active: props.is_active,
-        type: props.type,
-        order_number: props.order_number,
-        description: props.description
-      }).where("id", props.id).toString());
+        pipeline_id: props.pipeline_id
+      })
+      if (pipelineItemData == null) {
+        throw new Error("Pipeline item not found!");
+      }
+      await SqlService.update(SqlBricks.update('pipeline_items', CreateDate({
+        pipeline_id: SafeValue(props.pipeline_id, pipelineItemData.pipeline_id),
+        project_id: SafeValue(props.project_id, pipelineItemData.project_id),
+        name: SafeValue(props.name, pipelineItemData.name),
+        is_active: SafeValue(props.is_active, pipelineItemData.is_active),
+        type: SafeValue(props.type, pipelineItemData.type),
+        order_number: SafeValue(props.order_number, pipelineItemData.order_number),
+        description: SafeValue(props.description, pipelineItemData.description),
+        created_at: SafeValue(pipelineItemData.created_at, null)
+      })).where("id", props.id).toString());
       let resData = await SqlService.selectOne(SqlBricks.select("*").from("pipeline_items").where("id", props.id).toString());
       return resData;
     } catch (ex) {

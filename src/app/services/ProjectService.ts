@@ -1,6 +1,8 @@
 
 import Sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import ExecutionService from "./ExecutionService";
 import PipelineItemService from "./PipelineItemService";
 import PipelineService from "./PipelineService";
@@ -17,6 +19,8 @@ export interface ProjectInterface {
   user_id?: number
   name?: string
   description?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface ProjectServiceInterface extends ProjectInterface {
@@ -31,11 +35,11 @@ export interface ProjectServiceInterface extends ProjectInterface {
 export default {
   async addProject(props: ProjectInterface) {
     try {
-      let resInsert = await db.raw(Sqlbricks.insert('projects', {
+      let resInsert = await db.raw(Sqlbricks.insert('projects', CreateDate({
         name: props.name,
         description: props.description,
         user_id: props.user_id
-      }).toString());
+      })).toString());
       let id = resInsert.lastInsertRowid;
       let resData = await this.getProject({
         id
@@ -47,10 +51,17 @@ export default {
   },
   async updateProject(props: ProjectInterface) {
     try {
-      let res = await db.raw(Sqlbricks.update('projects', {
-        name: props.name,
-        description: props.description
-      }).where("id", props.id).where("user_id", props.user_id).toString());
+      let projectData: ProjectInterface = await this.getProject({
+        id: props.id
+      })
+      if (projectData == null) {
+        throw new Error("Project data not found!");
+      }
+      let res = await db.raw(Sqlbricks.update('projects', CreateDate({
+        name: SafeValue(props.name, projectData.name),
+        description: SafeValue(props.description, projectData.description),
+        created_at: SafeValue(projectData.created_at, null)
+      })).where("id", props.id).where("user_id", props.user_id).toString());
       let resData = await this.getProject({
         id: props.id
       })

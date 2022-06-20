@@ -2,6 +2,7 @@ import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
 import BoolearParse from "../functions/base/BoolearParse";
+import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import CreateQueue from "../functions/CreateQueue";
 import HostService, { Host } from "./HostService";
@@ -34,6 +35,8 @@ export interface Execution {
   pipeline_items?: Array<PipelineItemInterface>
   host_ids?: Array<number>
   description?: string
+  created_at?: string
+  updated_at?: string
   mode?: string
   delay?: number
   hosts?: Array<Host>
@@ -50,7 +53,7 @@ export default {
   PROCESS_MODE,
   async addExecution(props: Execution) {
     try {
-      let resData = await SqlService.insert(SqlBricks.insert('executions', {
+      let resData = await SqlService.insert(SqlBricks.insert('executions', CreateDate({
         name: props.name,
         process_mode: props.process_mode,
         process_limit: props.process_limit,
@@ -65,7 +68,7 @@ export default {
         description: props.description,
         mode: props.mode,
         delay: props.delay
-      }).toString());
+      })).toString());
       resData = await this.getExecution({
         id: resData.id
       })
@@ -76,22 +79,29 @@ export default {
   },
   async updateExecution(props: Execution) {
     try {
-      let resData = await SqlService.update(SqlBricks.update('executions', {
-        name: props.name,
-        process_mode: props.process_mode,
-        process_limit: props.process_limit,
-        pipeline_id: props.pipeline_id,
-        project_id: props.project_id,
-        branch: props.branch,
-        user_id: props.user_id,
-        variable_id: props.variable_id,
-        variable_option: props.variable_option,
-        pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
-        host_ids: JSON.stringify(props.host_ids),
-        description: props.description,
-        mode: props.mode,
-        delay: props.delay
-      }).where("id", props.id).toString());
+      let exeData: Execution = await this.getExecution({
+        id: props.id
+      });
+      if (exeData == null) {
+        throw new Error("Execution data not found!");
+      }
+      let resData = await SqlService.update(SqlBricks.update('executions', CreateDate({
+        name: SafeValue(props.name, exeData.name),
+        process_mode: SafeValue(props.process_mode, exeData.process_mode),
+        process_limit: SafeValue(props.process_limit, exeData.process_limit),
+        pipeline_id: SafeValue(props.pipeline_id, exeData.pipeline_id),
+        project_id: SafeValue(props.project_id, exeData.project_id),
+        branch: SafeValue(props.branch, exeData.branch),
+        user_id: SafeValue(props.user_id, exeData.user_id),
+        variable_id: SafeValue(props.variable_id, exeData.variable_id),
+        variable_option: SafeValue(props.variable_option, exeData.variable_option),
+        pipeline_item_ids: JSON.stringify(SafeValue(props.pipeline_item_ids, exeData.pipeline_item_ids)),
+        host_ids: JSON.stringify(SafeValue(props.host_ids, exeData.host_ids)),
+        description: SafeValue(props.description, exeData.description),
+        mode: SafeValue(props.mode, exeData.mode),
+        delay: SafeValue(props.delay, exeData.delay),
+        created_at: SafeValue(exeData.created_at, null)
+      })).where("id", props.id).toString());
       resData = await this.getExecution({
         id: props.id
       })
@@ -153,6 +163,8 @@ export default {
         'exe.host_ids as host_ids',
         'exe.description as description',
         'exe.mode as mode',
+        'exe.created_at as created_at',
+        'exe.updated_at as updated_at',
         'exe.delay as delay',
         'pro.name as pro_name',
         'pip.name as pip_name',
@@ -218,6 +230,8 @@ export default {
         'exe.description as description',
         'exe.mode as mode',
         'exe.delay as delay',
+        'exe.created_at as created_at',
+        'exe.updated_at as updated_at',
         'pro.name as pro_name',
         'pip.name as pip_name',
         'var.name as var_name'
