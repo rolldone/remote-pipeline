@@ -1,6 +1,7 @@
 import sqlbricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
 import BoolearParse from "../functions/base/BoolearParse";
+import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import QueueRecordDetailService from "./QueueRecordDetailService";
 import QueueSceduleService from "./QueueSceduleService";
@@ -22,6 +23,11 @@ export interface QueueRecordInterface {
   status?: number
   data?: string
   type?: string
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+
   // join
   // execution
   exe_host_ids?: Array<number>
@@ -68,6 +74,9 @@ const preSelectQuery = () => {
     'qrec.status as status',
     'qrec.data as data',
     'qrec.type as type',
+    'qrec.created_at as created_at',
+    'qrec.updated_at as updated_at',
+    'qrec.deleted_at as deleted_at',
     'qrec_sch.id as qrec_sch_id',
     'qrec_sch.queue_record_id as qrec_sch_queue_record_id',
     'qrec_sch.execution_id as qrec_sch_execution_id',
@@ -103,13 +112,13 @@ export default {
   TYPE: QueueRecordType,
   async addQueueRecord(props: QueueRecordInterface) {
     try {
-      let id = await SqlService.insert(sqlbricks.insert('queue_records', {
+      let id = await SqlService.insert(sqlbricks.insert('queue_records', CreateDate({
         queue_key: props.queue_key,
         execution_id: props.execution_id,
         status: props.status,
         data: JSON.stringify(props.data || {}),
         type: props.type
-      }).toString());
+      })).toString());
       let resData = await this.getQueueRecord({
         id
       })
@@ -128,13 +137,14 @@ export default {
         throw new Error("The Data is not found!");
       }
 
-      let resData = await SqlService.update(sqlbricks.update('queue_records', {
+      let resData = await SqlService.update(sqlbricks.update('queue_records', CreateDate({
         queue_key: SafeValue(props.queue_key, existData.queue_key),
         execution_id: SafeValue(props.execution_id, existData.execution_id),
         status: SafeValue(props.status, existData.status),
         data: JSON.stringify(SafeValue(props.data, SafeValue(existData.data, {}))),
-        type: SafeValue(props.type, SafeValue(existData.type, 'instant'))
-      }).where("id", props.id).toString());
+        type: SafeValue(props.type, SafeValue(existData.type, 'instant')),
+        created_at: SafeValue(existData.created_at, null)
+      })).where("id", props.id).toString());
 
       resData = await this.getQueueRecord({
         id: props.id

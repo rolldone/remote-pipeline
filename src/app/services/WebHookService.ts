@@ -2,6 +2,8 @@ import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import SqlBricks from "@root/tool/SqlBricks";
 import { Queue, Worker } from "bullmq";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import WebhookQueue from "../queues/WebhookQueue";
 import SqlService from "./SqlService";
 declare let db: Knex;
@@ -16,6 +18,10 @@ export interface webhook {
   webhook_datas?: Array<any>
   data?: any,
   key?: string
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 export interface SubmitExecuteInterfaceTest {
@@ -50,6 +56,9 @@ const defineQuery = () => {
     "whook.description as description",
     "whook.webhook_datas as webhook_datas",
     "whook.data as data",
+    "whook.created_at as created_at",
+    "whook.updated_at as updated_at",
+    "whook.deleted_at as deleted_at",
   );
 
   return query;
@@ -60,7 +69,7 @@ declare let masterData: MasterDataInterface
 export default {
   async addWebHook(props: webhook): Promise<any> {
     try {
-      let query = SqlBricks.insert("webhooks", {
+      let query = SqlBricks.insert("webhooks", CreateDate({
         id: props.id,
         name: props.name,
         key: props.key,
@@ -69,7 +78,7 @@ export default {
         description: props.description,
         user_id: props.user_id,
         status: props.status,
-      });
+      }));
       let resDataId = await SqlService.insert(query.toString());
       let resData = await this.getWebHook({
         id: resDataId
@@ -81,16 +90,22 @@ export default {
   },
   async updateWebHook(props: webhook): Promise<any> {
     try {
-      let query = SqlBricks.update("webhooks", {
-        id: props.id,
-        name: props.name,
-        key: props.key,
-        webhook_datas: JSON.stringify(props.webhook_datas || []),
-        data: JSON.stringify(props.data || {}),
-        description: props.description,
-        user_id: props.user_id,
-        status: props.status,
-      });
+      let webhookData: webhook = await this.getWebHook({
+        id: props.id
+      })
+      if (webhookData == null) {
+        throw new Error("Webhook not found!");
+      }
+      let query = SqlBricks.update("webhooks", CreateDate({
+        name: SafeValue(props.name, webhookData.name),
+        key: SafeValue(props.key, webhookData.key),
+        webhook_datas: JSON.stringify(SafeValue(props.webhook_datas, webhookData.webhook_datas)),
+        data: JSON.stringify(SafeValue(props.data, webhookData.data)),
+        description: SafeValue(props.description, webhookData.description),
+        user_id: SafeValue(props.user_id, webhookData.user_id),
+        status: SafeValue(props.status, webhookData.status),
+        created_at: SafeValue(webhookData.created_at, null)
+      }));
       query = query.where({
         "id": props.id,
         "user_id": props.user_id
@@ -249,7 +264,7 @@ export default {
              * Loop the webhook datas to get the right use
              */
             let webHookItems = webhook_data.webhook_datas;
-            console.log("wehookItems :: ",webHookItems, ' == ',props);
+            console.log("wehookItems :: ", webHookItems, ' == ', props);
             let isFound = false;
             for (var a = 0; a < webHookItems.length; a++) {
               if (webHookItems[a].key == key) {

@@ -2,6 +2,8 @@ import SqlBricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
 import SqlService from "./SqlService";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 
 declare let db: Knex;
 const saltRounds = 10;
@@ -16,6 +18,10 @@ export interface PersonalAccessTokenInterface {
   expired_date?: string
   status?: number
   description?: string
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 export interface PersonalAccessTokenServiceInterface extends PersonalAccessTokenInterface {
@@ -45,7 +51,7 @@ export default {
   async addPersonalAccessToken(props: PersonalAccessTokenInterface) {
     try {
       let _hash = await bcrypt.hash(props.secret_key, saltRounds);
-      let query = SqlBricks.insert("personal_access_tokens", {
+      let query = SqlBricks.insert("personal_access_tokens", CreateDate({
         id: props.id,
         name: props.name,
         encrypt_key: _hash,
@@ -54,7 +60,7 @@ export default {
         user_id: props.user_id,
         status: props.status,
         expired_date: props.expired_date
-      });
+      }));
       let resDataId = await SqlService.insert(query.toString());
       let resData = await this.getPersonalAccessToken({
         id: resDataId,
@@ -77,13 +83,14 @@ export default {
       }
 
 
-      let updateData: PersonalAccessTokenInterface = {
-        name: props.name || existTOkenData.name,
-        description: props.description || existTOkenData.description,
-        status: props.status || existTOkenData.status,
-        expired_date: props.expired_date || existTOkenData.expired_date,
-        api_key: props.api_key || existTOkenData.api_key
-      };
+      let updateData: PersonalAccessTokenInterface = CreateDate({
+        name: SafeValue(props.name, existTOkenData.name),
+        description: SafeValue(props.description, existTOkenData.description),
+        status: SafeValue(props.status, existTOkenData.status),
+        expired_date: SafeValue(props.expired_date, existTOkenData.expired_date),
+        api_key: SafeValue(props.api_key, existTOkenData.api_key),
+        created_at: SafeValue(existTOkenData.created_at, null)
+      });
 
       let _hash = null;
       if (props.secret_key != null) {
@@ -149,7 +156,7 @@ export default {
       });
       let resData: PersonalAccessTokenInterface = await SqlService.selectOne(query.toString());
       if (resData == null) return null;
-      console.log(secret_key,resData);
+      console.log(secret_key, resData);
       let resPassword = await bcrypt.compare(secret_key, resData.encrypt_key);
       if (resPassword == false) {
         throw new Error("Wrong secret or api key!");

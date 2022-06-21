@@ -6,6 +6,7 @@ import dirToJson from 'dir-to-json';
 import mimeType from 'mime-types';
 import { readFileSync } from "fs";
 import SafeValue from "../functions/base/SafeValue";
+import CreateDate from "../functions/base/CreateDate";
 
 declare let db: Knex;
 
@@ -34,6 +35,9 @@ export interface QueueRecordDetailInterface {
   job_id?: string
   data?: any
   status?: number
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
   // aditional
   job_data?: any
   // Queue record
@@ -79,6 +83,9 @@ const preSelectQuery = () => {
     'qrec_detail.job_id as job_id',
     'qrec_detail.data as data',
     'qrec_detail.status as status',
+    'qrec_detail.created_at as created_at',
+    'qrec_detail.updated_at as updated_at',
+    'qrec_detail.deleted_at as deleted_at',
     'qrec.id as qrec_id',
     'qrec.queue_key as qrec_queue_key',
     'qrec.execution_id as qrec_execution_id',
@@ -236,13 +243,13 @@ export default {
   async addQueueRecordDetail(props: QueueRecordDetailInterface) {
     try {
       console.log("addQueueRecordDetail props :: ", props);
-      let queryInsert = sqlbricks.insert("queue_record_details", {
+      let queryInsert = sqlbricks.insert("queue_record_details", CreateDate({
         queue_record_id: props.queue_record_id,
         queue_name: props.queue_name,
         job_id: props.job_id,
         data: JSON.stringify(props.job_data),
         status: props.status
-      });
+      }));
       let _query = queryInsert.toString();
       let resDataId = await db.raw(_query);
       let resData = await this.getQueueRecordDetail({
@@ -263,13 +270,14 @@ export default {
         throw new Error("Not found data");
       }
       console.log("addQueueRecordDetail props :: ", props);
-      let queryUpdate = sqlbricks.update("queue_record_details", {
+      let queryUpdate = sqlbricks.update("queue_record_details", CreateDate({
         queue_record_id: SafeValue(props.queue_record_id, queueData.queue_record_id),
         queue_name: SafeValue(props.queue_name, queueData.queue_name),
         job_id: SafeValue(props.job_id, queueData.job_id),
         data: JSON.stringify(SafeValue(props.job_data, queueData.data)),
-        status: SafeValue(props.status, queueData.status)
-      });
+        status: SafeValue(props.status, queueData.status),
+        created_at: SafeValue(queueData.created_at, null)
+      }));
       queryUpdate.where({
         "id": props.id
       })

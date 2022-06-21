@@ -1,4 +1,6 @@
 import SqlBricks from "@root/tool/SqlBricks";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
 
 export interface QueueScheduleInterface {
@@ -7,6 +9,10 @@ export interface QueueScheduleInterface {
   execution_id?: any
   schedule_type?: string
   data?: any
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 
   qrec_data?: any
   exe_pipeline_item_ids?: Array<number>
@@ -40,6 +46,9 @@ const preSelect = () => {
     'q_sch.execution_id as execution_id',
     'q_sch.schedule_type as schedule_type',
     'q_sch.data as data',
+    'q_sch.created_at as created_at',
+    'q_sch.updated_at as updated_at',
+    'q_sch.deleted_at as deleted_at',
     'qrec.id as qrec_id',
     'qrec.queue_key as qrec_queue_key',
     'qrec.execution_id as qrec_execution_id',
@@ -79,12 +88,12 @@ export default {
   },
   async addQueueSchedule(props: QueueScheduleInterface) {
     try {
-      let query = SqlBricks.insert("queue_schedules", {
+      let query = SqlBricks.insert("queue_schedules", CreateDate({
         queue_record_id: props.queue_record_id,
         execution_id: props.execution_id,
         schedule_type: props.schedule_type,
         data: JSON.stringify(props.data)
-      }).toString();
+      })).toString();
       let resDataId = await SqlService.insert(query);
       let resData = await this.getQueueSchedule({
         id: resDataId
@@ -96,12 +105,19 @@ export default {
   },
   async updateQueueSchedule(props: QueueScheduleInterface) {
     try {
-      let query = SqlBricks.update("queue_schedules", {
-        queue_record_id: props.queue_record_id,
-        execution_id: props.execution_id,
-        schedule_type: props.schedule_type,
-        data: JSON.stringify(props.data)
-      }).where("id", props.id).toString();
+      let queueScedule: QueueScheduleInterface = await this.getQueueSchedule({
+        id: props.id
+      });
+      if (queueScedule == null) {
+        throw new Error("Queue schedule not found!");
+      }
+      let query = SqlBricks.update("queue_schedules", CreateDate({
+        queue_record_id: SafeValue(props.queue_record_id, queueScedule.queue_record_id),
+        execution_id: SafeValue(props.execution_id, queueScedule.execution_id),
+        schedule_type: SafeValue(props.schedule_type, queueScedule.schedule_type),
+        data: JSON.stringify(SafeValue(props.data, queueScedule.data)),
+        created_at: SafeValue(queueScedule.created_at, null)
+      })).where("id", props.id).toString();
       let resDataUpdate = await SqlService.update(query);
       let resData = await this.getQueueSchedule({
         id: props.id

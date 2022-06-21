@@ -2,6 +2,8 @@ import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
 import SqlService from "./SqlService";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 
 declare let db: Knex;
 const saltRounds = 10;
@@ -19,6 +21,10 @@ export interface UserServiceInterface {
   limit?: number
   offset?: number
   user_id?: number
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 const preSelectQuery = () => {
@@ -35,6 +41,9 @@ const preSelectQuery = () => {
     "usr.password as password",
     "usr.status as status",
     "usr.data as data",
+    "usr.created_at as created_at",
+    "usr.updated_at as updated_at",
+    "usr.deleted_at as deleted_at",
     "part.user_id as part_user_id",
     "part.partner_user_id as part_partner_user_id",
     "part.data as part_data",
@@ -116,14 +125,14 @@ export default {
   async addUser(props: UserServiceInterface) {
     try {
       let _hash = await bcrypt.hash(props.password, saltRounds);
-      let queryInsert = Sqlbricks.insert("users", {
+      let queryInsert = Sqlbricks.insert("users", CreateDate({
         email: props.email,
         first_name: props.first_name,
         last_name: props.last_name,
         status: props.status,
         data: JSON.stringify(props.data),
         password: _hash
-      });
+      }));
       let resDataId = await SqlService.insert(queryInsert.toString());
       let resData = await this.getUser({
         id: resDataId
@@ -141,13 +150,14 @@ export default {
       if (existData == null) {
         throw new Error("Data not found!");
       }
-      let queryInsert = Sqlbricks.update("users", {
+      let queryInsert = Sqlbricks.update("users", CreateDate({
         email: props.email || existData.email,
         first_name: props.first_name || existData.first_name,
         last_name: props.last_name || existData.last_name,
         status: props.status || existData.status,
         data: JSON.stringify(props.data || existData.data || {}),
-      }).where("id", props.id);
+        created_at: SafeValue(existData.created_at, null)
+      })).where("id", props.id);
 
       let updateUser = await SqlService.update(queryInsert.toString());
 

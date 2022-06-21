@@ -1,5 +1,7 @@
 import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
+import CreateDate from "../functions/base/CreateDate";
+import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
 declare let db: Knex;
 
@@ -12,6 +14,10 @@ export interface variableInterface {
   data?: any
   schema?: any
   description?: string
+
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
 }
 
 export interface VariableServiceInterface extends variableInterface {
@@ -22,7 +28,7 @@ export interface VariableServiceInterface extends variableInterface {
 export default {
   async addVariable(props: variableInterface): Promise<any> {
     try {
-      let query = SqlBricks.insert("variables", {
+      let query = SqlBricks.insert("variables", CreateDate({
         id: props.id,
         pipeline_id: props.pipeline_id,
         project_id: props.project_id,
@@ -31,7 +37,7 @@ export default {
         data: JSON.stringify(props.data),
         schema: JSON.stringify(props.schema),
         description: props.description,
-      });
+      }));
       let resDataId = await SqlService.insert(query.toString());
       let resData = await this.getVariable({
         id: resDataId
@@ -43,15 +49,21 @@ export default {
   },
   async updateVariable(props: variableInterface): Promise<any> {
     try {
-      let query = SqlBricks.update("variables", {
-        pipeline_id: props.pipeline_id,
-        project_id: props.project_id,
-        user_id: props.user_id,
-        name: props.name,
-        data: JSON.stringify(props.data),
-        schema: JSON.stringify(props.schema),
-        description: props.description,
-      });
+      let variableData: variableInterface = await this.getVariable({
+        id: props.id
+      })
+      if (variableData == null) {
+        throw new Error("Variable not found!");
+      }
+      let query = SqlBricks.update("variables", CreateDate({
+        pipeline_id: SafeValue(props.pipeline_id, variableData.pipeline_id),
+        project_id: SafeValue(props.project_id, variableData.project_id),
+        user_id: SafeValue(props.user_id, variableData.user_id),
+        name: SafeValue(props.name, variableData.name),
+        data: JSON.stringify(SafeValue(props.data, variableData.data)),
+        schema: JSON.stringify(SafeValue(props.schema, variableData.schema)),
+        description: SafeValue(props.description, variableData.description),
+      }));
       query = query.where({
         "id": props.id,
         "user_id": props.user_id
@@ -83,6 +95,9 @@ export default {
         "vari.description as description",
         "vari.schema as schema",
         "vari.data as data",
+        "vari.created_at as created_at",
+        "vari.updated_at as updated_at",
+        "vari.deleted_at as deleted_at",
         "pip.id as pip_id",
         "pip.name as pip_name",
         "pip.description as pip_description",
@@ -134,6 +149,9 @@ export default {
         "vari.description as description",
         "vari.schema as schema",
         "vari.data as data",
+        "vari.created_at as created_at",
+        "vari.updated_at as updated_at",
+        "vari.deleted_at as deleted_at",
         "pip.id as pip_id",
         "pip.name as pip_name",
         "pip.description as pip_description",
