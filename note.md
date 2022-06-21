@@ -1,31 +1,14 @@
 ## Features:
-  #### Phase 1
-  - Github or famous repos integration
-  - Also can download zip and deploy by commit sha on execution
-  - Notification script
-  #### Phase 2
-  - Dynamic environment value by api request
-  - Connection hopping and Create tunnel for instant connection 
-  - Ansible integration
-
-\
-&nbsp;
-
-## Scenario crud:
-### execution:
-  - Delete execution will delete storage/executions/[execution_id]
-  - Delete queue relation with this execution
-### pipeline:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete the all relation with this pipeline
-    - No => just keep like that
-### pipeline_item:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete the all relation with this pipeline
-    - No => just keep like that
-### pipeline_task:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete only have contain pipeline_task on execution
+  #### Phase 1 Goal:
+  - [MainFeature] : Running the pipeline tasks within execution to the host target
+  - [MainFeature] : On manage pipeline can get repo from Github or famous repositories info
+  - [MainFeature] : On pipeline running, with info from manage pipeline, download git zip and deploy by commit sha on execution, and send it to the host target
+  - [MainFeature] : On pipeline running, can download which file on target host to the pipeline running folder.
+  - [MainFeature] : Enable webhook
+  #### Phase 2 Goal:
+  - [MainFeature] : On pipeline running, can override variable environment value by api request with schema from variable.
+  - [ExtraFeature] : On host, can use Ssh Connection hopping and Create tunnel for instant connection 
+  - [ExtraFeature] : Ansible integration
 
 \
 &nbsp;
