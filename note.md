@@ -50,10 +50,9 @@
 - [User] : Create personal access token [Alpha]
 - [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [Alpha]
 - [QueueRecordDetail] : Display queue process with id job [Alpha]
-- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress] 
 
 ## Revision phase 1
-- change order numbering pipeline task [Alpha]
+- change order numbering pipeline task [Done]
 - when try to going execution test the exist execution not display new pipeline item [Done]
 - when display page process get sort by execution pipline ordering number [Done]
 - when try add more new pipeline and save the current setting [Done]
@@ -61,15 +60,25 @@
 - Listen back state [Done]
 
 ## Phase 2
+- [Pipeline] : Can attach git repo just only git url and fill which branch
+- [Credentials] : Change table oauth_users to be credentials, and can manage
+  - Secret text - a token such as an API token (e.g. a GitHub personal access token),
+  - Username and password - which could be handled as separate components or as a colon separated string in the format username:password (read more about this in Handling credentials),
+  - Secret file - which is essentially secret content in a file,
+  - SSH Username with private key - an SSH public/private key pair,
+  - Certificate - a PKCS#12 certificate file and optional password, or
+  - Docker Host Certificate Authentication credentials.
+- [Host] : Change all auth information is get from table Credentials with filter [Waiting]
 - [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
 - [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Waiting]
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 
 - [User] : Manage join group share project [Waiting]
-- [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Waiting]
 - [Webhook] :Create manage webhook history [Waiting]
 - [Webhook] : Create template every webhook [Waiting]
 - [Pipeline] : Write file use echo with array method without sftp - if possible [Waiting]
 - [UserExperience] : Improvement all experience like validation, user navigation [Waiting]
-- [PipelineItem] : can clone pipeline item 
-- [PipelineItem] : can download pipeline item
+- [PipelineItem] : can clone pipeline item [Waiting]
+- [PipelineItem] : can download pipeline item [Waiting]
+- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress] 
+- [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Pending]
