@@ -117,8 +117,8 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                   break;
                 case data.includes('total size'):
                   _count_time_transfer += 1;
+                  ptyProcess.write('exit' + '\r')
                   if (_total_times_transfer == _count_time_transfer) {
-                    ptyProcess.write('exit' + '\r')
                     masterData.saveData("data_pipeline_" + job_id, {
                       pipeline_task_id: pipeline_task.id,
                       command: command,
