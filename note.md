@@ -51,6 +51,7 @@
   - SSH Username with private key - an SSH public/private key pair,
   - Certificate - a PKCS#12 certificate file and optional password, or
   - Docker Host Certificate Authentication credentials.
+- [Auth] : If open some url, and not login yet, will redirect to login. So save the url open before on query url, and after login success back to current url again was try opened [Waiting] 
 - [Host] : Change all auth information is get from table Credentials with filter [Waiting]
 - [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
