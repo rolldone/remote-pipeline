@@ -1,31 +1,14 @@
 ## Features:
-  #### Phase 1
-  - Github or famous repos integration
-  - Also can download zip and deploy by commit sha on execution
-  - Notification script
-  #### Phase 2
-  - Dynamic environment value by api request
-  - Connection hopping and Create tunnel for instant connection 
-  - Ansible integration
-
-\
-&nbsp;
-
-## Scenario crud:
-### execution:
-  - Delete execution will delete storage/executions/[execution_id]
-  - Delete queue relation with this execution
-### pipeline:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete the all relation with this pipeline
-    - No => just keep like that
-### pipeline_item:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete the all relation with this pipeline
-    - No => just keep like that
-### pipeline_task:
-  - Delete pipeline will display dialog warning if have relation with pipeline_item, execution, and etc, and have two option:
-    - Yes => will delete only have contain pipeline_task on execution
+  #### Phase 1 Goal:
+  - [MainFeature] : Running the pipeline tasks within execution to the host target
+  - [MainFeature] : On manage pipeline can get repo from Github or famous repositories info
+  - [MainFeature] : On pipeline running, with info from manage pipeline, download git zip and deploy by commit sha on execution, and send it to the host target
+  - [MainFeature] : On pipeline running, can download which file on target host to the pipeline running folder.
+  - [MainFeature] : Enable webhook
+  #### Phase 2 Goal:
+  - [MainFeature] : On pipeline running, can override variable environment value by api request with schema from variable.
+  - [ExtraFeature] : On host, can use Ssh Connection hopping and Create tunnel for instant connection 
+  - [ExtraFeature] : Ansible integration
 
 \
 &nbsp;
@@ -50,10 +33,9 @@
 - [User] : Create personal access token [Alpha]
 - [DeleteData] : Create scenario delete data with all relation impact from project, pipeline, pipeline_item, variable, execution, queue_record, queue_record_detail [Alpha]
 - [QueueRecordDetail] : Display queue process with id job [Alpha]
-- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress] 
 
 ## Revision phase 1
-- change order numbering pipeline task [Alpha]
+- change order numbering pipeline task [Done]
 - when try to going execution test the exist execution not display new pipeline item [Done]
 - when display page process get sort by execution pipline ordering number [Done]
 - when try add more new pipeline and save the current setting [Done]
@@ -61,15 +43,26 @@
 - Listen back state [Done]
 
 ## Phase 2
+- [Pipeline] : Can attach git repo just only git url and fill which branch
+- [Credentials] : Change table oauth_users to be credentials, and can manage
+  - Secret text - a token such as an API token (e.g. a GitHub personal access token),
+  - Username and password - which could be handled as separate components or as a colon separated string in the format username:password (read more about this in Handling credentials),
+  - Secret file - which is essentially secret content in a file,
+  - SSH Username with private key - an SSH public/private key pair,
+  - Certificate - a PKCS#12 certificate file and optional password, or
+  - Docker Host Certificate Authentication credentials.
+- [Auth] : If open some url, and not login yet, will redirect to login. So save the url open before on query url, and after login success back to current url again was try opened [Waiting] 
+- [Host] : Change all auth information is get from table Credentials with filter [Waiting]
 - [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
 - [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Waiting]
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 
 - [User] : Manage join group share project [Waiting]
-- [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Waiting]
 - [Webhook] :Create manage webhook history [Waiting]
 - [Webhook] : Create template every webhook [Waiting]
 - [Pipeline] : Write file use echo with array method without sftp - if possible [Waiting]
 - [UserExperience] : Improvement all experience like validation, user navigation [Waiting]
-- [PipelineItem] : can clone pipeline item 
-- [PipelineItem] : can download pipeline item
+- [PipelineItem] : can clone pipeline item [Waiting]
+- [PipelineItem] : can download pipeline item [Waiting]
+- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress] 
+- [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Pending]
