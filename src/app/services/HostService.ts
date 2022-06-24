@@ -17,6 +17,7 @@ export interface Host {
   user_id?: number
   created_at?: string
   updated_at?: string
+  credential_id?: number
 }
 
 export interface HostServiceInterface extends Host {
@@ -24,26 +25,33 @@ export interface HostServiceInterface extends Host {
   force_deleted?: boolean
 }
 
+const defineQuery = () => {
+  sqlbricks.aliasExpansions({
+    'usr': "users",
+    'hos': "hosts"
+  });
+  let query = sqlbricks.select(
+    'usr.id as usr_id',
+    'usr.first_name as usr_first_name',
+    'usr.last_name as usr_last_name',
+    'hos.id as id',
+    'hos.name as name',
+    'hos.data as data',
+    'hos.description as description',
+    'hos.username as username',
+    'hos.password as password',
+    'hos.auth_type as auth_type',
+    'hos.private_key as private_key',
+    'hos.created_at as created_at',
+    'hos.updated_at as updated_at',
+    'hos.credential_id as credential_id'
+  ).from("hos");
+  return query;
+}
 export default {
   async getHosts(props: HostServiceInterface) {
     try {
-      sqlbricks.aliasExpansions({
-        'usr': "users",
-        'hos': "hosts"
-      });
-      let query = sqlbricks.select(
-        'usr.id as usr_id',
-        'usr.first_name as usr_first_name',
-        'usr.last_name as usr_last_name',
-        'hos.id as id',
-        'hos.name as name',
-        'hos.data as data',
-        'hos.description as description',
-        'hos.username as username',
-        'hos.password as password',
-        'hos.auth_type as auth_type',
-        'hos.private_key as private_key'
-      ).from("hos");
+      let query = defineQuery();
       query = query.leftJoin('usr').on({
         "usr.id": "hos.user_id"
       });
@@ -69,25 +77,7 @@ export default {
   },
   async getHost(props) {
     try {
-      sqlbricks.aliasExpansions({
-        'usr': "users",
-        'hos': "hosts"
-      });
-      let query = sqlbricks.select(
-        'usr.id as usr_id',
-        'usr.first_name as usr_first_name',
-        'usr.last_name as usr_last_name',
-        'hos.id as id',
-        'hos.name as name',
-        'hos.data as data',
-        'hos.description as description',
-        'hos.username as username',
-        'hos.password as password',
-        'hos.auth_type as auth_type',
-        'hos.private_key as private_key',
-        'hos.created_at as created_at',
-        'hos.updated_at as updated_at'
-      ).from("hos");
+      let query = defineQuery();
       query = query.leftJoin('usr').on({
         "usr.id": "hos.user_id"
       });
@@ -118,7 +108,8 @@ export default {
         private_key: props.private_key,
         username: props.username,
         password: props.password,
-        user_id: props.user_id
+        user_id: props.user_id,
+        credential_id: props.credential_id
       })).toString());
       let resData = await this.getHost({
         id: resDataId
@@ -141,10 +132,11 @@ export default {
         description: SafeValue(props.description, hostData.description),
         data: JSON.stringify(SafeValue(props.data, hostData.data)),
         auth_type: SafeValue(props.auth_type, hostData.auth_type),
-        private_key: SafeValue(props.private_key, hostData.private_key),
-        username: SafeValue(props.username, hostData.username),
-        password: SafeValue(props.password, hostData.password),
-        user_id: SafeValue(props.user_id, hostData.user_id),
+        private_key: SafeValue(props.private_key, null),
+        username: SafeValue(props.username, null),
+        password: SafeValue(props.password, null),
+        user_id: SafeValue(props.user_id, null),
+        credential_id: SafeValue(props.credential_id, null),
         created_at: SafeValue(hostData.created_at, null)
       })).where("id", props.id).toString());
       resData = await this.getHost({

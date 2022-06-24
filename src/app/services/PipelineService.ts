@@ -20,13 +20,21 @@ export interface PipelineServiceInterface {
   description?: string
   project_id?: number
   oauth_user_id?: number
-  repo_data?: any
-  repo_name?: string
-  repo_id?: number
+  repo_data?: {
+    credential_id?: number // GIt
+    repo_id?: number // Gitlab
+    oauth_user_id?: number // Github, Gitlab
+    repo_from?: string // All
+    repo_name?: string // All
+    git_url?: string // All
+    [key: string]: any
+  }
+  // repo_name?: string
+  // repo_id?: number
   created_at?: string
   updated_at?: string
-  source_type?: string
-  from_provider?: string
+  // source_type?: string
+  // from_provider?: string
   force_deleted?: boolean
   ids?: Array<number>
   project_ids?: Array<number>
@@ -36,7 +44,7 @@ export interface PipelineServiceInterface {
 }
 
 const returnFactoryColumn = async (props: PipelineServiceInterface) => {
-  props.repo_data = JSON.parse(props.repo_data || '{}');
+  props.repo_data = JSON.parse(props.repo_data as any || '{}');
   props.pipeline_items = await PipelineItemService.getPipelineItems({
     pipeline_id: props.id,
     project_id: props.project_id
@@ -61,10 +69,10 @@ export default {
         description: props.description,
         project_id: props.project_id,
         oauth_user_id: props.oauth_user_id,
-        repo_name: props.repo_name,
-        repo_id: props.repo_id,
-        from_provider: props.from_provider,
-        source_type: props.source_type,
+        // repo_name: props.repo_name,
+        // repo_id: props.repo_id,
+        // from_provider: props.from_provider,
+        // source_type: props.source_type,
         repo_data: JSON.stringify(props.repo_data),
       })).toString());
       let id = resData.lastInsertRowid
@@ -90,10 +98,10 @@ export default {
         project_id: SafeValue(props.project_id, pipelineData.project_id),
         oauth_user_id: SafeValue(props.oauth_user_id, pipelineData.oauth_user_id),
         repo_data: JSON.stringify(SafeValue(props.repo_data, pipelineData.repo_data)),
-        repo_name: SafeValue(props.repo_name, pipelineData.repo_name),
-        repo_id: SafeValue(props.repo_id, pipelineData.repo_id),
-        from_provider: SafeValue(props.from_provider, pipelineData.from_provider),
-        source_type: SafeValue(props.source_type, pipelineData.source_type),
+        // repo_name: SafeValue(props.repo_name, pipelineData.repo_name),
+        // repo_id: SafeValue(props.repo_id, pipelineData.repo_id),
+        // from_provider: SafeValue(props.from_provider, pipelineData.from_provider),
+        // source_type: SafeValue(props.source_type, pipelineData.source_type),
         created_at: SafeValue(pipelineData.created_at, null)
       })).where("id", props.id).toString());
       resData = await SqlService.selectOne(Sqlbricks.select("*").from("pipelines").where("id", props.id).toString());

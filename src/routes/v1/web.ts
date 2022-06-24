@@ -31,6 +31,7 @@ import PersonalAccessTokenController from "@root/app/controllers/xhr/PersonalAcc
 import OutSideController from "@root/app/controllers/xhr/OutSideController";
 import OutSideAuth from "@root/app/middlewares/OutSideAuth";
 import OAuthUserController from "@root/app/controllers/xhr/OAuthUserController";
+import CredentialController from "@root/app/controllers/xhr/CredentialController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -245,11 +246,19 @@ export default BaseRoute.extend<BaseRouteInterface>({
     })
 
     self.use("/xhr/personal-token", [], function (route: BaseRouteInterface) {
-      route.get("/", "xhr.personal_access_token", [DashboardAuth], PersonalAccessTokenController.binding().getPersonalAccessTokens);
+      route.get("/", "xhr.personal_access_token.personal_access_tokens", [DashboardAuth], PersonalAccessTokenController.binding().getPersonalAccessTokens);
       route.get("/:id/view", "xhr.personal_access_token.personal_access_token", [DashboardAuth], PersonalAccessTokenController.binding().getPersonalAccessToken);
       route.post("/add", "xhr.personal_access_token.new", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().addPersonalAccessToken);
       route.post("/update", "xhr.personal_access_token.update", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().updatePersonalAccessToken);
       route.post("/delete", "xhr.personal_access_token.delete", [upload.any(), DashboardAuth], PersonalAccessTokenController.binding().deletePersonalAccessToken);
+    })
+
+    self.use("/xhr/credential", [], function (route: BaseRouteInterface) {
+      route.get("/", "xhr.credential.credentials", [DashboardAuth], CredentialController.binding().getCredentials);
+      route.get("/:id/view", "xhr.credential.credential", [DashboardAuth], CredentialController.binding().getCredential);
+      route.post("/add", "xhr.credential.new", [upload.any(), DashboardAuth], CredentialController.binding().addCredential);
+      route.post("/update", "xhr.credential.update", [upload.any(), DashboardAuth], CredentialController.binding().updateCredential);
+      route.post("/delete", "xhr.credential.delete", [upload.any(), DashboardAuth], CredentialController.binding().deleteCredential);
     })
   }
 });

@@ -86,7 +86,9 @@ export default BaseController.extend<ExecutionControllerInterface>({
     // page: int
     // limit: int
     try {
+      let user = req.session.user;
       let props = req.query;
+      props.user_id = user.id;
       let resData = await ExecutionService.getExecutions({
         ...props,
       });
@@ -102,8 +104,10 @@ export default BaseController.extend<ExecutionControllerInterface>({
   async getExecution(req, res) {
     // id: int
     try {
+      let user = req.session.user;
       let props = req.query;
       let id = req.params.id;
+      props.user_id = user.id;
       let resData = await ExecutionService.getExecution({
         ...props,
         id

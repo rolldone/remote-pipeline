@@ -43,20 +43,21 @@
 - Listen back state [Done]
 
 ## Phase 2
-- [Pipeline] : Can attach git repo just only git url and fill which branch
-- [Credentials] : Change table oauth_users to be credentials, and can manage
+- [Credentials] : Change table oauth_users to be credentials, and can manage [OnProgress]
   - Secret text - a token such as an API token (e.g. a GitHub personal access token),
   - Username and password - which could be handled as separate components or as a colon separated string in the format username:password (read more about this in Handling credentials),
   - Secret file - which is essentially secret content in a file,
   - SSH Username with private key - an SSH public/private key pair,
   - Certificate - a PKCS#12 certificate file and optional password, or
   - Docker Host Certificate Authentication credentials.
+- [Pipeline] : Can attach git repo just only git url and fill which branch
+- [Host] : Change all auth information is get from table Credentials with filter [OnProgress]
 - [Auth] : If open some url, and not login yet, will redirect to login. So save the url open before on query url, and after login success back to current url again was try opened [Waiting] 
-- [Host] : Change all auth information is get from table Credentials with filter [Waiting]
 - [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
 - [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Waiting]
-- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting] 
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
+- [Controller] : Add all user_id on all controller request "IMPORTANT" [Waiting]  
 - [User] : Manage join group share project [Waiting]
 - [Webhook] :Create manage webhook history [Waiting]
 - [Webhook] : Create template every webhook [Waiting]
