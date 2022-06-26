@@ -8,10 +8,12 @@ import StartQueueWorker from "./StartQueueWorker";
 import StartRedis from "./StartRedis";
 import StartSerializeError from "./StartSerializeError";
 import StartSqlite3 from "./StartSqlite3";
+import StartTimezone from "./StartTimezone";
 import StartWebSocket from "./StartWebSocket";
 
 const task: Array<any> = [
   /* Main Bootstrap */
+  StartTimezone,
   StartSerializeError,
   StartPubSub,
   StartMasterData,

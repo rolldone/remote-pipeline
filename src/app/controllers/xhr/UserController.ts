@@ -73,6 +73,10 @@ export default BaseController.extend<UserControllerInterface>({
         ...props,
         id
       });
+      
+      // Override the session
+      req.session.user = resData;
+
       res.send({
         status: 'success',
         status_code: 200,

@@ -1,4 +1,5 @@
 import BaseController from "@root/base/BaseController"
+import AppConfig from "@root/config/AppConfig"
 
 export interface ConfigurationControllerInterface extends BaseControllerInterface {
   addConfiguration: { (req: any, res: any): void }
@@ -35,5 +36,21 @@ export default BaseController.extend<ConfigurationControllerInterface>({
   },
   getConfiguration(req, res) {
     // id 
+    let resData = {} as any;
+    resData.APP_DOMAIN = AppConfig.APP_DOMAIN;
+    resData.TIMEZONE = AppConfig.TIMEZONE;
+    resData.BASE_TIMEZONE = AppConfig.TIMEZONE;
+    let sess = req.session;
+    if (sess.user != null) {
+      resData.TIMEZONE = sess.user.timezone;
+    }
+
+    res.send({
+      status: 'success',
+      status_code: 200,
+      return: resData
+    })
+
+    console.log("sess :: ", sess.user);
   },
 });

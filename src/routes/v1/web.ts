@@ -92,6 +92,12 @@ export default BaseRoute.extend<BaseRouteInterface>({
         })
       }], FileController.binding().moveFile)
     });
+
+
+    self.use("/xhr/configuration", [], function (route: BaseRouteInterface) {
+      route.get("/", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
+    });
+
     self.use('/xhr/sql', [], function (route: BaseRouteInterface) {
       route.get("/select-one", "xhr.sql.getOne", [], SqlQueryController.binding().selectOne);
       route.get("/select", "xhr.sql.get", [], SqlQueryController.binding().select);
@@ -206,13 +212,6 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/hosts", "xhr.host.hosts", [], HostController.binding().getHosts);
       route.get("/:id/view", "xhr.host.host", [], HostController.binding().getHost);
     });
-    self.use("/xhr/configuration", [], function (route: BaseRouteInterface) {
-      route.post("/add", "xhr.configuration.add", [], ConfigurationController.binding().addConfiguration);
-      route.post("/update", "xhr.configuration.update", [], ConfigurationController.binding().updateConfiguration);
-      route.post("/delete", "xhr.configuration.delete", [], ConfigurationController.binding().deleteConfiguration);
-      route.get("/configurations", "xhr.configuration.configurations", [], ConfigurationController.binding().getConfigurations);
-      route.get("/:id/view", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
-    });
     self.use("/xhr/execution", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.execution.add", [upload.any()], ExecutionController.binding().addExecution);
       route.post("/update", "xhr.execution.update", [upload.any()], ExecutionController.binding().updateExecution);
@@ -238,6 +237,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use("/xhr/webhook", [], function (route: BaseRouteInterface) {
       route.get("/webhooks", "xhr.webhook.webhooks", [DashboardAuth], WebHookController.binding().getWebHooks);
       route.get("/:id/view", "xhr.webhook.webhook", [DashboardAuth], WebHookController.binding().getWebHook);
+      route.get("/:webhook_id/histories", "xhr.webhook.webhook.histories", [DashboardAuth], WebHookController.binding().getHistories);
       route.post("/add", "xhr.webhook.add", [upload.any(), DashboardAuth], WebHookController.binding().addWebHook);
       route.post("/update", "xhr.webhook.update", [upload.any(), DashboardAuth], WebHookController.binding().updateWebHook);
       route.post("/delete", "xhr.webhook.delete", [upload.any(), DashboardAuth], WebHookController.binding().deleteWebHook);

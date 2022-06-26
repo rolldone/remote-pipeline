@@ -6,6 +6,7 @@ import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import WebhookQueue from "../queues/WebhookQueue";
 import SqlService from "./SqlService";
+import WebhookHistoryService from "./WebhookHistoryService";
 declare let db: Knex;
 
 export interface webhook {
@@ -70,7 +71,6 @@ export default {
   async addWebHook(props: webhook): Promise<any> {
     try {
       let query = SqlBricks.insert("webhooks", CreateDate({
-        id: props.id,
         name: props.name,
         key: props.key,
         webhook_datas: JSON.stringify(props.webhook_datas || []),
@@ -282,6 +282,16 @@ export default {
                   delay: 2000
                 });
                 isFound = true;
+
+                WebhookHistoryService.addHistory({
+                  data: data,
+                  status: WebhookHistoryService.STATUS.PROCESS,
+                  webhook_id: webhook_id,
+                  job_id: idJObInstant,
+                  webhook_type: webHookItems[a].webhook_type,
+                  webhook_item_key: webHookItems[a].key
+                });
+
                 break;
               }
             }

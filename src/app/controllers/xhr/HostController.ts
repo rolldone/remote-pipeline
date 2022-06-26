@@ -1,3 +1,4 @@
+import GetAuthUser from "@root/app/functions/GetAuthUser";
 import HostService from "@root/app/services/HostService";
 import PipelineItemService from "@root/app/services/PipelineItemService"
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
@@ -14,7 +15,9 @@ export interface HostControllerInterface extends BaseControllerInterface {
 export default BaseController.extend<HostControllerInterface>({
   async getHosts(req, res) {
     try {
+      let user = GetAuthUser(req);
       let props = req.query;
+      props.user_id = user.id;
       let resData = await HostService.getHosts({
         ...props,
       });
@@ -30,8 +33,10 @@ export default BaseController.extend<HostControllerInterface>({
   async getHost(req, res) {
     // id: int
     try {
+      let user = GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
+      props.user_id = user.id;
       let resData = await HostService.getHost({
         ...props,
         id
@@ -47,7 +52,7 @@ export default BaseController.extend<HostControllerInterface>({
   },
   async addHost(req, res) {
     try {
-      let user = req.session.user;
+      let user = GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
@@ -63,7 +68,7 @@ export default BaseController.extend<HostControllerInterface>({
   },
   async updateHost(req, res) {
     try {
-      let user = req.session.user;
+      let user = GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');

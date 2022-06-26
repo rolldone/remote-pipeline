@@ -13,6 +13,7 @@ export interface AppConfigInterface{
   SOCKET_DOMAIN : String,
   EXPIRED_TOKEN : number,
   EXPIRED_REFRESH_TOKEN : number,
+  TIMEZONE: string
 }
 
 export default ({
@@ -29,4 +30,5 @@ export default ({
   /* Token Life */
   EXPIRED_TOKEN : (1 * 24 * 60 * 60 * 1000),
   EXPIRED_REFRESH_TOKEN  : (7 * 24 * 60 * 60 * 1000),
+  TIMEZONE: DotEnv.TIMEZONE || 'Etc/Universal'
 } as AppConfigInterface);

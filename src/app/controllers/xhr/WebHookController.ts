@@ -1,4 +1,5 @@
 import GetAuthUser from "@root/app/functions/GetAuthUser"
+import WebhookHistoryService from "@root/app/services/WebhookHistoryService"
 import WebHookService from "@root/app/services/WebHookService"
 import BaseController from "@root/base/BaseController"
 
@@ -10,6 +11,7 @@ export interface WebHookControllerInterface extends BaseControllerInterface {
   getWebHook: { (req: any, res: any): void }
   execute: { (req: any, res: any): void }
   executeTestItem: { (req: any, res: any): void }
+  getHistories: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<WebHookControllerInterface>({
@@ -133,6 +135,26 @@ export default BaseController.extend<WebHookControllerInterface>({
       let props = req.body;
       props.data = JSON.parse(props.data || '{}');
       let resData = await WebHookService.executeTestItem(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async getHistories(req, res) {
+    try {
+      // id: int
+      let user = GetAuthUser(req);
+      let props = req.query;
+      let webhook_id = req.params.webhook_id;
+      props.webhook_user_id = user.id;
+      let resData = await WebhookHistoryService.getWebhookHistories({
+        ...props,
+        webhook_id
+      });
       res.send({
         status: 'success',
         status_code: 200,

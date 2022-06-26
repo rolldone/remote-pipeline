@@ -51,19 +51,23 @@
   - Certificate - a PKCS#12 certificate file and optional password, or
   - Docker Host Certificate Authentication credentials.
 - [Pipeline] : Can attach git repo just only git url and fill which branch
-- [Host] : Change all auth information is get from table Credentials with filter [OnProgress]
-- [Auth] : If open some url, and not login yet, will redirect to login. So save the url open before on query url, and after login success back to current url again was try opened [Waiting] 
+- [Host] : Change all auth information is get from table Credentials with filter [Alpha]
+- [Auth] : If open some url, and not login yet, will redirect to login. So save the url open before on query url, and after login success back to current url again was try opened [Alpha] 
 - [AdminMenu] : Enable interactive menu on side menu admin [Alpha]
+- [Queue] : Add timezone for nodejs and queue scheduler [Alpha]
+- [Controller] : Add all user_id on all controller request "IMPORTANT" [OnProgress] 
+- [Webhook] :Create manage webhook history [OnProgress(70%)]
+- [Webhook] : Create template every webhook [OnProgress(70%)]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
-- [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Waiting]
-- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
-- [Controller] : Add all user_id on all controller request "IMPORTANT" [Waiting]  
-- [User] : Manage join group share project [Waiting]
-- [Webhook] :Create manage webhook history [Waiting]
-- [Webhook] : Create template every webhook [Waiting]
-- [Pipeline] : Write file use echo with array method without sftp - if possible [Waiting]
-- [UserExperience] : Improvement all experience like validation, user navigation [Waiting]
 - [PipelineItem] : can clone pipeline item [Waiting]
 - [PipelineItem] : can download pipeline item [Waiting]
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
 - [UserExperience] : Improvement all experience like validation, user navigation [OnProgress] 
+
+ ## Phase 3
+- [User] : Manage join group share project [Waiting]
+
+
 - [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Pending]
+- [QueueSchedule] : Change workflow queue schedule no need from execution again create as group [Pending]
+- [Pipeline] : Write file use echo with array method without sftp - if possible [Pending]

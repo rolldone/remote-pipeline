@@ -21,6 +21,7 @@ export interface UserServiceInterface {
   limit?: number
   offset?: number
   user_id?: number
+  timezone?: string
 
   created_at?: string
   updated_at?: string
@@ -41,6 +42,7 @@ const preSelectQuery = () => {
     "usr.password as password",
     "usr.status as status",
     "usr.data as data",
+    "usr.timezone as timezone",
     "usr.created_at as created_at",
     "usr.updated_at as updated_at",
     "usr.deleted_at as deleted_at",
@@ -131,7 +133,8 @@ export default {
         last_name: props.last_name,
         status: props.status,
         data: JSON.stringify(props.data),
-        password: _hash
+        password: _hash,
+        timezone: props.timezone
       }));
       let resDataId = await SqlService.insert(queryInsert.toString());
       let resData = await this.getUser({
@@ -156,7 +159,8 @@ export default {
         last_name: props.last_name || existData.last_name,
         status: props.status || existData.status,
         data: JSON.stringify(props.data || existData.data || {}),
-        created_at: SafeValue(existData.created_at, null)
+        created_at: SafeValue(existData.created_at, null),
+        timezone: SafeValue(props.timezone, existData.timezone)
       })).where("id", props.id);
 
       let updateUser = await SqlService.update(queryInsert.toString());
