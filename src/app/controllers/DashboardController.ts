@@ -17,7 +17,7 @@ export default BaseController.extend<DashboardControllerInterface>({
   },
   async oauthRedirect(req, res) {
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.query;
 
       let pkce_verifier = null;

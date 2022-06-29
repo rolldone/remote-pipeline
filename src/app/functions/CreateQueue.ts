@@ -6,9 +6,11 @@ import QueueRecordDetailService from "@root/app/services/QueueRecordDetailServic
 import QueueRecordService, { QueueRecordInterface } from "@root/app/services/QueueRecordService";
 import QueueSceduleService from "@root/app/services/QueueSceduleService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import AppConfig from "@root/config/AppConfig";
 import { QueueRequestInterface } from "@root/routes/v1/cli";
 import { Moment } from "@root/tool";
 import { Queue, Worker } from "bullmq";
+import UserService, { UserServiceInterface } from "../services/UserService";
 
 declare let masterData: MasterDataInterface
 
@@ -129,8 +131,12 @@ const CreateQueue = function (props: {
                     await _processQueue.removeRepeatableByKey(job.key);
                   }
                   await _processQueue.drain();
+                  let user: UserServiceInterface = await UserService.getUser({
+                    id: resQueueRecord.exe_user_id
+                  })
                   _repeat = {
-                    cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`
+                    cron: `${qrec_sch_data.minute} ${qrec_sch_data.hour} ${qrec_sch_data.day} ${qrec_sch_data.month} ${qrec_sch_data.weekday}`,
+                    tz: user.timezone || AppConfig.TIMEZONE
                   };
                   break;
                 case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
@@ -162,7 +168,8 @@ const CreateQueue = function (props: {
                     // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
                     jobId: idJobSchedule,
                     delay: _delay,
-                    repeat: _repeat
+                    repeat: _repeat,
+
                   });
                   // console.log("theJOB ::: ", theJOb.);
                   // Insert to queue record detail 

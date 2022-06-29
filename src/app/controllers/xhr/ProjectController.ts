@@ -23,7 +23,7 @@ export default BaseController.extend<ProjectControllerInterface>({
       // name: string
       // description: text
       // user_id: array [1]
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       let resData = await ProjectService.addProject(props);
@@ -49,7 +49,7 @@ export default BaseController.extend<ProjectControllerInterface>({
       // description: text
       // user_id: array [1,2,3]
       // is_active: boolean
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       let resData = await ProjectService.updateProject(props);
@@ -66,7 +66,7 @@ export default BaseController.extend<ProjectControllerInterface>({
     // ids: JSON []
     try {
       // ids: JSON []
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
       let resData = await ProjectService.deleteProject({
@@ -89,7 +89,7 @@ export default BaseController.extend<ProjectControllerInterface>({
       // page: int
       // limit: int
       // where_by: string
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.query;
       props.user_id = user.id;
       let resData = await ProjectService.getProjects({
@@ -108,7 +108,7 @@ export default BaseController.extend<ProjectControllerInterface>({
   async getProject(req, res) {
     // id: int
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;

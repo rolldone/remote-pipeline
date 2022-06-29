@@ -141,7 +141,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getIdsStatus(req, res) {
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props: QueueRecordDetailServiceInterface = req.query;
       props.ids = JSON.parse(props.ids || '[]' as any);
       props.user_id = user.id;
@@ -161,7 +161,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getDirectories(req, res) {
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let job_id = req.params.job_id;
       let resData = await QueueRecordDetailService.getDirectories(job_id, user.id);
       return res.send({
@@ -176,7 +176,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getFile(req, res) {
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let path = req.query.path;
       let job_id = req.params.job_id;
       let resData = await QueueRecordDetailService.getFile(path, job_id, user.id);
@@ -201,7 +201,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       console.log(ex);
       return res.status(400).send(ex);
     }
-  }
+  },
 });
 
 export default QueueRecordDetailController;

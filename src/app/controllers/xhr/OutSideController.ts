@@ -1,11 +1,14 @@
 import SafeValue from "@root/app/functions/base/SafeValue";
 import CreateQueue from "@root/app/functions/CreateQueue";
+import GetAuthUser from "@root/app/functions/GetAuthUser";
+import QueueRecordDetailService from "@root/app/services/QueueRecordDetailService";
 import QueueRecordService, { QueueRecordInterface } from "@root/app/services/QueueRecordService";
 import BaseController from "@root/base/BaseController"
 
 export interface HostControllerInterface extends BaseControllerInterface {
   createQueue: { (req: any, res: any): void }
   queueDisplayProcess: { (req: any, res: any): void }
+  addResultQueueDetailData: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<HostControllerInterface>({
@@ -32,5 +35,25 @@ export default BaseController.extend<HostControllerInterface>({
   },
   async queueDisplayProcess(req, res) {
 
+  },
+  async addResultQueueDetailData(req, res) {
+    try {
+      let user = await GetAuthUser(req);
+      let props = req.body;
+      props.job_id = SafeValue(req.body.job_id, null);
+      props.path = SafeValue(req.body.path, "");
+      props.file_name = SafeValue(req.body.file_name, null);
+      props.user_id = user.id;
+      props.files = req.files;
+      let resAddResultQueueDetailData = await QueueRecordDetailService.addResultQueueDetailData(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resAddResultQueueDetailData
+      })
+    } catch (ex) {
+      console.log(ex);
+      return res.status(400).send(ex);
+    }
   }
 });

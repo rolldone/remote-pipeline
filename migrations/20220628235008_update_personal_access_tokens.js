@@ -2,8 +2,8 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
- exports.up = function (knex) {
-  return knex.schema.alterTable('user_partners', function (table) {
+exports.up = function (knex) {
+  return knex.schema.alterTable('personal_access_tokens', function (table) {
     table.dateTime("deleted_at");
     table.dateTime("created_at");
     table.dateTime("updated_at");
@@ -15,7 +15,7 @@
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.alterTable('user_partners', function (table) {
+  return knex.schema.alterTable('personal_access_tokens', function (table) {
     table.dropColumn("deleted_at", "created_at", "updated_at");
   });
 };

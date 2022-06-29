@@ -34,6 +34,7 @@ export interface QueueRecordInterface {
   exe_process_mode?: string
   exe_process_limit?: number
   exe_delay?: number
+  exe_user_id?: number
   // Schedule
   qrec_sch_data?: any
 }
@@ -104,6 +105,7 @@ const returnFactoryColumn = (props: QueueRecordInterface) => {
   resQueueRecord.qrec_sch_data = JSON.parse(resQueueRecord.qrec_sch_data || '{}');
   resQueueRecord.data = JSON.parse(resQueueRecord.data || '{}');
   resQueueRecord.exe_host_ids = JSON.parse(resQueueRecord.exe_host_ids as any);
+
   return resQueueRecord;
 }
 

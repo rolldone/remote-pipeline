@@ -67,6 +67,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use("/xhr/outside", [OutSideAuth], function (route: BaseRouteInterface) {
       route.post("/queue/:queue_key", "xhr.outside.queue", [upload.any()], OutSideController.binding().createQueue);
       route.get("/queue-display-process", "xhr.outside.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
+      route.post("/queue-detail/result/add", "xhr.outside.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
     });
 
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {

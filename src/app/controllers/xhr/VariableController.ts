@@ -17,7 +17,7 @@ export default BaseController.extend<VariableControllerInterface>({
       // name: string
       // description: string
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
@@ -39,7 +39,7 @@ export default BaseController.extend<VariableControllerInterface>({
       // name: string
       // description: text
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
@@ -86,7 +86,7 @@ export default BaseController.extend<VariableControllerInterface>({
   async getVariable(req, res) {
     try {
       // id: int
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;

@@ -4,9 +4,12 @@ import { Knex } from "knex";
 import SqlService from "./SqlService";
 import dirToJson from 'dir-to-json';
 import mimeType from 'mime-types';
-import { readFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync } from "fs";
 import SafeValue from "../functions/base/SafeValue";
 import CreateDate from "../functions/base/CreateDate";
+import upath from 'upath'
+import filendir from 'filendir';
+import AppConfig from "@root/config/AppConfig";
 
 declare let db: Knex;
 
@@ -448,6 +451,33 @@ export default {
         )
       `);
       return resDeleteQuery;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  addResultQueueDetailData(props: {
+    job_id: string
+    file_name: string
+    path: string
+    user_id: number
+    files: any
+  }) {
+    try {
+      console.log("addResultQueueDetailData :: ", props);
+      if (props.files == null) {
+        throw new Error("File not found!");
+      }
+      if (props.files.length == 0) {
+        throw new Error("File not found!");
+      }
+      let oldPath = props.files[0].path;
+      let newFolder = upath.normalize(process.cwd() + "/storage/app/jobs/" + props.job_id + "/download/" + props.path + "/");
+      let newPath = newFolder + "/" + props.file_name;
+      if (existsSync(newFolder) == false) {
+        mkdirSync(newFolder, { recursive: true });
+      }
+      renameSync(oldPath, newPath);
+      return AppConfig.ROOT_DOMAIN + "/xhr/queue-record-detail/display-data/" + props.job_id + "/file?path=" + upath.normalize(props.path + "/" + props.file_name);
     } catch (ex) {
       throw ex;
     }

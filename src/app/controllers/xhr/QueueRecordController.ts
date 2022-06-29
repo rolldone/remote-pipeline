@@ -93,7 +93,7 @@ const QueueRecordController = BaseController.extend<QueueRecordControllerInterfa
   },
   async getQueueIdsstatus(req, res) {
     try {
-      let user = GetAuthUser(req);
+      let user = await  GetAuthUser(req);
       let props = req.query;
       props.ids = JSON.parse(props.ids || '[]');
       props.user_id = user.id;

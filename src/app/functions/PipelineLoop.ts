@@ -48,8 +48,8 @@ const PipelineLoop = async function (props: {
     if (queue_record_detail.status == QueueRecordDetailService.STATUS.STOPPED) {
       return false;
     }
-    
-    if(queue_record.type == QueueRecordType.INSTANT){
+
+    if (queue_record.type == QueueRecordType.INSTANT) {
       if (queue_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED) {
         return true;
       }
@@ -154,6 +154,8 @@ const PipelineLoop = async function (props: {
           let extraVar = {
             job_id,
             link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id,
+            link_add_data: AppConfig.ROOT_DOMAIN + "/xhr/outside/queue-detail/result/add",
+            link_display_data: AppConfig.ROOT_DOMAIN + "/xhr/queue-record-detail/display-data/" + job_id + "/file",
             ...extra
           }
 
