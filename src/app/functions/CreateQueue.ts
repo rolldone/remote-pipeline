@@ -68,6 +68,26 @@ const CreateQueue = function (props: {
             ids: resQueueRecord.exe_host_ids
           })
 
+          switch (resQueueRecord.exe_access_host_type) {
+            case 'one_to_one':
+              _hosts_datas = [_hosts_datas[Math.floor(Math.random() * _hosts_datas.length)]]
+              break;
+            case 'one_to_many':
+            default:
+              break;
+          }
+
+          switch (resQueueRecord.exe_access_host_type) {
+            case 'one_to_one':
+              if (_hosts_datas[0].data.length > 0) {
+                _hosts_datas[0] = [_hosts_datas[0].data[Math.floor(Math.random() * _hosts_datas[0].data.length)]]
+              }
+              break;
+            case 'one_to_many':
+            default:
+              break;
+          }
+
           let _total_host_item = 0;
           _hosts_datas.filter((el) => {
             _total_host_item += el.data.length;

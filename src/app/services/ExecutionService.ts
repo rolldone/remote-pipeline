@@ -35,6 +35,7 @@ export interface Execution {
   pipeline_items?: Array<PipelineItemInterface>
   host_ids?: Array<number>
   description?: string
+  access_host_type?: string
   created_at?: string
   updated_at?: string
   mode?: string
@@ -47,6 +48,43 @@ export interface ExecutionServiceInterface extends Execution {
   force_deleted?: boolean
   project_ids?: Array<number>
   pipeline_ids?: Array<number>
+}
+
+const defineQuery = () => {
+
+  SqlBricks.aliasExpansions({
+    'pro': "projects",
+    "pip": "pipelines",
+    "pip_item": "pipeline_items",
+    "var": "variables",
+    'usr': "users",
+    'exe': "executions",
+  });
+  let query = SqlBricks.select(
+    'exe.id as id',
+    'exe.name as name',
+    'exe.process_mode as process_mode',
+    'exe.process_limit as process_limit',
+    'exe.pipeline_id as pipeline_id',
+    'exe.project_id as project_id',
+    'exe.user_id as user_id',
+    'exe.branch as branch',
+    'exe.variable_id as variable_id',
+    'exe.variable_option as variable_option',
+    'exe.pipeline_item_ids as pipeline_item_ids',
+    'exe.host_ids as host_ids',
+    'exe.description as description',
+    'exe.mode as mode',
+    'exe.access_host_type as access_host_type',
+    'exe.created_at as created_at',
+    'exe.updated_at as updated_at',
+    'exe.delay as delay',
+    'pro.name as pro_name',
+    'pip.name as pip_name',
+    'var.name as var_name'
+  ).from("exe");
+
+  return query;
 }
 
 export default {
@@ -66,6 +104,7 @@ export default {
         pipeline_item_ids: JSON.stringify(props.pipeline_item_ids),
         host_ids: JSON.stringify(props.host_ids),
         description: props.description,
+        access_host_type: props.access_host_type,
         mode: props.mode,
         delay: props.delay
       })).toString());
@@ -98,6 +137,7 @@ export default {
         pipeline_item_ids: JSON.stringify(SafeValue(props.pipeline_item_ids, exeData.pipeline_item_ids)),
         host_ids: JSON.stringify(SafeValue(props.host_ids, exeData.host_ids)),
         description: SafeValue(props.description, exeData.description),
+        access_host_type: SafeValue(props.access_host_type, exeData.access_host_type),
         mode: SafeValue(props.mode, exeData.mode),
         delay: SafeValue(props.delay, exeData.delay),
         created_at: SafeValue(exeData.created_at, null)
@@ -140,36 +180,8 @@ export default {
   },
   getExecution: async function (props: ExecutionServiceInterface) {
     try {
-      SqlBricks.aliasExpansions({
-        'pro': "projects",
-        "pip": "pipelines",
-        "pip_item": "pipeline_items",
-        "var": "variables",
-        'usr': "users",
-        'exe': "executions",
-      });
-      let query = SqlBricks.select(
-        'exe.id as id',
-        'exe.name as name',
-        'exe.process_mode as process_mode',
-        'exe.process_limit as process_limit',
-        'exe.pipeline_id as pipeline_id',
-        'exe.project_id as project_id',
-        'exe.user_id as user_id',
-        'exe.branch as branch',
-        'exe.variable_id as variable_id',
-        'exe.variable_option as variable_option',
-        'exe.pipeline_item_ids as pipeline_item_ids',
-        'exe.host_ids as host_ids',
-        'exe.description as description',
-        'exe.mode as mode',
-        'exe.created_at as created_at',
-        'exe.updated_at as updated_at',
-        'exe.delay as delay',
-        'pro.name as pro_name',
-        'pip.name as pip_name',
-        'var.name as var_name'
-      ).from("exe");
+      let query = defineQuery();
+
       query = query.leftJoin('pro').on({
         "pro.id": "exe.project_id"
       });
@@ -206,36 +218,8 @@ export default {
   },
   getExecutions: async function (props: ExecutionServiceInterface) {
     try {
-      SqlBricks.aliasExpansions({
-        'pro': "projects",
-        "pip": "pipelines",
-        "pip_item": "pipeline_items",
-        "var": "variables",
-        'usr': "users",
-        'exe': "executions",
-      });
-      let query = SqlBricks.select(
-        'exe.id as id',
-        'exe.name as name',
-        'exe.process_mode as process_mode',
-        'exe.process_limit as process_limit',
-        'exe.pipeline_id as pipeline_id',
-        'exe.project_id as project_id',
-        'exe.user_id as user_id',
-        'exe.branch as branch',
-        'exe.variable_id as variable_id',
-        'exe.variable_option as variable_option',
-        'exe.pipeline_item_ids as pipeline_item_ids',
-        'exe.host_ids as host_ids',
-        'exe.description as description',
-        'exe.mode as mode',
-        'exe.delay as delay',
-        'exe.created_at as created_at',
-        'exe.updated_at as updated_at',
-        'pro.name as pro_name',
-        'pip.name as pip_name',
-        'var.name as var_name'
-      ).from("exe");
+      let query = defineQuery();
+      
       query = query.leftJoin('pro').on({
         "pro.id": "exe.project_id"
       });

@@ -13,7 +13,7 @@ export default BaseController.extend<FileControllerInterface>({
     try {
       console.log('addFile :: ', req.body);
       console.log('files :: ', req.files);
-      let _files_datas_exist = req.body.file_datas;
+      let _files_datas_exist = req.body.files || [];
       let _files_datas_new = req.files;
       _files_datas_exist = [
         ..._files_datas_exist,

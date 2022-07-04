@@ -3,6 +3,7 @@ import { Knex } from "knex";
 import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
+import VariableItemService from "./VariableItemService";
 declare let db: Knex;
 
 export interface variableInterface {
@@ -25,6 +26,44 @@ export interface VariableServiceInterface extends variableInterface {
   pipeline_ids?: Array<number>
 }
 
+const preSelectQuery = () => {
+  SqlBricks.aliasExpansions({
+    "vari": "variables",
+    "pip": "pipelines",
+    "pro": "projects"
+  });
+
+  let query = SqlBricks.select(
+    "vari.id as id",
+    "vari.name as name",
+    "vari.pipeline_id as pipeline_id",
+    "vari.project_id as project_id",
+    "vari.user_id as user_id",
+    "vari.description as description",
+    "vari.schema as schema",
+    "vari.created_at as created_at",
+    "vari.updated_at as updated_at",
+    "vari.deleted_at as deleted_at",
+    "pip.id as pip_id",
+    "pip.name as pip_name",
+    "pip.description as pip_description",
+    "pro.id as pro_id",
+    "pro.name as pro_name",
+    "pro.description as pro_description"
+  );
+
+  query = query.from("vari");
+  return query;
+}
+
+const returnFactoryColumn = async (props: VariableServiceInterface) => {
+  let resData = props;
+  let _viTem = await VariableItemService.getVariableItemsByVariableID(props.id, {});
+  resData.data = _viTem; // JSON.parse(resData.data || '[]');
+  resData.schema = JSON.parse(resData.schema || '[]')
+  return resData;
+}
+
 export default {
   async addVariable(props: variableInterface): Promise<any> {
     try {
@@ -34,7 +73,7 @@ export default {
         project_id: props.project_id,
         user_id: props.user_id,
         name: props.name,
-        data: JSON.stringify(props.data),
+        // data: JSON.stringify(props.data),
         schema: JSON.stringify(props.schema),
         description: props.description,
       }));
@@ -60,7 +99,7 @@ export default {
         project_id: SafeValue(props.project_id, variableData.project_id),
         user_id: SafeValue(props.user_id, variableData.user_id),
         name: SafeValue(props.name, variableData.name),
-        data: JSON.stringify(SafeValue(props.data, variableData.data)),
+        // data: JSON.stringify(SafeValue(props.data, variableData.data)),
         schema: JSON.stringify(SafeValue(props.schema, variableData.schema)),
         description: SafeValue(props.description, variableData.description),
       }));
@@ -80,33 +119,7 @@ export default {
   },
   getVariable: async function (props: any) {
     try {
-      SqlBricks.aliasExpansions({
-        "vari": "variables",
-        "pip": "pipelines",
-        "pro": "projects"
-      });
-
-      let query = SqlBricks.select(
-        "vari.id as id",
-        "vari.name as name",
-        "vari.pipeline_id as pipeline_id",
-        "vari.project_id as project_id",
-        "vari.user_id as user_id",
-        "vari.description as description",
-        "vari.schema as schema",
-        "vari.data as data",
-        "vari.created_at as created_at",
-        "vari.updated_at as updated_at",
-        "vari.deleted_at as deleted_at",
-        "pip.id as pip_id",
-        "pip.name as pip_name",
-        "pip.description as pip_description",
-        "pro.id as pro_id",
-        "pro.name as pro_name",
-        "pro.description as pro_description"
-      );
-
-      query = query.from("vari");
+      let query = preSelectQuery();
       query = query
         .leftJoin("pip").on("pip.id", "vari.pipeline_id")
         .leftJoin("pro").on("pro.id", "pip.project_id");
@@ -125,8 +138,7 @@ export default {
       let resData = await db.raw(query.toString());
       resData = resData[0];
       if (resData == null) return;
-      resData.data = JSON.parse(resData.data || '[]');
-      resData.schema = JSON.parse(resData.schema || '[]');
+      resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
       throw ex;
@@ -134,33 +146,8 @@ export default {
   },
   getVariables: async function (props: any) {
     try {
-      SqlBricks.aliasExpansions({
-        "vari": "variables",
-        "pip": "pipelines",
-        "pro": "projects"
-      });
+      let query = preSelectQuery();
 
-      let query = SqlBricks.select(
-        "vari.id as id",
-        "vari.name as name",
-        "vari.pipeline_id as pipeline_id",
-        "vari.project_id as project_id",
-        "vari.user_id as user_id",
-        "vari.description as description",
-        "vari.schema as schema",
-        "vari.data as data",
-        "vari.created_at as created_at",
-        "vari.updated_at as updated_at",
-        "vari.deleted_at as deleted_at",
-        "pip.id as pip_id",
-        "pip.name as pip_name",
-        "pip.description as pip_description",
-        "pro.id as pro_id",
-        "pro.name as pro_name",
-        "pro.description as pro_description"
-      );
-
-      query = query.from("vari");
       query = query
         .leftJoin("pip").on("pip.id", "vari.pipeline_id")
         .leftJoin("pro").on("pro.id", "pip.project_id");
@@ -169,12 +156,12 @@ export default {
       if (props.pipeline_id != null) {
         query = query.where("pip.id", props.pipeline_id);
       }
-      let resDatas = await db.raw(query.toString());
-      resDatas.filter((resData) => {
-        resData.data = JSON.parse(resData.data || '[]');
-        resData.schema = JSON.parse(resData.schema || '[]');
-        return resData;
-      })
+      let resDatas = await SqlService.select(query.toString());
+
+      for (var a = 0; a < resDatas.length; a++) {
+        resDatas[a] = await returnFactoryColumn(resDatas[a]);
+      }
+
       return resDatas
     } catch (ex) {
       throw ex;

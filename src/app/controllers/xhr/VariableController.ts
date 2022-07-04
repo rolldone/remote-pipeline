@@ -1,4 +1,5 @@
 import GetAuthUser from "@root/app/functions/GetAuthUser"
+import VariableItemService from "@root/app/services/VariableItemService"
 import VariableService from "@root/app/services/VariableService"
 import BaseController from "@root/base/BaseController"
 
@@ -17,7 +18,7 @@ export default BaseController.extend<VariableControllerInterface>({
       // name: string
       // description: string
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
@@ -39,12 +40,27 @@ export default BaseController.extend<VariableControllerInterface>({
       // name: string
       // description: text
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
       props.schema = JSON.parse(props.schema || '[]');
+      props.deleted_ids = JSON.parse(props.deleted_ids || '[]');
       let resData = await VariableService.updateVariable(props);
+      for (let i in props.data) {
+        if (props.data[i].id != null) {
+          await VariableItemService.updateVariableItem({
+            ...props.data[i],
+            variable_id: props.id
+          });
+        } else {
+          await VariableItemService.addVariableItem({
+            ...props.data[i],
+            variable_id: props.id
+          });
+        }
+      }
+      await VariableItemService.deleteVariableItemByIds(props.deleted_ids);
       res.send({
         status: 'success',
         status_code: 200,
@@ -86,7 +102,7 @@ export default BaseController.extend<VariableControllerInterface>({
   async getVariable(req, res) {
     try {
       // id: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;

@@ -138,7 +138,13 @@ Task :
 
 - [Webhook] : Create template every webhook [OnProgress(70%)]
 
+- [Host] : Create check Host healthy every 5 minutes [Waiting]
+
+- [Queue] : Add new scenario how queue use host one to one with different value and one to many with same value [Alpha] 
+
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
+
+- [QueueTool] : Create form tester tool for create queue [Waiting]
 
 - [PipelineItem] : can clone pipeline item [Waiting]
 
@@ -152,10 +158,9 @@ Task :
 
 ## Phase 3
 
-- [User] : Manage join group share project [Waiting]
+- [Variable] : Add scheduling delete files not exist on database table variabe
 
-  
-  
+- [User] : Manage join group share project [Waiting]
 
 - [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Pending]
 

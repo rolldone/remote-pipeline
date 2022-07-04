@@ -35,6 +35,7 @@ export interface QueueRecordInterface {
   exe_process_limit?: number
   exe_delay?: number
   exe_user_id?: number
+  exe_access_host_type?: string
   // Schedule
   qrec_sch_data?: any
 }
@@ -95,7 +96,8 @@ const preSelectQuery = () => {
     'exe.pipeline_item_ids as exe_pipeline_item_ids',
     'exe.host_ids as exe_host_ids',
     'exe.description as exe_description',
-    'exe.delay as exe_delay'
+    'exe.delay as exe_delay',
+    'exe.access_host_type as exe_access_host_type'
   ).from("qrec");
   return query;
 }

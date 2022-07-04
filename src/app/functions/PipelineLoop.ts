@@ -152,11 +152,11 @@ const PipelineLoop = async function (props: {
             throw new Error("I think your forgot define the task_type, check your file on app/functions/task_type/index.ts");
           }
           let extraVar = {
-            job_id,
             link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id,
             link_add_data: AppConfig.ROOT_DOMAIN + "/xhr/outside/queue-detail/result/add",
             link_display_data: AppConfig.ROOT_DOMAIN + "/xhr/queue-record-detail/display-data/" + job_id + "/file",
-            ...extra
+            ...extra,
+            job_id,
           }
 
           let isnnn = await theTaskTYpeFunc({
