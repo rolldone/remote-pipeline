@@ -32,6 +32,7 @@ import OutSideController from "@root/app/controllers/xhr/OutSideController";
 import OutSideAuth from "@root/app/middlewares/OutSideAuth";
 import OAuthUserController from "@root/app/controllers/xhr/OAuthUserController";
 import CredentialController from "@root/app/controllers/xhr/CredentialController";
+import VariableItemController from "@root/app/controllers/xhr/VariableItemController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -227,6 +228,15 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/variables", "xhr.variable.variables", [], VariableController.binding().getVariables);
       route.get("/:id/view", "xhr.variable.variable", [], VariableController.binding().getVariable);
     });
+
+    self.use("/xhr/variable-item", [], function (route: BaseRouteInterface) {
+      route.post("/add", "xhr.variable_item.add", [upload.any()], VariableItemController.binding().addVariableItem);
+      route.post("/update", "xhr.variable_item.update", [upload.any()], VariableItemController.binding().updateVariableItem);
+      route.post("/delete", "xhr.variable_item.delete", [upload.any()], VariableItemController.binding().deleteVariableItem);
+      route.get("/variable-items", "xhr.variable_item.variable_items", [], VariableItemController.binding().getVariableItems);
+      route.get("/:id/view", "xhr.variable_item.variable", [], VariableItemController.binding().getVariableItem);
+    });
+    
     self.use("/xhr/repository", [DashboardAuth, GithubAuth], function (route: BaseRouteInterface) {
       route.get("/repositories", "xhr.repository.repositories", [], RepositoryController.binding().getRepositories);
       route.get("/owner", "xhr.repository.owner", [], RepositoryController.binding().getOwner);
