@@ -20,6 +20,7 @@ export default BaseController.extend<VariableItemControllerInterface>({
       let user = await GetAuthUser(req);
       props.user_id = user.id;
       props.datas = JSON.parse(props.datas || '[]');
+      props.var_schema = JSON.parse(props.var_schema || '[]');
       let resData = await VariableItemService.addVariableItem({
         name: (Math.random() + 1).toString(36).substring(7),
         variable_id: props.variable_id,
