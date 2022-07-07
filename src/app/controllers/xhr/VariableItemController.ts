@@ -1,4 +1,6 @@
+import SafeValue from "@root/app/functions/base/SafeValue"
 import GetAuthUser from "@root/app/functions/GetAuthUser"
+import MergeVarScheme from "@root/app/functions/MergeVarScheme"
 import FileService from "@root/app/services/FileService"
 import VariableItemService from "@root/app/services/VariableItemService"
 import VariableService from "@root/app/services/VariableService"
@@ -74,9 +76,23 @@ export default BaseController.extend<VariableItemControllerInterface>({
       return res.status(400).send(ex);
     }
   },
-  getVariableItem(req, res) {
+  async getVariableItem(req, res) {
     try {
-
+      let query = req.query;
+      let user = await GetAuthUser(req);
+      query.action = SafeValue(query.action, null);
+      query.user_id = user.id;
+      query.id = req.params.id;
+      let resData = await VariableItemService.getVariableItemById(query.id);
+      console.log("resData :: resData",resData);
+      if (query.action == "render") {
+        resData = MergeVarScheme(resData.datas, resData.var_schema, {});
+      }
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }

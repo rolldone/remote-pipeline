@@ -2,7 +2,7 @@ const MergeVarScheme = function (variable, scheme, extra) {
   let mergeVarScheme = ((variable, schema) => {
     let jj = {};
     for (var a = 0; a < schema.length; a++) {
-      if (variable[a].is_active == true) {
+      // if (variable[a].is_active == true) {
         switch (schema[a].type) {
           case 'input-asset':
             for (let b in variable) {
@@ -29,7 +29,7 @@ const MergeVarScheme = function (variable, scheme, extra) {
             }
             break;
         }
-      }
+      // }
     }
     return {
       ...jj,
