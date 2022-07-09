@@ -110,6 +110,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use('/xhr/queue', [], function (route: BaseRouteInterface) {
       route.post("/delete-item", "xhr.queue.delete_item", [upload.any()], QueueController.binding().deleteQueueItem);
       route.post("/create-item", "xhr.queue.create_item", [upload.any()], QueueController.binding().createQueueItem);
+      route.post("/create/:queue_key", "xhr.queue.create_by_queue_key", [upload.any()], OutSideController.binding().createQueue);
       route.post("/create", "xhr.queue.create", [upload.any()], QueueController.binding().createQueue);
       route.post("/update", "xhr.queue.update", [upload.any()], QueueController.binding().updateQueue);
       route.post("/delete", "xhr.queue.delete", [upload.any()], QueueController.binding().deleteQueue);
@@ -236,7 +237,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/variable-items", "xhr.variable_item.variable_items", [], VariableItemController.binding().getVariableItems);
       route.get("/:id/view", "xhr.variable_item.variable", [], VariableItemController.binding().getVariableItem);
     });
-    
+
     self.use("/xhr/repository", [DashboardAuth, GithubAuth], function (route: BaseRouteInterface) {
       route.get("/repositories", "xhr.repository.repositories", [], RepositoryController.binding().getRepositories);
       route.get("/owner", "xhr.repository.owner", [], RepositoryController.binding().getOwner);

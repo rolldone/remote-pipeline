@@ -143,6 +143,9 @@ const VariableItemService = {
       query
         .leftJoin("var").on("var.id", "var_item.variable_id")
       query.where("var_item.variable_id", variable_id);
+      if (props.is_permanent != null) {
+        query.where("var_item.is_permanent", props.is_permanent);
+      }
       query.orderBy("var_item.id DESC");
       query.limit(props.limit || 50);
       query.offset((props.offset || 0) * (props.limit || 50));

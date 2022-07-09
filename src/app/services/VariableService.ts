@@ -58,7 +58,9 @@ const preSelectQuery = () => {
 
 const returnFactoryColumn = async (props: VariableServiceInterface) => {
   let resData = props;
-  let _viTem = await VariableItemService.getVariableItemsByVariableID(props.id, {});
+  let _viTem = await VariableItemService.getVariableItemsByVariableID(props.id, {
+    is_permanent: 1
+  });
   resData.data = _viTem; // JSON.parse(resData.data || '[]');
   resData.schema = JSON.parse(resData.schema || '[]')
   return resData;

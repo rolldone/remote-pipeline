@@ -31,7 +31,7 @@
 
 	response: url
 
-	field:
+	body:
 
 	- job_id : string
 
@@ -47,8 +47,12 @@
 	url : {{HOST}}/xhr/outside/queue/:queue_key
 
 	response: status
-
-	field:
+	
+	body:
+	- delay : number
+	- process_mode : string
+	- process_limit : string
+	- data : JSON
 
 # RoadMap:
 
@@ -142,9 +146,9 @@ Task :
 
 - [Queue] : Add new scenario how queue use host one to one with different value and one to many with same value [Alpha] 
 
+- [QueueTool] : Create form tester tool for create queue [Alpha]
+]
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
-
-- [QueueTool] : Create form tester tool for create queue [Waiting]
 
 - [PipelineItem] : can clone pipeline item [Waiting]
 
