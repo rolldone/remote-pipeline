@@ -146,7 +146,7 @@ Task :
 
 - [QueueTool] : Create form tester tool for create queue [Alpha]
 
-- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Progress]
 
 - [Host] : Create check Host healthy every 5 minutes [Waiting]
 
