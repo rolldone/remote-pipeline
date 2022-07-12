@@ -17,6 +17,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getQueueRecordDetails: { (req: any, res: any): void }
   getQueueRecordDetail: { (req: any, res: any): void }
   getDisplayProcess: { (req: any, res: any): void }
+  getDisplayProcessItem: { (req: any, res: any): void }
   getIdsStatus: { (req: any, res: any): void }
   getDirectories: { (req: any, res: any): void }
   getFile: { (req: any, res: any): void }
@@ -106,27 +107,29 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
             return tail;
           }
           let isPendingToClose = null;
-          let fileREadline = ReadRecordCOmmandFileLog(keyLis, (data) => {
-            if (isPendingToClose != null) {
-              isPendingToClose.cancel();
-            }
-            isPendingToClose = debounce(() => {
-              fileREadline.close();
-              console.log("FileReadline Close")
-              runningTail(keyLis);
-            }, 1000);
-            isPendingToClose();
+          setTimeout(() => {
+            let fileREadline = ReadRecordCOmmandFileLog(keyLis, (data) => {
+              if (isPendingToClose != null) {
+                isPendingToClose.cancel();
+              }
+              isPendingToClose = debounce(() => {
+                fileREadline.close();
+                console.log("FileReadline Close")
+                runningTail(keyLis);
+              }, 500);
+              isPendingToClose();
 
-            // If suddenly get close by websocket event
-            if (_ws_client != null) {
-              _ws_client.ws.send(JSON.stringify({
-                action: keyLis,
-                data: data
-              }))
-            }
-          });
-          // Write for first time for get line on trigger event
-          fileREadline.write("--" + "\n")
+              // If suddenly get close by websocket event
+              if (_ws_client != null) {
+                _ws_client.ws.send(JSON.stringify({
+                  action: keyLis,
+                  data: data
+                }))
+              }
+            });
+            // Write for first time for get line on trigger event
+            fileREadline.write("--" + "\n")
+          }, 1000)
         }
       }
       return res.send({
@@ -139,9 +142,35 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       return res.status(400).send(ex);
     }
   },
+  async getDisplayProcessItem(req, res) {
+    try {
+      let _ws_client: {
+        key: string
+        ws: WebSocket
+      } = ws_client[req.query.key];
+      let id = req.params.id;
+      let resData = await QueueRecordDetailService.getQueueRecordDetail({
+        id
+      });
+      let res_pipeline_item = await PipelineTaskService.getPipelineTasks({
+        pipeline_id: resData.exe_pipeline_id,
+        order_by: "pip_item.id ASC, pip_task.order_number ASC",
+        pipeline_item_ids: resData.exe_pipeline_item_ids
+      })
+      let resGroupPipeline = _(res_pipeline_item).groupBy("pip_item_id").map((g) => {
+        return {
+          name: g[0].pip_item_name,
+          data: g
+        }
+      }).value();
+    } catch (ex) {
+      console.log(ex);
+      return res.status(400).send(ex);
+    }
+  },
   async getIdsStatus(req, res) {
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props: QueueRecordDetailServiceInterface = req.query;
       props.ids = JSON.parse(props.ids || '[]' as any);
       props.user_id = user.id;
@@ -161,7 +190,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getDirectories(req, res) {
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let job_id = req.params.job_id;
       let resData = await QueueRecordDetailService.getDirectories(job_id, user.id);
       return res.send({
@@ -176,7 +205,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getFile(req, res) {
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let path = req.query.path;
       let job_id = req.params.job_id;
       let resData = await QueueRecordDetailService.getFile(path, job_id, user.id);

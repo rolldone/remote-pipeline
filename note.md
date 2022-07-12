@@ -142,19 +142,19 @@ Task :
 
 - [Webhook] : Create template every webhook [OnProgress(70%)]
 
-- [Host] : Create check Host healthy every 5 minutes [Waiting]
-
 - [Queue] : Add new scenario how queue use host one to one with different value and one to many with same value [Alpha] 
 
 - [QueueTool] : Create form tester tool for create queue [Alpha]
-]
+
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
+
+- [Host] : Create check Host healthy every 5 minutes [Waiting]
+
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
 
 - [PipelineItem] : can clone pipeline item [Waiting]
 
 - [PipelineItem] : can download pipeline item [Waiting]
-
-- [QueueRecordDetail] : Improvement message notif success and error pipeline [Waiting]
 
 - [UserExperience] : Improvement all experience like validation, user navigation [OnProgress]
 

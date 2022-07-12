@@ -310,7 +310,7 @@ const PipelineLoop = async function (props: {
                   if (data.toString() != "") {
                     RecordCommandToFileLog({
                       fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id,
-                      commandString: data.toString()
+                      commandString: data.toString() + "\n"
                     })
                     // masterData.saveData("ws.commit", {
                     //   user_id: user_id,
