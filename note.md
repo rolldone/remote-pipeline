@@ -28,24 +28,17 @@
 - [addResultQueueDetailData] = POST 
 
 	url : {{HOST}}/xhr/outside/queue-detail/result/add 
-
 	response: url
 
 	body:
-
 	- job_id : string
-
 	- path : string
-
 	- file_name: string
-
 	- files : files data
-
 
 - [createQueue] = POST
 
 	url : {{HOST}}/xhr/outside/queue/:queue_key
-
 	response: status
 	
 	body:
@@ -148,8 +141,6 @@ Task :
 
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Progress]
 
-- [Host] : Create check Host healthy every 5 minutes [Waiting]
-
 - [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
 
 - [PipelineItem] : can clone pipeline item [Waiting]
@@ -162,7 +153,9 @@ Task :
 
 ## Phase 3
 
-- [Variable] : Add scheduling delete files not exist on database table variabe
+- [Host] : Create check Host healthy every 5 minutes [Waiting]
+
+- [Variable] : Add scheduling delete files not exist on database table variabe [Waiting]
 
 - [User] : Manage join group share project [Waiting]
 
