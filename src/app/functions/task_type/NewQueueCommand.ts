@@ -10,6 +10,7 @@ import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import QueueRecordService from "@root/app/services/QueueRecordService";
 import CreateQueue from "../CreateQueue";
 import SafeValue from "../base/SafeValue";
+import VariableItemService from "@root/app/services/VariableItemService";
 
 
 declare let masterData: MasterDataInterface;
@@ -46,21 +47,37 @@ const NewQueueCommand = function (props: TaskTypeInterface) {
           console.log("queue_record :: ", queue_record);
           if (queue_record != null) {
             let id = _queue_datas[a].id;
-            let data = {};
+            let data = mergeVarScheme;
             let process_mode = queue_record.exe_process_mode;
             let process_limit = SafeValue(queue_record.exe_process_limit, 1);
             let delay = SafeValue(queue_record.exe_delay, 2000);
             let queue_name = "queue_" + process_mode + "_" + id;
+
+            // If variable item id not null use this variable
+            if (_queue_datas[a].data.variable_item_id != null) {
+              let variable_item = await VariableItemService.getVariableItemById(_queue_datas[a].data.variable_item_id);
+              mergeVarScheme = MergeVarScheme(variable_item.datas, variable_item.var_schema, extra_var);
+              command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+              data = mergeVarScheme;
+              process_mode = SafeValue(_queue_datas[a].data.process_mode, process_mode);
+              process_limit = SafeValue(_queue_datas[a].data.process_limit, process_limit);
+              delay = SafeValue(_queue_datas[a].data.delay, delay);
+            }
+
             let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay: delay });
+
             RecordCommandToFileLog({
               fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
               commandString: "Create queue :: " + _queue_datas[a].name + "\n"
             })
+
           } else {
+
             RecordCommandToFileLog({
               fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
               commandString: "Create queue :: " + _queue_datas[a].name + " Not found\n"
             })
+
           }
         }
 
