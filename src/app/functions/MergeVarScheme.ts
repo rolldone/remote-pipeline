@@ -7,7 +7,7 @@ const MergeVarScheme = function (variable, scheme, extra = {}) {
       switch (schema[a].type) {
         case 'input-asset':
           for (let b in variable) {
-            if (variable[b].name == schema[a].name) {
+            if (variable[b].name == schema[a].name && variable[b].type == schema[a].type) {
               jj[schema[a].name] = variable[a].attachment_datas;
               isFound = true;
               break;
@@ -16,7 +16,7 @@ const MergeVarScheme = function (variable, scheme, extra = {}) {
           break;
         case 'input-script':
           for (let b in variable) {
-            if (variable[b].name == schema[a].name) {
+            if (variable[b].name == schema[a].name && variable[b].type == schema[a].type) {
               jj[schema[a].name] = variable[a].value;
               isFound = true;
               break;
@@ -25,7 +25,7 @@ const MergeVarScheme = function (variable, scheme, extra = {}) {
           break;
         case 'input-text':
           for (let b in variable) {
-            if (variable[b].name == schema[a].name) {
+            if (variable[b].name == schema[a].name && variable[b].type == schema[a].type) {
               jj[schema[a].name] = variable[a].value;
               isFound = true;
               break;

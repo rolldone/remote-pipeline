@@ -141,7 +141,7 @@ Task :
 
 - [QueueRecordDetail] : Improvement message notif success and error pipeline [Progress]
 
-- [Queue] : Add delay and add fix time delay for create new queue from queue [Waiting]
+- [Queue] : Add delay and add fix time delay for create new queue from queue [Progress]
 
 - [PipelineItem] : can clone pipeline item [Waiting]
 

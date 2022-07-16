@@ -97,7 +97,8 @@ const preSelectQuery = () => {
     'exe.host_ids as exe_host_ids',
     'exe.description as exe_description',
     'exe.delay as exe_delay',
-    'exe.access_host_type as exe_access_host_type'
+    'exe.access_host_type as exe_access_host_type',
+    'pip.name as pip_name'
   ).from("qrec");
   return query;
 }
