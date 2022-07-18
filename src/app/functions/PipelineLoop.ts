@@ -326,6 +326,12 @@ const PipelineLoop = async function (props: {
             }
             if (_isError == true) {
               await sshPromise.close();
+              masterData.saveData("data_pipeline_" + job_id + "_error", {
+                pipeline_task_id: pipeline_task_id,
+                command: '',
+                parent: who_parent,
+                message: "Your pipeline get force stop by some condition"
+              })
               return;
             }
             if (_isDone == true) {

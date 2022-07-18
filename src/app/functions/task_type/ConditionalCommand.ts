@@ -22,12 +22,14 @@ export default async function (props: TaskTypeInterface) {
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
     let _condition_values = _data.condition_values;
+    let _parent_condition_type = _data.parent_condition_type;
     let isPassed = [];
     let evalString = "";
-    
+
+    // Check if working dir and command string have variable rendered
     let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
-    
+
     if (working_dir != null) {
       command = `cd ${working_dir} && ${command}`;
     }
@@ -38,6 +40,10 @@ export default async function (props: TaskTypeInterface) {
           // console.log("Conditional command :: Called ");
           try {
             for (var key in _condition_values) {
+
+              // Check if condition string have variable rendered
+              _condition_values[key].condition_input_value = MustacheRender(_condition_values[key].condition_input_value, mergeVarScheme);
+
               if (_condition_values[key].condition_logic == 'NONE') {
                 if (props.data.toString().includes(_condition_values[key].condition_input_value)) {
                   isPassed.push(true);
@@ -69,11 +75,29 @@ export default async function (props: TaskTypeInterface) {
               }
             }
             if (eval(evalString) == true) {
+              switch (_parent_condition_type) {
+                case 'failed':
+                  masterData.saveData("data_pipeline_" + job_id + "_error", {
+                    pipeline_task_id: pipeline_task.id,
+                    command: "",
+                    parent: pipeline_task.temp_id,
+                    message: "Catch the condition : " + _condition_values[key].condition_input_value
+                  })
+                  return;
+                case 'next':
+                  masterData.saveData("data_pipeline_" + job_id, {
+                    pipeline_task_id: pipeline_task.id,
+                    command: "",
+                    parent: pipeline_task.temp_id,
+                    message: "Catch the condition : " + _condition_values[key].condition_input_value
+                  })
+                  return;
+              }
               masterData.saveData("data_pipeline_" + job_id, {
                 pipeline_task_id: pipeline_task.id,
                 command: command,
                 parent: pipeline_task.temp_id,
-                message: "Catch the condition!"
+                message: "Catch the condition : " + _condition_values[key].condition_input_value
               })
             } else {
               // ignore it

@@ -103,6 +103,10 @@ const RepoInstall = function (props: TaskTypeInterface) {
       if (filePRivateKey.identityFile != null) {
         ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
       }
+      
+      // Check if path have variable rendered
+      _data.target_path = MustacheRender(_data.target_path,mergeVarScheme);
+
       let _delete_mode_active = _data.transfer_mode == "force" ? true : false;
       var rsync = Rsync.build({
         /* Support multiple source too */

@@ -14,12 +14,16 @@ export default function (req): Promise<any> {
         if (psTokenData == null) {
           return reject("The token is not valid or expired");
         }
-        console.log("dsdd :: ", Moment(psTokenData.expired_date, "YYYY-MM-DD"))
-        if (Moment(psTokenData.expired_date, "YYYY-MM-DD") < Moment()) {
-          return reject("The token is expired");
+        
+        if(psTokenData.expired_date != null || psTokenData.expired_date != ""){
+          console.log("psTokenData.expired_date :: ", Moment(psTokenData.expired_date, "YYYY-MM-DD"))
+          if (Moment(psTokenData.expired_date, "YYYY-MM-DD") < Moment()) {
+            return reject("The token is expired");
+          }
         }
+
         let user = await UserService.getUser({
-          id: psTokenData.id
+          id: psTokenData.user_id
         })
         resolve(user);
       } catch (ex) {

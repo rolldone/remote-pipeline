@@ -53,6 +53,8 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
           }
           let _write_to = upath.normalizeSafe(_data.working_dir + "/" + _data.script_datas[au2].file_path);
 
+          // Check if path have variable rendered
+          _write_to = MustacheRender(_write_to, mergeVarScheme);
           // console.log("_content_data ::: ", _content_data);
           try {
             console.log("path.dirname(_write_to) :: ", path.dirname(_write_to));

@@ -149,7 +149,10 @@ Task :
 
 - [UserExperience] : Improvement all experience like validation, user navigation [OnProgress]
 
-  
+
+## Revision phase 2
+- [Pipeline] : Create unselect git source and remove all contain repo branch on execution, but. When unselect git source show popup to delete pipeline task repo install first. [Alpha]
+
 
 ## Phase 3
 

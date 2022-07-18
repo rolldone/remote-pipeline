@@ -45,6 +45,9 @@ const WriteTransfer = function (props: TaskTypeInterface) {
         let sftp = await sshPromise.sftp();
         for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
           let _content_data = mergeVarScheme[_data.asset_datas[au2].name];
+          // Check if path have variable rendered
+          _data.asset_datas[au2].target_path = MustacheRender(_data.asset_datas[au2].target_path, mergeVarScheme);
+
           await MkdirReqursive(sftp, path.dirname(_data.asset_datas[au2].target_path));
           await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
           RecordCommandToFileLog({
