@@ -105,19 +105,19 @@ Task :
 
 ## Phase 2
 
-- [Credentials] : Change table oauth_users to be credentials, and can manage [OnProgress]
+- [Credentials] : can manage [Alpha]
 
-- Secret text - a token such as an API token (e.g. a GitHub personal access token),
+	- Secret text - a token such as an API token (e.g. a GitHub personal access token),
 
-- Username and password - which could be handled as separate components or as a colon separated string in the format username:password (read more about this in Handling credentials),
+	- Username and password - which could be handled as separate components or as a colon separated string in the format username:password (read more about this in Handling credentials),
 
-- Secret file - which is essentially secret content in a file,
+	- Secret file - which is essentially secret content in a file,
 
-- SSH Username with private key - an SSH public/private key pair,
+	- SSH Username with private key - an SSH public/private key pair,
 
-- Certificate - a PKCS#12 certificate file and optional password, or
+	- Certificate - a PKCS#12 certificate file and optional password, or
 
-- Docker Host Certificate Authentication credentials.
+	- Docker Host Certificate Authentication credentials.
 
 - [Pipeline] : Can attach git repo just only git url and fill which branch
 
@@ -129,7 +129,7 @@ Task :
 
 - [Queue] : Add timezone for nodejs and queue scheduler [Alpha]
 
-- [Controller] : Add all user_id on all controller request "IMPORTANT" [OnProgress]
+- [Controller] : Add all user_id on all controller request "IMPORTANT" [OnProgress(60%)]
 
 - [Webhook] :Create manage webhook history [OnProgress(70%)]
 
@@ -139,28 +139,48 @@ Task :
 
 - [QueueTool] : Create form tester tool for create queue [Alpha]
 
-- [QueueRecordDetail] : Improvement message notif success and error pipeline [Progress]
+- [QueueRecordDetail] : Improvement message notif success and error pipeline [Progress(70%)]
 
-- [Queue] : Add delay and add fix time delay for create new queue from queue [Progress]
+- [Queue] : Add delay and add fix time delay for create new queue from queue [Progress(70%)]
 
-- [PipelineItem] : can clone pipeline item [Waiting]
+- [PipelineItem] : can import, add, and replace pipeline item [Alpha]
 
-- [PipelineItem] : can download pipeline item [Waiting]
+- [PipelineItem] : can download pipeline item and variable [Alpha]
 
-- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress]
+- [UserExperience] : Improvement all experience like validation, user navigation [OnProgress(60%)]
 
 
 ## Revision phase 2
 - [Pipeline] : Create unselect git source and remove all contain repo branch on execution, but. When unselect git source show popup to delete pipeline task repo install first. [Alpha]
 
+- [Pipeline] : Change git repository to have feature search repository [Waiting]
+
 
 ## Phase 3
+
+- [Create,Execution] : Before create new queue record or execution check first variable_id relation is exist or not as validation on controller. If missing return error [Waiting]
+
+- [QueueRecordDetail] : Record all execution, variable, variable_extra, to queue_record as bundle. [Waiting]
+
+- [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [Waiting]
+
+- [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Waiting]
+
+- [Storage] : Create storage file for easy management files [Waiting]
 
 - [Host] : Create check Host healthy every 5 minutes [Waiting]
 
 - [Variable] : Add scheduling delete files not exist on database table variabe [Waiting]
 
+
+## Phase 4
+
+- [OAuthUSers] : Change table oauth_users  to be credentials [Consider]
+
 - [User] : Manage join group share project [Waiting]
+
+
+## Pending
 
 - [Pipeline] : Create new lib form codemirror for easy compile and usable for other case [Pending]
 

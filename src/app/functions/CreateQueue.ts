@@ -126,6 +126,10 @@ const CreateQueue = function (props: {
                     job_id: idJObInstant,
                     job_data: theJOb.data,
                     status: QueueRecordDetailService.STATUS.RUNNING,
+                    // planning also record
+                    // variable
+                    // execution
+                    // variable_extra
                   });
 
                   indexHostItem += 1;

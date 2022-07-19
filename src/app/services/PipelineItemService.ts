@@ -1,6 +1,7 @@
 import SqlBricks from "@root/tool/SqlBricks";
 import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
+import PipelineTaskService, { PipelineTaskInterface } from "./PipelineTaskService";
 import SqlService from "./SqlService";
 
 const TYPE = {
@@ -23,6 +24,36 @@ export interface PipelineItemInterface {
   pipeline_tasks?: Array<any>
 }
 
+const preSelectQuery = () => {
+  SqlBricks.aliasExpansions({
+    'pro': "projects",
+    'pip': "pipelines",
+    'pip_item': "pipeline_items",
+  });
+  let query = SqlBricks.select(
+    "pip_item.name as name",
+    "pip_item.id as id",
+    "pip_item.description as description",
+    "pip_item.is_active as is_active",
+    "pip_item.order_number as order_number",
+    "pro.name as pro_name",
+    "pro.id as pro_id",
+    "pro.description as pro_description",
+    "pro.user_id as pro_user_id",
+    "pip.name as pip_name",
+    "pip.id as pip_id",
+    "pip.description as pip_description",
+    "pip.created_at as created_at",
+    "pip.updated_at as updated_at",
+  ).from("pip_item").leftJoin("pro").on({
+    "pro.id": "pip_item.project_id"
+  }).leftJoin("pip").on({
+    "pip.id": "pip_item.pipeline_id"
+  });
+
+  return query;
+}
+
 export interface PipelineItemServiceInterface extends PipelineItemInterface {
   ids?: Array<number>
   order_by_name?: string
@@ -32,6 +63,16 @@ export interface PipelineItemServiceInterface extends PipelineItemInterface {
   // Relation
   project_ids?: Array<number>
   pipeline_ids?: Array<number>
+
+  // One to many
+  pipeline_tasks?: Array<PipelineTaskInterface>
+}
+
+const returnFactoryColumn = async (props: PipelineItemServiceInterface) => {
+  props.pipeline_tasks = await PipelineTaskService.getPipelineTasks({
+    pipeline_item_id: props.id
+  });
+  return props;
 }
 
 export default {
@@ -55,26 +96,8 @@ export default {
         'pip': "pipelines",
         'pip_item': "pipeline_items"
       });
-      let query = SqlBricks.select(
-        "pip_item.name as name",
-        "pip_item.id as id",
-        "pip_item.description as description",
-        "pip_item.is_active as is_active",
-        "pip_item.order_number as order_number",
-        "pro.name as pro_name",
-        "pro.id as pro_id",
-        "pro.description as pro_description",
-        "pro.user_id as pro_user_id",
-        "pip.name as pip_name",
-        "pip.id as pip_id",
-        "pip.description as pip_description",
-        "pip.created_at as created_at",
-        "pip.updated_at as updated_at"
-      ).from("pip_item").leftJoin("pro").on({
-        "pro.id": "pip_item.project_id"
-      }).leftJoin("pip").on({
-        "pip.id": "pip_item.pipeline_id"
-      });
+      let query = preSelectQuery();
+
       query = query.where({
         "pip_item.project_id": props.project_id,
         "pip_item.pipeline_id": props.pipeline_id,
@@ -99,30 +122,14 @@ export default {
         'pip_item': "pipeline_items",
         'pip': "pipelines"
       });
-      let query = SqlBricks.select(
-        "pip_item.name as name",
-        "pip_item.id as id",
-        "pip_item.description as description",
-        "pip_item.is_active as is_active",
-        "pip_item.order_number as order_number",
-        "pro.name as pro_name",
-        "pro.id as pro_id",
-        "pro.description as pro_description",
-        "pro.user_id as pro_user_id",
-        "pip.name as pip_name",
-        "pip.id as pip_id",
-        "pip.description as pip_description",
-        "pip.created_at as created_at",
-        "pip.updated_at as updated_at"
-      ).from("pip_item").leftJoin("pro").on({
-        "pro.id": "pip_item.project_id"
-      }).leftJoin("pip").on({
-        "pip.id": "pip_item.pipeline_id"
-      });
+
+      let query = preSelectQuery();
+
       query = query.where({
         "pip_item.project_id": props.project_id,
         "pip_item.pipeline_id": props.pipeline_id,
       });
+
       if (props.ids != null) {
         query = query.where(SqlBricks.in("pip_item.id", props.ids));
       }
@@ -133,8 +140,11 @@ export default {
         query = query.orderBy("pip_item." + props.order_by_name + " " + props.order_by_value);
       }
       // return query.toString();
-      let resData = await SqlService.select(query.toString());
-      return resData;
+      let resDatas = await SqlService.select(query.toString());
+      for (var i in resDatas) {
+        resDatas[i] = await returnFactoryColumn(resDatas[i]);
+      }
+      return resDatas;
     } catch (ex) {
       throw ex;
     }

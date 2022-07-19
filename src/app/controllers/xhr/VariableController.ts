@@ -24,6 +24,12 @@ export default BaseController.extend<VariableControllerInterface>({
       props.data = JSON.parse(props.data || '[]');
       props.schema = JSON.parse(props.schema || '[]');
       let resData = await VariableService.addVariable(props);
+      for (let i in props.data) {
+        await VariableItemService.addVariableItem({
+          ...props.data[i],
+          variable_id: resData.id
+        });
+      }
       res.send({
         status: 'success',
         status_code: 200,
@@ -77,6 +83,11 @@ export default BaseController.extend<VariableControllerInterface>({
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
       let resData = await VariableService.deleteVariable(ids);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
     } catch (ex) {
       return res.status(400).send(ex);
     }
