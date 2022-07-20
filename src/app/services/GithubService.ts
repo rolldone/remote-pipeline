@@ -5,6 +5,7 @@ import shelljs from 'shelljs';
 
 export interface GithubServiceInterface {
   access_token?: string,
+  search?: string
   owner?: string
   orgName?: string
   repo_name?: string
@@ -28,13 +29,22 @@ export default {
   },
   async getCurrentRepositories(props: GithubServiceInterface) {
     try {
-      let resData = await axios.get(`https://api.github.com/user/repos?type=all&per_page=500`, {
+      let resData = await axios.get(`https://api.github.com/search/repositories?q=${props.search}+user:${props.owner}`, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
-          'Authorization': 'Bearer ' + props.access_token
+          'Authorization': 'token ' + props.access_token
         }
       })
-      return resData.data;
+      
+      /**
+       * return display :
+       * { 
+       *  "total_count": 959015,
+          "incomplete_results": false,
+          "items": []
+       * }
+       */
+      return resData.data.items;
     } catch (ex) {
       throw ex;
     }
@@ -121,16 +131,16 @@ export default {
         } catch (ex) {
           console.log("error - ", ex);
         }
-        try{
-          console.log("commitData :: ",commitData);
-          console.log("infoJSON :: ",infoJSON);
+        try {
+          console.log("commitData :: ", commitData);
+          console.log("infoJSON :: ", infoJSON);
           if (infoJSON != null && commitData.sha == infoJSON.sha) {
             if (existsSync(props.download_path + "/" + props.branch) == true) {
               console.log("GithubService ::: Branch " + props.branch + " is exist");
               return resolve(props.download_path + "/" + props.branch);
             }
           }
-        }catch(ex){
+        } catch (ex) {
           return reject(ex);
         }
         let url = `https://api.github.com/repos/${props.owner}/${props.repo_name}/zipball/${props.branch}`;
@@ -152,13 +162,13 @@ export default {
           shelljs.exec("touch " + props.download_path + "/info.json");
           // Then unzip the file from root project path as point
           console.log("GithubService ::: Shelljs is done");
-          
+
           // Then save new file
           writeFileSync(place_save_file, response.data);
-          
+
           shelljs.exec("unzip -o " + props.download_path + "/" + file_zip + " -d " + props.download_path + " && rm " + props.download_path + "/" + file_zip);
           shelljs.exec("mv " + props.download_path + "/" + props.owner + "* " + props.download_path + "/" + props.branch);
-          
+
           writeFileSync(props.download_path + "/info.json", JSON.stringify({
             sha: commitData.sha,
             branch: props.branch,

@@ -32,7 +32,8 @@ export default BaseController.extend<RepositoryControllerInterface>({
           repoAccessToken = req.repo_auth_access_token;
           resData = await GithubService.getCurrentRepositories({
             owner: oauthRepoUser.login,
-            access_token: repoAccessToken
+            access_token: repoAccessToken,
+            search: props.search
           });
           break;
         case 'gitlab':
@@ -40,7 +41,8 @@ export default BaseController.extend<RepositoryControllerInterface>({
           repoAccessToken = req.repo_auth_access_token;
           resData = await GitlabService.getCurrentRepositories({
             owner: oauthRepoUser.login,
-            access_token: repoAccessToken
+            access_token: repoAccessToken,
+            search: props.search
           });
           break;
       }

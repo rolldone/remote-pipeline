@@ -13,6 +13,8 @@ export interface GitlabServiceInterface {
   branch?: string
   download_path?: string
   sha?: string
+
+  search?: string
 }
 
 export default {
@@ -31,7 +33,11 @@ export default {
   },
   async getCurrentRepositories(props: GitlabServiceInterface) {
     try {
-      let resData = await axios.get(`https://gitlab.com/api/v4/projects?owned=true`, {
+      // Global
+      let query = `https://gitlab.com/api/v4/search?owned=true&scope=projects&search=${props.search}`
+      // Own repo
+      let url = `https://gitlab.com/api/v4/projects?owned=true&search=${props.search}`;
+      let resData = await axios.get(url, {
         headers: {
           "Accept": "application/vnd.github.v3+json",
           'Authorization': 'Bearer ' + props.access_token
@@ -161,14 +167,14 @@ export default {
           // shelljs.exec("rm -R " + props.download_path + "/!(info.json)");
           shelljs.exec("rm -R " + props.download_path + "/*");
           shelljs.exec("touch " + props.download_path + "/info.json");
-          
+
           // Then save new file
           writeFileSync(place_save_file, response.data);
-          
+
           // Then unzip the file from root project path as point
           shelljs.exec("unzip -o " + props.download_path + "/" + file_zip + " -d " + props.download_path + " && rm " + props.download_path + "/" + file_zip);
           shelljs.exec("mv " + props.download_path + "/" + (props.repo_name.split(" ").join("_").toLowerCase()) + "* " + props.download_path + "/" + props.branch);
-          
+
           writeFileSync(props.download_path + "/info.json", JSON.stringify({
             sha: commitData.sha,
             branch: props.branch,
