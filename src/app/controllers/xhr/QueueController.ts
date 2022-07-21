@@ -51,12 +51,14 @@ export default BaseController.extend<QueueControllerInterface>({
       let queue_name = "queue_" + res_data_record_detail.exe_process_mode + "_" + res_data_record_detail.qrec_id;
       // let resData = await CreateQueueItem({ queue_name, res_data_record_detail });
       let resData = await CreateQueue({
-        data: res_data_record_detail.data,
         delay: res_data_record_detail.exe_delay,
         id: res_data_record_detail.queue_record_id,
         process_mode: res_data_record_detail.exe_process_mode,
         process_limit: res_data_record_detail.exe_process_limit,
-        queue_name: res_data_record_detail.queue_name
+        queue_name: res_data_record_detail.queue_name,
+        variable: res_data_record_detail.variable,
+        variable_extra: res_data_record_detail.variable_extra,
+        execution: res_data_record_detail.execution
       })
       res.send({
         status: 'success',
@@ -76,12 +78,12 @@ export default BaseController.extend<QueueControllerInterface>({
   async createQueue(req, res) {
     try {
       let id = req.body.id;
-      let data = JSON.parse(req.body.data || "{}");
+      let variable_extra = JSON.parse(req.body.data || "{}");
       let process_mode = req.body.process_mode;
       let process_limit = parseInt(SafeValue(req.body.process_limit, 1));
       let queue_name = "queue_" + process_mode + "_" + id;
       let delay = parseInt(SafeValue(req.body.delay, 3000));
-      let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay });
+      let resQueueRecord = await CreateQueue({ id, variable_extra, process_mode, process_limit, queue_name, delay });
       res.send({
         status: 'success',
         status_code: 200,

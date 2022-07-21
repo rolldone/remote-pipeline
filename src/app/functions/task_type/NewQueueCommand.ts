@@ -47,7 +47,7 @@ const NewQueueCommand = function (props: TaskTypeInterface) {
           console.log("queue_record :: ", queue_record);
           if (queue_record != null) {
             let id = _queue_datas[a].id;
-            let data = mergeVarScheme;
+            let variable_extra = mergeVarScheme;
             let process_mode = queue_record.exe_process_mode;
             let process_limit = SafeValue(queue_record.exe_process_limit, 1);
             let delay = SafeValue(queue_record.exe_delay, 2000);
@@ -58,13 +58,13 @@ const NewQueueCommand = function (props: TaskTypeInterface) {
               let variable_item = await VariableItemService.getVariableItemById(_queue_datas[a].data.variable_item_id);
               mergeVarScheme = MergeVarScheme(variable_item.datas, variable_item.var_schema, extra_var);
               command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
-              data = mergeVarScheme;
+              variable_extra = mergeVarScheme;
               process_mode = SafeValue(_queue_datas[a].data.process_mode, process_mode);
               process_limit = SafeValue(_queue_datas[a].data.process_limit, process_limit);
               delay = SafeValue(_queue_datas[a].data.delay, delay);
             }
 
-            let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay: delay });
+            let resQueueRecord = await CreateQueue({ id, variable_extra, process_mode, process_limit, queue_name, delay: delay });
 
             RecordCommandToFileLog({
               fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,

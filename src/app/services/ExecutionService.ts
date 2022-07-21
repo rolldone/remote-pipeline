@@ -333,12 +333,12 @@ export default {
             id, data,
             callback: async (props) => {
               if (props == "") {
-                let data = JSON.parse("{}");
+                let variable_extra = JSON.parse("{}");
                 let process_mode = resData.process_mode;
                 let process_limit = resData.process_limit || 1;
                 let queue_name = "queue_" + process_mode + "_" + id;
                 let delay = 2000;
-                let resQueueRecord = await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay });
+                let resQueueRecord = await CreateQueue({ id, variable_extra, process_mode, process_limit, queue_name, delay });
                 return resolve(resQueueRecord);
               }
               resolve(props);

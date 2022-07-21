@@ -3,7 +3,7 @@ import { Knex } from "knex";
 import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import SqlService from "./SqlService";
-import VariableItemService from "./VariableItemService";
+import VariableItemService, { VariableItemInterface } from "./VariableItemService";
 declare let db: Knex;
 
 export interface variableInterface {
@@ -12,7 +12,7 @@ export interface variableInterface {
   project_id?: number
   user_id?: number
   name?: string
-  data?: any
+  data?: Array<VariableItemInterface>
   schema?: any
   description?: string
 
@@ -56,10 +56,13 @@ const preSelectQuery = () => {
   return query;
 }
 
-const returnFactoryColumn = async (props: VariableServiceInterface) => {
+const returnFactoryColumn = async (props: VariableServiceInterface, filter: {
+  variable_item_name?: string
+} = {}) => {
   let resData = props;
   let _viTem = await VariableItemService.getVariableItemsByVariableID(props.id, {
-    is_permanent: 1
+    is_permanent: 1,
+    name: filter.variable_item_name
   });
   resData.data = _viTem; // JSON.parse(resData.data || '[]');
   resData.schema = JSON.parse(resData.schema || '[]')
@@ -140,7 +143,7 @@ export default {
       let resData = await db.raw(query.toString());
       resData = resData[0];
       if (resData == null) return;
-      resData = await returnFactoryColumn(resData);
+      resData = await returnFactoryColumn(resData, props);
       return resData;
     } catch (ex) {
       throw ex;

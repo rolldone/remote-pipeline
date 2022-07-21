@@ -153,16 +153,16 @@ Task :
 ## Revision phase 2
 - [Pipeline] : Create unselect git source and remove all contain repo branch on execution, but. When unselect git source show popup to delete pipeline task repo install first. [Alpha]
 
-- [Pipeline] : Change git repository to have feature search repository [Waiting]
+- [Pipeline] : Change git repository to have feature search repository [Alpha]
 
 
 ## Phase 3
 
-- [Create,Execution] : Before create new queue record or execution check first variable_id relation is exist or not as validation on controller. If missing return error [Waiting]
+- [Create,Execution] : Before create new queue record or execution check first variable_id relation is exist or not as validation on controller. If missing return error [Alpha]
 
-- [QueueRecordDetail] : Record all execution, variable, variable_extra, to queue_record as bundle. [Waiting]
+- [QueueRecordDetail] : Record all execution, variable, variable_extra, to queue_record as bundle. [Alpha]
 
-- [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [Waiting]
+- [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [OnProgress]
 
 - [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Waiting]
 

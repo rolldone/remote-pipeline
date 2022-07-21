@@ -17,12 +17,12 @@ export default BaseController.extend<HostControllerInterface>({
       let props = req.body;
       let queue_key = req.params.queue_key;
       let queueData: QueueRecordInterface = await QueueRecordService.getQueueRecordByKey(queue_key);
-      let data = JSON.parse(props.data || "{}");
+      let variable_extra = JSON.parse(props.data || "{}");
       let process_mode = SafeValue(props.process_mode, queueData.exe_process_mode);
       let process_limit = parseInt(SafeValue(props.process_limit, queueData.exe_process_limit));
       let delay = parseInt(SafeValue(props.delay, queueData.exe_delay));
       let queue_name = "queue_" + process_mode + "_" + queueData.id;
-      let resQueueRecord = await CreateQueue({ id: queueData.id, data, process_mode, process_limit, queue_name, delay });
+      let resQueueRecord = await CreateQueue({ id: queueData.id, variable_extra, process_mode, process_limit, queue_name, delay });
 
       res.send({
         status: 'success',

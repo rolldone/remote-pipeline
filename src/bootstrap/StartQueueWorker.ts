@@ -16,7 +16,6 @@ export default function (next: Function) {
 
       for (var a = 0; a < queueRecords.length; a++) {
         let id = queueRecords[a].id;
-        let data = queueRecords[a].data;
         let process_mode = queueRecords[a].exe_process_mode;
         let process_limit = queueRecords[a].exe_process_limit || 1;
         let queue_name = "queue_" + process_mode + "_" + id;
@@ -34,7 +33,7 @@ export default function (next: Function) {
             queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
           })
         }
-        await CreateQueue({ id, data, process_mode, process_limit, queue_name, delay });
+        await CreateQueue({ id, process_mode, process_limit, queue_name, delay });
       }
       if (queueRecords.length == 0) {
         await QueueRecordDetailService.updateQueueRecordDetailWhere({

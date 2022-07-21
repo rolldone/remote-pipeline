@@ -28,6 +28,9 @@ const transformColumn = (el) => {
   el.qrec_sch_data = JSON.parse(el.qrec_sch_data || '{}');
   el.exe_host_ids = JSON.parse(el.exe_host_ids || '[]');
   el.exe_pipeline_item_ids = JSON.parse(el.exe_pipeline_item_ids || '[]');
+  el.variable = el.variable != null ? JSON.parse(el.variable || '{}') : null;
+  el.execution = el.execution != null ? JSON.parse(el.execution || '{}') : null;
+  el.variable_extra = el.variable_extra != null ? JSON.parse(el.variable_extra || '{}') : null;
   return el;
 }
 
@@ -41,6 +44,10 @@ export interface QueueRecordDetailInterface {
   created_at?: string
   updated_at?: string
   deleted_at?: string
+  variable?: any
+  variable_extra?: any
+  execution?: any
+
   // aditional
   job_data?: any
   // Queue record
@@ -86,6 +93,9 @@ const preSelectQuery = () => {
     'qrec_detail.job_id as job_id',
     'qrec_detail.data as data',
     'qrec_detail.status as status',
+    'qrec_detail.variable as variable',
+    'qrec_detail.variable_extra as variable_extra',
+    'qrec_detail.execution as execution',
     'qrec_detail.created_at as created_at',
     'qrec_detail.updated_at as updated_at',
     'qrec_detail.deleted_at as deleted_at',
@@ -251,7 +261,10 @@ export default {
         queue_name: props.queue_name,
         job_id: props.job_id,
         data: JSON.stringify(props.job_data),
-        status: props.status
+        status: props.status,
+        variable: JSON.stringify(props.variable),
+        variable_extra: JSON.stringify(props.variable_extra),
+        execution: JSON.stringify(props.execution)
       }));
       let _query = queryInsert.toString();
       let resDataId = await db.raw(_query);
