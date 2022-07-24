@@ -166,7 +166,7 @@ Task :
 
 - [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Waiting]
 
-- [Storage] : Create storage file for easy management files [Waiting]
+- [Storage] : Create storage file for easy management files [OnProgress]
 
 - [Host] : Create check Host healthy every 5 minutes [Waiting]
 

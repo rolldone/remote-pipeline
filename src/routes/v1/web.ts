@@ -33,6 +33,11 @@ import OutSideAuth from "@root/app/middlewares/OutSideAuth";
 import OAuthUserController from "@root/app/controllers/xhr/OAuthUserController";
 import CredentialController from "@root/app/controllers/xhr/CredentialController";
 import VariableItemController from "@root/app/controllers/xhr/VariableItemController";
+import File2Controller from "@root/app/controllers/xhr/File2Controller";
+import { FlydriveStorageEngine, MulterFlydriveOptionsFunction } from 'multer-flydrive-engine';
+import { StorageManager } from "@slynova/flydrive";
+import GetAuthUser from "@root/app/functions/GetAuthUser";
+import upath from 'upath';
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -46,9 +51,37 @@ const storageTemp = multer.diskStorage({
   }
 })
 
+const basicUpload = multer();
 const upload = multer({
   storage: storageTemp
 });
+
+declare let storage: StorageManager;
+
+const storageTempUseFlyDrive = new FlydriveStorageEngine({
+  async disk(req, file) {
+    return storage.disk();// req.query.dest === 's3' ? storage.disk('s3') : storage.disk('local');
+  },
+  async destination(req, file) {
+    let basePath = '/temp';
+    return basePath;
+  },
+  async filename(req, file) {
+    console.log('storageTemp - filename :: ', file)
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    let gg = upath.normalize(uniqueSuffix + "-" + file.originalname);
+    let newFile = {
+      ...file,
+      temp_name: gg
+    }
+    req.files = [newFile];
+    return gg; // file.fieldname + '-' + Date.now();
+  }
+})
+
+const upload2 = multer({
+  storage: storageTempUseFlyDrive
+})
 
 export default BaseRoute.extend<BaseRouteInterface>({
   baseRoute: '',
@@ -74,7 +107,8 @@ export default BaseRoute.extend<BaseRouteInterface>({
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.file.add", [function (req, res, next) {
         console.log("before-multer-res.body", req.body);
-        console.log("before-multer-req.file", req.files)
+        console.log("before-multer-req.file", req.file)
+        // console.log("before-multer-req.body_file", req.body.files)
         let _middleware = upload.any()
         return _middleware(req, res, () => {
           // Remember, the middleware will call it's next function
@@ -93,6 +127,30 @@ export default BaseRoute.extend<BaseRouteInterface>({
           next();
         })
       }], FileController.binding().moveFile)
+    });
+
+
+    self.use("/xhr/file2", [DashboardAuth], function (route: BaseRouteInterface) {
+      route.post("/put", "xhr.file2.put", [function (req, res, next) {
+        let _middleware = upload2.any()
+        return _middleware(req, res, () => {
+          // Remember, the middleware will call it's next function
+          // so we can inject our controller manually as the next()
+          console.log("res.body", req.body);
+          console.log("req.files", req.files);
+          if (!req.files) return res.json({ error: "invalid" })
+          next()
+        });
+      }], File2Controller.binding().addFile);
+      route.post("/mkdir", "xhr.file2.mkdir", [upload.any()], File2Controller.binding().addDir);
+      route.post("/delete", "xhr.file2.delete", [upload.any()], File2Controller.binding().remove);
+      route.post('/delete-by-ids', 'xhr.file2.delete_by_ids', [upload.any()], File2Controller.binding().removeByIds);
+      route.post("/move", "xhr.file2.move", [upload.any()], File2Controller.binding().move)
+      route.post("/copy", "xhr.file2.copy", [upload.any()], File2Controller.binding().copy)
+      route.post("/duplicate", "xhr.file2.duplicate", [upload.any()], File2Controller.binding().duplicated)
+      route.post("/rename", "xhr.file2.rename", [upload.any()], File2Controller.binding().rename)
+      route.get("/files", "xhr.file2.files", [], File2Controller.binding().getFiles);
+      route.get("/:id/view", "xhr.file2.file", [], File2Controller.binding().getFile);
     });
 
 
