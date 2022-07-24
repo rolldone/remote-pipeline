@@ -12,6 +12,7 @@ import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import FlyDriveConfig from "@root/config/FlyDriveConfig";
+import File2Service from "@root/app/services/File2Service";
 
 declare let masterData: MasterDataInterface
 declare let storage: StorageManager
@@ -59,7 +60,8 @@ export default async function (props: TaskTypeInterface) {
                   recursive: true
                 });
               }
-              let readFile = await storage.disk(FlyDriveConfig.FLY_DRIVE_DRIVER).getBuffer(upath.normalize(`${_ioir.user_id}/${_ioir.path}/${_ioir.name}`));
+              let assetData = await File2Service.getFileById(_ioir.id);
+              let readFile = await storage.disk(FlyDriveConfig.FLY_DRIVE_DRIVER).getBuffer(upath.normalize(`${assetData.user_id}/${assetData.path}/${assetData.name}`));
               writeFileSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}/${_ioir.name}`), readFile.content);
             } catch (ex) {
               masterData.saveData("data_pipeline_" + job_id + "_error", {

@@ -164,7 +164,7 @@ Task :
 
 - [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [OnProgress]
 
-- [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Waiting]
+- [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Pending]
 
 - [Storage] : Create storage file for easy management files [OnProgress]
 
