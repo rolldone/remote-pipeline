@@ -30,22 +30,22 @@ export default BaseController.extend<VariableItemControllerInterface>({
         datas: props.datas,
         is_active: true
       })
-      for (let b = 0; b < props.datas.length; b++) {
-        let _data = props.datas[b];
-        if (_data.attachment_datas != null) {
-          for (let c = 0; c < _data.attachment_datas.length; c++) {
-            let _item = _data.attachment_datas[c];
-            let resMove = FileService.moveFile(_item.file[0].path, "./storage/app/variables/" + props.id + "/" + _item.file[0].name);
-            console.log("resMove :: ", resMove);
-          }
-        }
-        if (_data.attachment_datas_deleted != null) {
-          for (let c = 0; c < _data.attachment_datas_deleted.length; c++) {
-            let _item = _data.attachment_datas_deleted[c];
-            FileService.removeFile("./storage/app/variables/" + props.variable_id + "/" + _item.file[0].name)
-          }
-        }
-      }
+      // for (let b = 0; b < props.datas.length; b++) {
+      //   let _data = props.datas[b];
+      //   if (_data.attachment_datas != null) {
+      //     for (let c = 0; c < _data.attachment_datas.length; c++) {
+      //       let _item = _data.attachment_datas[c];
+      //       let resMove = FileService.moveFile(_item.file[0].path, "./storage/app/variables/" + props.id + "/" + _item.file[0].name);
+      //       console.log("resMove :: ", resMove);
+      //     }
+      //   }
+      //   if (_data.attachment_datas_deleted != null) {
+      //     for (let c = 0; c < _data.attachment_datas_deleted.length; c++) {
+      //       let _item = _data.attachment_datas_deleted[c];
+      //       FileService.removeFile("./storage/app/variables/" + props.variable_id + "/" + _item.file[0].name)
+      //     }
+      //   }
+      // }
       res.send({
         status: 'success',
         status_code: 200,
@@ -70,22 +70,22 @@ export default BaseController.extend<VariableItemControllerInterface>({
         is_active: true,
         id: props.id
       })
-      for (let b = 0; b < props.datas.length; b++) {
-        let _data = props.datas[b];
-        if (_data.attachment_datas != null) {
-          for (let c = 0; c < _data.attachment_datas.length; c++) {
-            let _item = _data.attachment_datas[c];
-            let resMove = FileService.moveFile(_item.file[0].path, "./storage/app/variables/" + props.id + "/" + _item.file[0].name);
-            console.log("resMove :: ", resMove);
-          }
-        }
-        if (_data.attachment_datas_deleted != null) {
-          for (let c = 0; c < _data.attachment_datas_deleted.length; c++) {
-            let _item = _data.attachment_datas_deleted[c];
-            FileService.removeFile("./storage/app/variables/" + props.variable_id + "/" + _item.file[0].name)
-          }
-        }
-      }
+      // for (let b = 0; b < props.datas.length; b++) {
+      //   let _data = props.datas[b];
+      //   if (_data.attachment_datas != null) {
+      //     for (let c = 0; c < _data.attachment_datas.length; c++) {
+      //       let _item = _data.attachment_datas[c];
+      //       let resMove = FileService.moveFile(_item.file[0].path, "./storage/app/variables/" + props.id + "/" + _item.file[0].name);
+      //       console.log("resMove :: ", resMove);
+      //     }
+      //   }
+      //   if (_data.attachment_datas_deleted != null) {
+      //     for (let c = 0; c < _data.attachment_datas_deleted.length; c++) {
+      //       let _item = _data.attachment_datas_deleted[c];
+      //       FileService.removeFile("./storage/app/variables/" + props.variable_id + "/" + _item.file[0].name)
+      //     }
+      //   }
+      // }
       res.send({
         status: 'success',
         status_code: 200,

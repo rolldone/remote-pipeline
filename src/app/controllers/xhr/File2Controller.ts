@@ -39,8 +39,18 @@ const File2Controller = BaseController.extend<File2ControllerInterface>({
       return res.status(400).send(ex);
     }
   },
-  getFile(req, res) {
-
+  async getFile(req, res) {
+    try {
+      let user = await GetAuthUser(req);
+      let resDatas = await File2Service.getFileById_UserId(req.params.id, user.id);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resDatas,
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
   async addFile(req, res) {
     try {

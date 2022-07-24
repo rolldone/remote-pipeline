@@ -8,8 +8,13 @@ import Rsync from "@root/tool/rsync";
 import InitPtyProcess from "../InitPtyProcess";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import MustacheRender from "../MustacheRender";
+import { StorageManager } from "@slynova/flydrive";
+import upath from 'upath';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import FlyDriveConfig from "@root/config/FlyDriveConfig";
 
 declare let masterData: MasterDataInterface
+declare let storage: StorageManager
 
 export default async function (props: TaskTypeInterface) {
   let {
@@ -44,8 +49,28 @@ export default async function (props: TaskTypeInterface) {
       for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
         for (var b = 0; b < mergeVarScheme[_data.asset_datas[au2].name].length; b++) {
           let _ioir = mergeVarScheme[_data.asset_datas[au2].name][b];
-          if (_ioir.file[0].originalname != null) {
-            _files.push(_ioir.file[0].originalname);
+          // if (_ioir.file[0].originalname != null) {
+          //   _files.push(_ioir.file[0].originalname);
+          // }
+          if (_ioir.name != null) {
+            try {
+              if (existsSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}`)) == false) {
+                mkdirSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}`), {
+                  recursive: true
+                });
+              }
+              let readFile = await storage.disk(FlyDriveConfig.FLY_DRIVE_DRIVER).getBuffer(upath.normalize(`${_ioir.user_id}/${_ioir.path}/${_ioir.name}`));
+              writeFileSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}/${_ioir.name}`), readFile.content);
+            } catch (ex) {
+              masterData.saveData("data_pipeline_" + job_id + "_error", {
+                pipeline_task_id: pipeline_task.id,
+                command: command,
+                parent: pipeline_task.temp_id,
+                message: "Error :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: On Copy File From storage to variable get problem"
+              })
+              break;
+            }
+            _files.push(_ioir.name);
           }
         }
       }
@@ -147,6 +172,7 @@ export default async function (props: TaskTypeInterface) {
                   break;
               }
             });
+
             ptyProcess.write("cd " + process.cwd() + '/storage/app/variables/' + raw_variable.id + "/\r");
             // Set privatekey permission to valid for auth ssh
             if (filePRivateKey.identityFile != null) {

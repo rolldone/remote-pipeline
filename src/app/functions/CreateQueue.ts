@@ -193,7 +193,7 @@ const CreateQueue = function (props: {
                   let hostDataItem = _hosts_datas[a].data[b];
                   idJOb = (Math.random() + 1).toString(36).substring(7);
 
-                  copyAssetToJobAsset(idJOb, variable);
+                  // copyAssetToJobAsset(idJOb, variable);
 
                   theJOb = await _processQueue.add("host_" + idJOb + "_" + hostDataItem.ip_address, {
                     queue_record_id: id,
@@ -268,7 +268,7 @@ const CreateQueue = function (props: {
                   let hostDataItem = _hosts_datas[a].data[b];
                   idJOb = (Math.random() + 1).toString(36).substring(7);
 
-                  copyAssetToJobAsset(idJOb, variable);
+                  // copyAssetToJobAsset(idJOb, variable);
 
                   // Repeatable is different, you cannot keep fixed the jobId it still create new every loop
                   theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
