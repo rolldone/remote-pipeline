@@ -168,9 +168,9 @@ Task :
 
 - [Storage] : Create storage file for easy management files [OnProgress]
 
-- [Host] : Create check Host healthy every 5 minutes [Waiting]
+- [Host] : Create check Host healthy every 5 minutes [Alpha]
 
-- [Variable] : Add scheduling delete files not exist on database table variabe [Waiting]
+- [Variable] : Add scheduling delete files not exist on database table variabe [Pending]
 
 
 ## Phase 4

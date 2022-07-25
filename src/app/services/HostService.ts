@@ -9,7 +9,7 @@ export interface Host {
   id?: number,
   name?: string,
   description?: string,
-  data?: Array<any>
+  data?: Array<any> | any
   auth_type?: string
   password?: string
   username?: string
@@ -48,7 +48,29 @@ const defineQuery = () => {
   ).from("hos");
   return query;
 }
+
+const transformField = (props: Host) => {
+  props.data = JSON.parse(props.data);
+  return props;
+}
+
 export default {
+  async getAllHosts_GroupAddressPort() {
+    try {
+      let query = defineQuery();
+      query = query.leftJoin('usr').on({
+        "usr.id": "hos.user_id"
+      });
+      query = query.where(sqlbricks.isNull("hos.deleted_at"));
+      let resData = await SqlService.select(query.toString());
+      for (var a = 0; a < resData.length; a++) {
+        resData[a] = transformField(resData[a]);
+      }
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getHosts(props: HostServiceInterface) {
     try {
       let query = defineQuery();

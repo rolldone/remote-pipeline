@@ -68,7 +68,7 @@ export default async function (props: TaskTypeInterface) {
                 pipeline_task_id: pipeline_task.id,
                 command: command,
                 parent: pipeline_task.temp_id,
-                message: "Error :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: On Copy File From storage to variable get problem"
+                message: "Error :: " + pipeline_task.temp_id + " - " + pipeline_task.name + ` :: On Copy File ${_ioir.name} From storage to variable get problem`
               })
               break;
             }

@@ -153,6 +153,23 @@ const CreateQueue = function (props: {
             ids: resQueueRecord.exe_host_ids
           })
 
+          let host_info = masterData.getData("host.info", {});
+          for (let _hostI = 0; _hostI < _hosts_datas.length; _hostI++) {
+            for (let _hostI2 = 0; _hostI2 < _hosts_datas[_hostI].data.length; _hostI2++) {
+              let _hostDataItem = _hosts_datas[_hostI].data[_hostI2];
+              switch (host_info[_hostDataItem.host + ":" + _hostDataItem.port]) {
+                case 'up':
+                  break;
+                case 'down':
+                  _hosts_datas[_hostI].data.splice(_hostI2, 1);
+                  _hostI2--;
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
+
           switch (resQueueRecord.exe_access_host_type) {
             case 'one_to_one':
               _hosts_datas = [_hosts_datas[Math.floor(Math.random() * _hosts_datas.length)]]
