@@ -162,11 +162,11 @@ Task :
 
 - [QueueRecordDetail] : Record all execution, variable, variable_extra, to queue_record as bundle. [Alpha]
 
-- [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [OnProgress]
+- [QueueRecordDetail] : Can move files from variable asset to jobs/[jobxxx]/assets folder [Cancel]
 
 - [QueueRecordDetail] : and can duplicate folder jobs/[jobxxx]/assets to new queue record detail folder [Pending]
 
-- [Storage] : Create storage file for easy management files [OnProgress]
+- [Storage] : Create storage file for easy management files [Alpha]
 
 - [Host] : Create check Host healthy every 5 minutes [Alpha]
 

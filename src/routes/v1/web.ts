@@ -206,6 +206,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/register", "xhr.auth.register", [upload.any()], AuthController.binding().register);
       route.post("/logout", "xhr.auth.logout", [], AuthController.binding().logout);
       route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
+      route.get("/auth/register-expired-check", 'xhr.auth.register_expired_check', [], AuthController.binding().registerExpiredCheck);
     })
     self.use('/xhr/oauth-user', [DashboardAuth], function (route: BaseRouteInterface) {
       route.get('/oauth-users', 'xhr.oauth-user.oauth-users', [], OAuthUserController.binding().getOAuthUsers);

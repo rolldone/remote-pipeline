@@ -2,8 +2,10 @@ import StoreValue from "@root/app/functions/base/StoreValue"
 import AuthService from "@root/app/services/AuthService"
 import OAuthService from "@root/app/services/OAuthService"
 import BaseController from "@root/base/BaseController"
+import AppConfig from "@root/config/AppConfig"
 import OAuth from "@root/config/OAuth"
 import { createHash, randomBytes } from "crypto"
+import moment from 'moment'
 
 export interface AuthControllerInterface extends BaseControllerInterface {
   oAuthGenerate: { (req: any, res: any): void }
@@ -12,6 +14,7 @@ export interface AuthControllerInterface extends BaseControllerInterface {
   logout: { (req: any, res: any): void }
   forgotPassword: { (req: any, res: any): void }
   getAuth: { (req: any, res: any): void }
+  registerExpiredCheck: { (req: any, res: any): void }
 }
 
 
@@ -85,6 +88,10 @@ export default BaseController.extend<AuthControllerInterface>({
     // password: string
     // is_active: boolean
     // term_police: string
+    let statusResponse = this.registerExpiredCheck(req, res) as any;
+    if (statusResponse.return == "expired") {
+      throw new Error("Form regiser is closed right now.");
+    }
     let props = req.body;
     let resData = await AuthService.registerService(props);
 
@@ -117,6 +124,22 @@ export default BaseController.extend<AuthControllerInterface>({
       status: "success",
       status_code: 200,
       return: sess.user
+    });
+  },
+  registerExpiredCheck(req, res) {
+    let expiredDays = AppConfig.APP_REGISTRATION_EXPIRED;
+    let ex = moment(expiredDays, "YYYY-MM-DD");
+    if (ex.diff(moment()) < 0) {
+      return res.send({
+        status: "success",
+        status_code: 200,
+        return: 'expired'
+      });
+    }
+    res.send({
+      status: "success",
+      status_code: 200,
+      return: 'registration open'
     });
   }
 });
