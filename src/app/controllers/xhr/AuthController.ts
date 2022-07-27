@@ -88,8 +88,8 @@ export default BaseController.extend<AuthControllerInterface>({
     // password: string
     // is_active: boolean
     // term_police: string
-    let statusResponse = this.registerExpiredCheck(req, res) as any;
-    if (statusResponse.return == "expired") {
+    let statusResponse = await AuthService.registerExpiredCheck() as any;
+    if (statusResponse == "expired") {
       throw new Error("Form regiser is closed right now.");
     }
     let props = req.body;
@@ -126,20 +126,12 @@ export default BaseController.extend<AuthControllerInterface>({
       return: sess.user
     });
   },
-  registerExpiredCheck(req, res) {
-    let expiredDays = AppConfig.APP_REGISTRATION_EXPIRED;
-    let ex = moment(expiredDays, "YYYY-MM-DD");
-    if (ex.diff(moment()) < 0) {
-      return res.send({
-        status: "success",
-        status_code: 200,
-        return: 'expired'
-      });
-    }
-    res.send({
+  async registerExpiredCheck(req, res) {
+    let validRegister = await AuthService.registerExpiredCheck();
+    return res.send({
       status: "success",
       status_code: 200,
-      return: 'registration open'
-    });
+      return: validRegister
+    })
   }
 });

@@ -8,9 +8,10 @@ import Rsync from "@root/tool/rsync";
 import InitPtyProcess from "../InitPtyProcess";
 import RecordCommandToFileLog from "../RecordCommandToFileLog";
 import MustacheRender from "../MustacheRender";
-import { mkdirSync, writeFileSync, writeSync } from "fs";
+import { constants, createWriteStream, existsSync, mkdirSync, writeFileSync, writeSync } from "fs";
 import path from "path";
 import upath from 'upath';
+import SafeValue from "../base/SafeValue";
 
 declare let masterData: MasterDataInterface;
 
@@ -60,13 +61,52 @@ const DownloadRequest = function (props: TaskTypeInterface) {
           try {
             let sftp = await sshPromise.sftp();
             for (var aq2 = 0; aq2 < _data.asset_datas.length; aq2++) {
-              try {
-                let pathDirname = upath.normalize(path.dirname(base_working_dir + "/" + _data.asset_datas[aq2].target_path));
-                mkdirSync(pathDirname, { recursive: true });
-              } catch (ex) { }
-              let _writeFileName = upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path);
-              writeFileSync(_writeFileName, '');
-              await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName)
+              if (SafeValue(_data.asset_datas[aq2].is_folder, false) == true) {
+                if (existsSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path)) == false) {
+                  mkdirSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path), { recursive: true });
+                }
+                // Check if path have variable rendered
+                _data.asset_datas[aq2].source_path = MustacheRender(_data.asset_datas[aq2].source_path, mergeVarScheme);
+
+                // console.log("listFiles :: ", listFiles);
+                function removeNonDuplicatePath(path1, path2) {
+                  let newPath1 = path1.replace(path2, "");
+                  let newPath11 = path1.replace(newPath1, "");
+                  return newPath11;
+                }
+                function isDir(mode) {
+                  return (mode & constants.S_IFMT) == constants.S_IFDIR;
+                }
+                let downloadsRecurd = async (basePathName, pathName) => {
+                  let listFiles = await sftp.readdir(upath.normalize(basePathName + '/' + pathName));
+                  for (let _ff = 0; _ff < listFiles.length; _ff++) {
+                    try {
+                      console.log("listFiles[_ff].path", removeNonDuplicatePath(basePathName + "/" + pathName + "/" + listFiles[_ff].filename, pathName + "/" + listFiles[_ff].filename))
+                      let newPathProcess = removeNonDuplicatePath(basePathName + "/" + pathName + "/" + listFiles[_ff].filename, pathName + "/" + listFiles[_ff].filename);
+                      if (isDir(listFiles[_ff].attrs.mode) == true) {
+                        mkdirSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path + "/" + newPathProcess));
+                        await downloadsRecurd(_data.asset_datas[aq2].source_path, listFiles[_ff].filename);
+                      } else {
+                        let pp = await sftp.readFile(upath.normalize(_data.asset_datas[aq2].source_path + "/" + pathName + "/" + listFiles[_ff].filename));
+                        let newPath = upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path + "/" + newPathProcess);
+                        console.log("newPath :: ", newPath);
+                        writeFileSync(newPath, pp);
+                      }
+                    } catch (ex) {
+                      console.error("sftp.readFile :: ", ex);
+                    }
+                    // createWriteStream()
+                  }
+                }
+                await downloadsRecurd(_data.asset_datas[aq2].source_path, "");
+              } else {
+                let _writeFileName = upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path);
+                if (existsSync(_writeFileName) == false) {
+                  mkdirSync(_writeFileName, { recursive: true });
+                }
+                await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName)
+              }
+
               RecordCommandToFileLog({
                 fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
                 commandString: "Fash Get :: " + _data.asset_datas[aq2].source_path + " to [storage-saved]:" + _data.asset_datas[aq2].target_path + "\n"
@@ -137,11 +177,26 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                   break;
               }
             });
-            try {
-              let pathDirname = upath.normalize(path.dirname(base_working_dir + "/" + _data.asset_datas[r1].target_path));
-              mkdirSync(pathDirname, { recursive: true });
-            } catch (ex) { }
-            writeFileSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path), '');
+
+            // Check if path have variable rendered
+            _data.asset_datas[r1].source_path = MustacheRender(_data.asset_datas[r1].source_path, mergeVarScheme)
+
+            if (SafeValue(_data.asset_datas[r1].is_folder, false) == true) {
+              try {
+                let pathDirectory = upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path);
+                mkdirSync(pathDirectory, { recursive: true });
+                _data.asset_datas[r1].source_path = upath.normalize(_data.asset_datas[r1].source_path + "/*");
+              } catch (ex: any) {
+                console.log("mkdirSync :: ", upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path));
+                masterData.saveData("data_pipeline_" + job_id + "_error", {
+                  pipeline_task_id: pipeline_task.id,
+                  command: command,
+                  parent: pipeline_task.temp_id,
+                  message: "Catch the error : " + ex.message
+                })
+                return;
+              }
+            }
             // Set privatekey permission to valid for auth ssh
             if (filePRivateKey.identityFile != null) {
               ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");

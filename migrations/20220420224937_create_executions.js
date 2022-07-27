@@ -16,6 +16,14 @@ exports.up = function (knex) {
     tableBuilder.json("pipeline_item_ids");
     tableBuilder.json("host_ids");
     tableBuilder.text('description');
+
+
+    // Relation
+    tableBuilder.foreign("user_id").references("users.id").onDelete("CASCADE");
+    tableBuilder.foreign("pipeline_id").references("pipelines.id").onDelete("CASCADE");
+    tableBuilder.foreign("project_id").references("projects.id").onDelete("CASCADE");
+    tableBuilder.foreign("variable_id").references("variables.id").onDelete("CASCADE");
+
   });
 };
 

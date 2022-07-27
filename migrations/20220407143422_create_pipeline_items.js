@@ -11,6 +11,9 @@ exports.up = function (knex) {
     tableBuilder.boolean('is_active').defaultTo(true);
     tableBuilder.string('type', 255);
     tableBuilder.integer('order_number');
+    // Relation
+    tableBuilder.foreign("pipeline_id").references("pipelines.id").onDelete('CASCADE');
+    tableBuilder.foreign("project_id").references("projects.id").onDelete("CASCADE");
   });
 };
 

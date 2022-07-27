@@ -8,6 +8,8 @@ exports.up = function (knex) {
     tableBuilder.bigInteger('project_id', 255);
     tableBuilder.string('name', 255);
     tableBuilder.string('description', 255);
+    // Relation
+    tableBuilder.foreign('project_id').references('projects.id').onDelete('CASCADE');
   })
 };
 
@@ -17,5 +19,5 @@ exports.up = function (knex) {
  */
 exports.down = function (knex) {
   return knex.schema
-    .dropTable("pipelines")
+    .dropTable("pipelines");
 };

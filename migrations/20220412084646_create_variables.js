@@ -12,6 +12,10 @@ exports.up = function (knex) {
     tableBuilder.json('data');
     tableBuilder.json('schema');
     tableBuilder.string('description');
+
+    // Relation
+    tableBuilder.foreign("pipeline_id").references("pipelines.id").onDelete("CASCADE");
+    tableBuilder.foreign("project_id").references("projects.id").onDelete("CASCADE");
   });
 };
 

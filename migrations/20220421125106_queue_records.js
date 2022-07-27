@@ -9,6 +9,8 @@ exports.up = function(knex) {
     tableBuilder.integer('execution_id');
     tableBuilder.integer('status');
     tableBuilder.json('data');
+
+    tableBuilder.foreign("execution_id").references("executions.id").onDelete("CASCADE");
   });
 };
 

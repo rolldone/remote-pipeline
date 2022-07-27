@@ -12,6 +12,9 @@ exports.up = function (knex) {
     tableBuilder.dateTime("expired_date");
     tableBuilder.tinyint("status");
     tableBuilder.text("description");
+
+    // Relations
+    tableBuilder.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 

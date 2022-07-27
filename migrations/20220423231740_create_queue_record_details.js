@@ -10,6 +10,8 @@ exports.up = function (knex) {
     tableBuilder.integer('job_id');
     tableBuilder.json('data');
     tableBuilder.integer('status');
+    // Relation
+    tableBuilder.foreign("queue_record_id").references("queue_records.id").onDelete("CASCADE");
   });
 };
 

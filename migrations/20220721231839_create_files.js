@@ -14,6 +14,8 @@ exports.up = function (knex) {
     tableBuilder.dateTime("deleted_at");
     tableBuilder.dateTime("created_at");
     tableBuilder.dateTime("updated_at");
+
+    tableBuilder.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 

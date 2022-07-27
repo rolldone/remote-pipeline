@@ -16,6 +16,11 @@ exports.up = function (knex) {
     tableBuilder.integer('order_number', 10);
     tableBuilder.boolean('is_active').defaultTo(true);
     tableBuilder.json("data");
+
+    // Relation
+    tableBuilder.foreign("pipeline_id").references("pipelines.id").onDelete("CASCADE");
+    tableBuilder.foreign("project_id").references("projects.id").onDelete("CASCADE");
+    tableBuilder.foreign("pipeline_item_id").references("pipeline_items.id").onDelete("CASCADE");
   });
 };
 

@@ -12,6 +12,9 @@ exports.up = function (knex) {
     tableBuilder.string("token_type");
     tableBuilder.string("scope");
     tableBuilder.json('data');
+
+    // Relations
+    tableBuilder.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 

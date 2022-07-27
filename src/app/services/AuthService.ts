@@ -2,6 +2,9 @@ import Sqlbricks from "@root/tool/SqlBricks"
 import { Knex } from "knex";
 import bcrypt from 'bcrypt';
 import CreateDate from "../functions/base/CreateDate";
+import SqlService from "./SqlService";
+import moment from 'moment'
+import AppConfig from "@root/config/AppConfig";
 
 const saltRounds = 10;
 
@@ -45,10 +48,8 @@ export default {
   async loginService(props: AuthInterface) {
     try {
       let query = Sqlbricks.select().from("users").where("email", props.email);
-      let _query = query.limit(1).offset(0).toString();
-      let user = await db.raw(_query);
+      let user = await SqlService.selectOne(query.toString());
       if (user == null) return null;
-      user = user[0];
       let resPassword = await bcrypt.compare(props.password, user.password);
       if (resPassword == false) {
         throw new Error("Wrong password or email address!");
@@ -58,5 +59,13 @@ export default {
     } catch (ex) {
       throw ex;
     }
+  },
+  async registerExpiredCheck() {
+    let expiredDays = AppConfig.APP_REGISTRATION_EXPIRED;
+    let ex = moment(expiredDays, "YYYY-MM-DD");
+    if (ex.diff(moment()) < 0) {
+      return 'expired';
+    }
+    return 'registration open';
   }
 }

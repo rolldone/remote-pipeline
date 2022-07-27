@@ -12,6 +12,9 @@ exports.up = function (knex) {
     tableBuilder.integer("user_id");
     tableBuilder.integer("status");
     tableBuilder.json('data');
+
+    // Relations
+    tableBuilder.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 

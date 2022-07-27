@@ -8,6 +8,8 @@ exports.up = function (knex) {
     table.string("username");
     table.text("password");
     table.text("private_key");
+    // Relation
+    table.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 
@@ -21,5 +23,6 @@ exports.down = function (knex) {
     table.dropColumn("username");
     table.dropColumn("password");
     table.dropColumn("private_key");
+    table.dropForeign("user_id");
   });
 };

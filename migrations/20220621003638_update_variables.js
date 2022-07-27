@@ -7,6 +7,8 @@ exports.up = function (knex) {
     table.dateTime("deleted_at");
     table.dateTime("created_at");
     table.dateTime("updated_at");
+    // Relation
+    table.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
 };
 
@@ -17,5 +19,6 @@ exports.up = function (knex) {
 exports.down = function (knex) {
   return knex.schema.alterTable('variables', function (table) {
     table.dropColumn("deleted_at", "created_at", "updated_at");
+    table.dropForeign("user_id");
   });
 };
