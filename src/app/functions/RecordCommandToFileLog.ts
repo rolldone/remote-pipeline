@@ -19,6 +19,14 @@ const RecordCommandToFileLog = function (props: {
   });
 }
 
+export const ResetCommandToFileLog = function (fileName: string) {
+  try {
+    writeFileSync(process.cwd() + "/storage/app/command/log/" + fileName + ".log", '');
+  } catch (ex) {
+    console.log(ex);
+  }
+}
+
 export const ReadRecordCOmmandFileLog = function (job_id_pipeline_item_id, callback) {
   try {
     if (existsSync(process.cwd() + "/storage/app/command/log/" + job_id_pipeline_item_id + ".log") == false) {

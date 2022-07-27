@@ -10,7 +10,7 @@ import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../se
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
 import DownloadRepo from "./DownloadRepo";
-import RecordCommandToFileLog from "./RecordCommandToFileLog";
+import RecordCommandToFileLog, { ResetCommandToFileLog } from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
 
 declare let masterData: MasterDataInterface;
@@ -114,7 +114,7 @@ const PipelineLoop = async function (props: {
           order_by: "pip_task.order_number ASC",
           parent: props.parent || null
         });
-
+        
         // console.log("_pipeline_task :::::: ", _pipeline_task);
         // console.log("_pipeline_task :::: ", _pipeline_task);
         // console.log("_pipeline_task - " + props.parent + " :: ", _pipeline_task);
@@ -146,6 +146,10 @@ const PipelineLoop = async function (props: {
         }
 
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
+
+          // Reset or create empty file log first
+          ResetCommandToFileLog("job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[a2].id)
+
           // console.log("_pipeline_task[a2].type :: ", _pipeline_task[a2].type);
           let theTaskTYpeFunc: { (props: TaskTypeInterface) } = task_type[_pipeline_task[a2].type];
           if (theTaskTYpeFunc == null) {
@@ -188,13 +192,15 @@ const PipelineLoop = async function (props: {
         }
       }
 
+
       // Get pipeline item by id
       let _pipeline_item = await PipelineItemService.getPipelineItem({
         id: _pipeline_item_ids[a],
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
-
+      
+      
       // Filter processing by type
       switch (_pipeline_item.type) {
         case PipelineItemService.TYPE.ANSIBLE:
