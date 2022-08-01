@@ -175,9 +175,16 @@ Task :
 
 ## Phase 4
 
+- [TaskType] : Add webhook component post data on Task Item
+
 - [OAuthUSers] : Change table oauth_users  to be credentials [Consider]
 
 - [User] : Manage join group share project [Waiting]
+
+
+## Phase 5
+
+- [QueueRecordDetail] : From host can post data value to queue record detail.
 
 
 ## Pending

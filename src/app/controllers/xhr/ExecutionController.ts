@@ -23,11 +23,12 @@ export default BaseController.extend<ExecutionControllerInterface>({
     // running_value: string null|01:02:2022 00:00:00|01:00:00|9000
     // running_mode: string recursive|onetime
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.pipeline_item_ids = JSON.parse(props.pipeline_item_ids || '[]');
       props.host_ids = JSON.parse(props.host_ids || '[]');
+      props.child_execution_datas = JSON.parse(props.child_execution_datas || '[]');
       let resData = await ExecutionService.addExecution(props);
       res.send({
         status: 'success',
@@ -48,7 +49,7 @@ export default BaseController.extend<ExecutionControllerInterface>({
     // running_value: string null|01:02:2022 00:00:00|01:00:00|9000
     // running_mode: string recursive|onetime
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.pipeline_item_ids = JSON.parse(props.pipeline_item_ids || '[]');
@@ -67,7 +68,7 @@ export default BaseController.extend<ExecutionControllerInterface>({
     // ids: JSON []
     try {
       // ids: JSON []
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let ids = req.body.ids;
       ids = JSON.parse(ids || '[]');
       let resData = await ExecutionService.deleteExecutions({
@@ -89,7 +90,7 @@ export default BaseController.extend<ExecutionControllerInterface>({
     // page: int
     // limit: int
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       props.user_id = user.id;
       let resData = await ExecutionService.getExecutions({
@@ -107,7 +108,7 @@ export default BaseController.extend<ExecutionControllerInterface>({
   async getExecution(req, res) {
     // id: int
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;

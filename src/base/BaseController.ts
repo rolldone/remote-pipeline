@@ -26,6 +26,15 @@ const BaseController = BaseProto.extend<BaseControllerInterface>({
       console.error('----------------------------------------------------------------------------------------------------------');
       console.error(ex);
     }
+  },
+  getBaseQuery(req) {
+    let test = req.query;
+    test.filter = JSON.parse(req.query.filter || 'false');
+    test.group_by = req.query.group_by || null;
+    test.search = req.query.search || '';
+    test.take = req.query.take || 100;
+    test.page = req.query.page || 1;
+    return test
   }
 });
 

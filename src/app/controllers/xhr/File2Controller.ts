@@ -25,8 +25,9 @@ const File2Controller = BaseController.extend<File2ControllerInterface>({
   async getFiles(req, res) {
     try {
       let user = await GetAuthUser(req);
-      let props = req.query;
+      let props = this.getBaseQuery(req);
       let resDatas = await File2Service.getFiles({
+        ...props,
         user_id: user.id,
         path: SafeValue(props.path, ""),
       });
