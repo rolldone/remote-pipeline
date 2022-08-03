@@ -176,6 +176,9 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
     });
+    self.use('/xhr/queue-group', [], function (route: BaseRouteInterface) {
+      route.post("/create", "xhr.queue.create", [upload.any()], QueueController.binding().createQueueGroup);
+    });
     self.use('/xhr/queue-record', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record.add", [upload.any()], QueueRecordController.binding().addQueueRecord);
       route.post("/update", "xhr.queue_record.update", [upload.any()], QueueRecordController.binding().updateQueueRecord);

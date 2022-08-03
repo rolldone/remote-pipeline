@@ -41,6 +41,8 @@ export interface Execution {
   mode?: string
   delay?: number
   hosts?: Array<Host>
+  parent_id?: number
+  execution_type?: string
 }
 
 export interface ExecutionServiceInterface extends Execution {
@@ -78,10 +80,12 @@ const defineQuery = () => {
     'exe.access_host_type as access_host_type',
     'exe.created_at as created_at',
     'exe.updated_at as updated_at',
+    'exe.parent_id as parent_id',
     'exe.delay as delay',
+    'exe.execution_type as execution_type',
     'pro.name as pro_name',
     'pip.name as pip_name',
-    'var.name as var_name'
+    'var.name as var_name',
   ).from("exe");
 
   return query;
@@ -106,7 +110,9 @@ export default {
         description: props.description,
         access_host_type: props.access_host_type,
         mode: props.mode,
-        delay: props.delay
+        delay: props.delay,
+        parent_id: props.parent_id || null,
+        execution_type: props.execution_type
       })).toString());
       resData = await this.getExecution({
         id: resData.id
@@ -140,7 +146,9 @@ export default {
         access_host_type: SafeValue(props.access_host_type, exeData.access_host_type),
         mode: SafeValue(props.mode, exeData.mode),
         delay: SafeValue(props.delay, exeData.delay),
-        created_at: SafeValue(exeData.created_at, null)
+        created_at: SafeValue(exeData.created_at, null),
+        parent_id: SafeValue(exeData.parent_id, null),
+        execution_type: SafeValue(exeData.execution_type, null)
       })).where("id", props.id).toString());
       resData = await this.getExecution({
         id: props.id
@@ -219,7 +227,7 @@ export default {
   getExecutions: async function (props: ExecutionServiceInterface) {
     try {
       let query = defineQuery();
-      
+
       query = query.leftJoin('pro').on({
         "pro.id": "exe.project_id"
       });
@@ -247,6 +255,12 @@ export default {
 
       if (props.project_id != null) {
         query = query.where("pro.id", props.project_id);
+      }
+
+      if (props.parent_id != null) {
+        query = query.where("exe.parent_id", props.parent_id);
+      } else {
+        query = query.where("exe.parent_id", null);
       }
 
       // Need table project deleted_at null

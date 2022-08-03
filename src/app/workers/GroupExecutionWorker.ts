@@ -5,7 +5,7 @@ import { Knex } from "knex";
 import { QueueRecordStatus } from "../services/QueueRecordService";
 declare let db: Knex;
 
-export default function (props) {
+const GroupExecutionWorker = function (props) {
   const queueEvents = new Worker(props.queue_name, async (job: Job) => {
     try {
       console.log("job ::: ", job);
@@ -57,3 +57,5 @@ export default function (props) {
   });
   return queueEvents;
 }
+
+export default GroupExecutionWorker;

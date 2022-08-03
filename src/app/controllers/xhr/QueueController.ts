@@ -93,33 +93,15 @@ export default BaseController.extend<QueueControllerInterface>({
       return res.status(400).send(ex);
     }
   },
-  createQueueGroup(req, res) {
+  async createQueueGroup(req, res) {
     try {
       let id = req.body.id;
-      let data = JSON.parse(req.body.data || "{}");
+      let variable_extra = JSON.parse(req.body.data || "{}");
       let process_mode = req.body.process_mode;
-      let queue_name = "queue_" + process_mode;
-      masterData.saveData(oberserverPath + process_mode, {
-        queue_name, data,
-        callback: async (worker: Worker) => {
-          if (worker.isRunning() == false) {
-            worker.resume();
-          }
-          console.log("worker.isRunning() :: ", worker.isRunning());
-          let _queue = new Queue(queue_name, {
-            connection: global.redis_bullmq,
-            // prefix: "bullmq_",
-            defaultJobOptions: {
-              removeOnComplete: true, removeOnFail: 1000
-            }
-          })
-          await _queue.add("basic", data, {
-            jobId: id,
-            timeout: 5000
-          });
-          res.send(worker.name + " :: start running!")
-        }
-      });
+      let process_limit = parseInt(SafeValue(req.body.process_limit, 1));
+      let queue_name = "queue_" + process_mode + "_" + id;
+      let delay = parseInt(SafeValue(req.body.delay, 3000));
+      let resQueueRecord = await CreateQueue({ id, variable_extra, process_mode, process_limit, queue_name, delay });
     } catch (ex) {
       return res.status(400).send(ex);
     }

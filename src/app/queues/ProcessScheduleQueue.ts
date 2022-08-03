@@ -1,6 +1,6 @@
 import { Queue, QueueScheduler } from "bullmq";
 
-export default function (props) {
+const ProcessScheduleQueue = function (props) {
   const myQueueScheduler = new QueueScheduler(props.queue_name, {
     connection: global.redis_bullmq,
     // prefix: "bullmq_",
@@ -14,3 +14,5 @@ export default function (props) {
   });
   return _queue;
 }
+
+export default ProcessScheduleQueue;
