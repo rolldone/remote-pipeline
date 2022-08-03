@@ -79,8 +79,9 @@ const SmtpHook = async function (props: SmtpHookInterface) {
       from: `"${from_name} " <${from_email}>`, // sender address
       to: to_datas.join(","), // list of receivers
       subject: `${subject}`, // Subject line
-      text: message_type == "text" ? `${_message}` : "", // plain text body
-      html: message_type == "html" ? `${_message}` : "", // html body
+      // text: message_type == "text" ? `${_message}` : "", // plain text body
+      // html: message_type == "html" ? `${_message}` : "", // html body
+      html: `${_message}`
     });
     // console.log("SmtpHook ::: ", props);
     console.log("Message sent: %s", info.messageId);

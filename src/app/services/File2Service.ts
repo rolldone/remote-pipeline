@@ -247,23 +247,33 @@ export default {
         "usr.id": "file.user_id"
       });
       query.where("file.user_id", props.user_id);
-      query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+
+      if (props.filter != null) {
+        let _filter = props.filter as any;
+        if (_filter.group_by != null && _filter.group_by == "directory") {
+          query.where("file.type", _filter.group_by);
+        } else if (_filter.group_by != null && _filter.group_by == "file") {
+          query.where(SqlBricks.notEq("file.type", "directory"));
+        }
+        if (_filter.search != null && _filter.search != "") {
+          query.where(SqlBricks.like("file.name", `%${_filter.search}%`));
+        } else {
+          query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+        }
+        //   if (props.search != null && props.search == "") {
+        //     query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+        //   }
+        // } else {
+        //   query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+      } else {
+        query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+      }
+
       query.orderBy("file.type <> 'directory'");
       query.orderBy("file.type ASC");
       query.orderBy("file.id DESC");
-      // if (props.filter == true) {
-      //   if (props.group_by != null && props.group_by != "") {
-      //     query.groupBy(props.group_by);
-      //   }
-      //   if (props.search != null && props.search != "") {
-      //     query.where(SqlBricks.like("file.name", `%${props.search}%`));
-      //   }
-      //   if (props.search != null && props.search == "") {
-      //     query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
-      //   }
-      // } else {
-      //   query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
-      // }
+
+
       let resDatas = await SqlService.select(query.toString());
       for (let i in resDatas) {
         resDatas[i] = transformData(resDatas[i]);

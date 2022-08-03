@@ -29,7 +29,8 @@ const BaseController = BaseProto.extend<BaseControllerInterface>({
   },
   getBaseQuery(req) {
     let test = req.query;
-    test.filter = JSON.parse(req.query.filter || 'false');
+    test.filter = decodeURIComponent(req.query.filter || null);
+    test.filter = JSON.parse(test.filter);
     test.group_by = req.query.group_by || null;
     test.search = req.query.search || '';
     test.take = req.query.take || 100;
