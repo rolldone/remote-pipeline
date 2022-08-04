@@ -29,6 +29,9 @@ const PipelineLoop = async function (props: {
     job_id,
     extra
   } = props;
+
+  let lastFileNameForClose = null;
+
   try {
     // First get the queue_record
     let queue_record: QueueRecordInterface = await QueueRecordService.getQueueRecord({
@@ -90,6 +93,7 @@ const PipelineLoop = async function (props: {
       return _variable_select;
     })(variable.data || []);
 
+
     // Get Schema
     let _var_scheme = variable.schema;
     let pendingCallCommand: DebouncedFunc<any> = null;
@@ -114,7 +118,7 @@ const PipelineLoop = async function (props: {
           order_by: "pip_task.order_number ASC",
           parent: props.parent || null
         });
-        
+
         // console.log("_pipeline_task :::::: ", _pipeline_task);
         // console.log("_pipeline_task :::: ", _pipeline_task);
         // console.log("_pipeline_task - " + props.parent + " :: ", _pipeline_task);
@@ -199,8 +203,8 @@ const PipelineLoop = async function (props: {
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
-      
-      
+
+
       // Filter processing by type
       switch (_pipeline_item.type) {
         case PipelineItemService.TYPE.ANSIBLE:
@@ -245,8 +249,9 @@ const PipelineLoop = async function (props: {
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
           masterData.setOnListener("data_pipeline_" + job_id + "_ignore", (props) => {
+            lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
             RecordCommandToFileLog({
-              fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id,
+              fileName: lastFileNameForClose,
               commandString: props.message
             })
             who_parent = props.parent;
@@ -262,8 +267,9 @@ const PipelineLoop = async function (props: {
           });
           masterData.setOnListener("data_pipeline_" + job_id, (props) => {
             if (props.message != null) {
+              lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
               RecordCommandToFileLog({
-                fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id,
+                fileName: lastFileNameForClose,
                 commandString: props.message + "\n"
               })
             }
@@ -381,9 +387,17 @@ const PipelineLoop = async function (props: {
           break;
       }
     }
+    RecordCommandToFileLog({
+      fileName: lastFileNameForClose,
+      commandString: "finish-finish" + "\n"
+    })
     return true;
   } catch (ex) {
     console.log("PipelineLoop - ex  :: ", ex)
+    RecordCommandToFileLog({
+      fileName: lastFileNameForClose,
+      commandString: "error-error" + "\n"
+    })
     return false;
   }
 }
