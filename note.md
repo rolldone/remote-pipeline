@@ -47,6 +47,10 @@
 	- process_limit : string
 	- data : JSON
 
+- [webhook] = POST | GET | DELETE
+- [file] = POST | GET | DELETE
+- [variable] = POST | GET | DELETE
+
 # RoadMap:
 
 ## Phase 1
