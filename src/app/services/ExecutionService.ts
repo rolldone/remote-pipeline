@@ -148,7 +148,7 @@ export default {
         delay: SafeValue(props.delay, exeData.delay),
         created_at: SafeValue(exeData.created_at, null),
         parent_id: SafeValue(exeData.parent_id, null),
-        execution_type: SafeValue(exeData.execution_type, null)
+        execution_type: SafeValue(props.execution_type, exeData.execution_type)
       })).where("id", props.id).toString());
       resData = await this.getExecution({
         id: props.id

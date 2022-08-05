@@ -31,6 +31,7 @@ const PipelineLoop = async function (props: {
   } = props;
 
   let lastFileNameForClose = null;
+  let sshPromise = null;
 
   try {
     // First get the queue_record
@@ -213,7 +214,7 @@ const PipelineLoop = async function (props: {
         default:
 
           // Try create connection ssh
-          let sshPromise = await ConnectToHost({
+          sshPromise = await ConnectToHost({
             host_data,
             host_id
           })
@@ -398,6 +399,11 @@ const PipelineLoop = async function (props: {
       fileName: lastFileNameForClose,
       commandString: "error-error" + "\n"
     })
+    try {
+      await sshPromise.close();
+    } catch (ex) {
+      console.log("ssh2Promise - ex :: ", ex);
+    }
     return false;
   }
 }
