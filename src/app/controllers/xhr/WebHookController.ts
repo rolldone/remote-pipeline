@@ -21,7 +21,7 @@ export default BaseController.extend<WebHookControllerInterface>({
       // name: string
       // description: string
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '{}');
@@ -43,7 +43,7 @@ export default BaseController.extend<WebHookControllerInterface>({
       // name: string
       // description: text
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '{}');
@@ -79,7 +79,7 @@ export default BaseController.extend<WebHookControllerInterface>({
       // where_by: string
       // page: int
       // limit: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       props.user_id = user.id;
       let resData = await WebHookService.getWebHooks({
@@ -97,7 +97,7 @@ export default BaseController.extend<WebHookControllerInterface>({
   async getWebHook(req, res) {
     try {
       // id: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;
@@ -119,7 +119,12 @@ export default BaseController.extend<WebHookControllerInterface>({
       let api_key: string = req.headers.authorization.replace("Bearer ", "");
       let props = req.body;
       props.key = api_key;
-      props.data = JSON.parse(props.data || '{}');
+      if (props.data != null) {
+        props.data = JSON.parse(props.data || '{}');
+      } else {
+        props.data = JSON.parse(JSON.stringify(req.body));
+      }
+      console.log("props.data :: ",props.data);
       let resData = await WebHookService.execute(props);
       res.send({
         status: 'success',
@@ -147,7 +152,7 @@ export default BaseController.extend<WebHookControllerInterface>({
   async getHistories(req, res) {
     try {
       // id: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       let webhook_id = req.params.webhook_id;
       props.webhook_user_id = user.id;

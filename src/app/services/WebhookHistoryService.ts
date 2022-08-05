@@ -169,6 +169,7 @@ export default {
           "whook.id": "whs.webhook_id"
         });
       let resData = await SqlService.selectOne(query.toString());
+      if(resData == null) return;
       resData = transformColumn(resData);
       return resData;
     } catch (ex) {

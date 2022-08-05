@@ -226,6 +226,15 @@ export default {
                 jobId: idJObInstant,
                 delay: 2000
               });
+
+              WebhookHistoryService.addHistory({
+                data: data,
+                status: WebhookHistoryService.STATUS.PROCESS,
+                webhook_id: webhook_data.id,
+                job_id: idJObInstant,
+                webhook_type: hook_data.webhook_type,
+                webhook_item_key: hook_data.key
+              });
             }
 
             resolve(worker.name + " :: start running!");

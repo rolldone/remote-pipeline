@@ -25,6 +25,10 @@ const HttpRequest = (props: TaskTypeInterface) => {
   try {
     let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
+
+    // Render first to get data from tag
+    _data = JSON.parse(MustacheRender(JSON.stringify(_data), mergeVarScheme));
+
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
     // NOTE YOU MUST ADD  \r for get trigger next task
@@ -41,11 +45,6 @@ const HttpRequest = (props: TaskTypeInterface) => {
           content_type
         } = _data;
 
-        // RecordCommandToFileLog({
-        //   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-        //   commandString: JSON.stringify(_data) + "\n" // "Write File :: " + _write_to + "\n"
-        // })
-
         let _headers = {};
         for (let _aHeaders = 0; _aHeaders < SafeValue(headers, []).length; _aHeaders++) {
           _headers[headers[_aHeaders].key] = headers[_aHeaders].value;
@@ -59,6 +58,15 @@ const HttpRequest = (props: TaskTypeInterface) => {
 
         switch (content_type) {
           case 'application/x-www-form-urlencoded':
+            _formData = new URLSearchParams();
+            for (let _aBodys = 0; _aBodys < SafeValue(body_datas, []).length; _aBodys++) {
+              _formData.append(body_datas[_aBodys].key, body_datas[_aBodys].value);
+            }
+
+            _formData = _formData.toString();
+            _headers["Content-type"] = content_type;
+            break;
+          case 'multipart/form-data':
             _formData = new FormData();
             for (let _aBodys = 0; _aBodys < SafeValue(body_datas, []).length; _aBodys++) {
               _formData.append(body_datas[_aBodys].key, body_datas[_aBodys].value);
@@ -119,15 +127,21 @@ const HttpRequest = (props: TaskTypeInterface) => {
           parent: pipeline_task.temp_id
         })
 
-      } catch (ex) {
+      } catch (ex: any) {
         console.log("Conditional Command - JOB ID ::", job_id);
         console.log("Conditional Command ::: ", ex);
-        masterData.saveData("data_pipeline_" + job_id + "_error", {
-          pipeline_task_id: pipeline_task.id,
-          command: command,
-          parent: pipeline_task.temp_id,
-          message: "On Pipeline Task Key :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: There is no match the result with your conditions"
+        RecordCommandToFileLog({
+          fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
+          commandString: "Error :: " + ex.message + "\n" // "Write File :: " + _write_to + "\n"
         })
+        setTimeout(() => {
+          masterData.saveData("data_pipeline_" + job_id + "_error", {
+            pipeline_task_id: pipeline_task.id,
+            command: command,
+            parent: pipeline_task.temp_id,
+            message: "On Pipeline Task Key :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: Get problem from your http request"
+          })
+        }, 2000);
       }
     }
 
