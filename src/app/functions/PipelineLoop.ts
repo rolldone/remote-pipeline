@@ -15,6 +15,16 @@ import task_type, { TaskTypeInterface } from "./task_type";
 
 declare let masterData: MasterDataInterface;
 
+
+type FunctionREcur = {
+  pipeline_item_id?: number
+  parent?: any
+  sshPromise?: SSH2Promise
+  socket?: any
+  resolve?: Function
+  rejected?: Function
+}
+
 const PipelineLoop = async function (props: {
   queue_record_id: number
   host_id: number
@@ -30,10 +40,11 @@ const PipelineLoop = async function (props: {
     extra
   } = props;
 
+
   let lastFileNameForClose = null;
-  let sshPromise = null;
 
   try {
+
     // First get the queue_record
     let queue_record: QueueRecordInterface = await QueueRecordService.getQueueRecord({
       id: queue_record_id
@@ -101,19 +112,15 @@ const PipelineLoop = async function (props: {
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
+      let sshPromise = null;
       let resolveDone = null;
       let resolveReject = null;
       let firstStart = null;
       let lastStartParent = null;
       // Create the recursive function
-      let _recursiveTasks = async (props: {
-        pipeline_item_id?: number
-        parent?: any
-        sshPromise?: SSH2Promise
-        socket?: any
-        resolve?: Function
-        rejected?: Function
-      }, recursiveFunc?: Function) => {
+
+      let _recursiveTasks = async (props: FunctionREcur, recursiveFunc?: { (props: FunctionREcur, Function): void }) => {
+
         let _pipeline_task: Array<any> = await PipelineTaskService.getPipelineTasks({
           pipeline_item_id: props.pipeline_item_id,
           order_by: "pip_task.order_number ASC",
@@ -192,7 +199,7 @@ const PipelineLoop = async function (props: {
             parent: _pipeline_task[a2].temp_id,
             socket: props.socket,
             resolve: props.resolve,
-            rejected: props.rejected
+            rejected: props.rejected,
           }, recursiveFunc);
         }
       }
@@ -321,8 +328,9 @@ const PipelineLoop = async function (props: {
                 // console.log(data.toString());
                 if (pipeline_task_id != null) {
                   if (data.toString() != "") {
+                    lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id;
                     RecordCommandToFileLog({
-                      fileName: "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id,
+                      fileName: lastFileNameForClose,
                       commandString: data.toString() + "\n"
                     })
                     // masterData.saveData("ws.commit", {
@@ -383,11 +391,19 @@ const PipelineLoop = async function (props: {
               }, _recursiveTasks);
             })
           }
-          await resTask();
-          await sshPromise.close();
+          try {
+            await resTask();
+            await sshPromise.close();
+          } catch (ex) {
+            try {
+              await sshPromise.close();
+            } catch (ex) { }
+            throw ex;
+          }
           break;
       }
     }
+    console.log("lastFileNameForClose :: ", lastFileNameForClose);
     RecordCommandToFileLog({
       fileName: lastFileNameForClose,
       commandString: "finish-finish" + "\n"
@@ -399,11 +415,6 @@ const PipelineLoop = async function (props: {
       fileName: lastFileNameForClose,
       commandString: "error-error" + "\n"
     })
-    try {
-      await sshPromise.close();
-    } catch (ex) {
-      console.log("ssh2Promise - ex :: ", ex);
-    }
     return false;
   }
 }

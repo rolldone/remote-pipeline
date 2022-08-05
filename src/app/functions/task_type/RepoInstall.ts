@@ -30,6 +30,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
+    // NOTE YOU MUST ADD  \r for get trigger next task
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
     let processWait = async () => {
@@ -139,7 +140,6 @@ const RepoInstall = function (props: TaskTypeInterface) {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           processWait();
-          break;
         }
       }
     })

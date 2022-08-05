@@ -28,10 +28,15 @@ export default async function (props: TaskTypeInterface) {
 
     // Check if working dir and command string have variable rendered
     let working_dir = MustacheRender(_data.working_dir, mergeVarScheme);
+    // NOTE YOU MUST ADD  \r for get trigger next task
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
     if (working_dir != null) {
       command = `cd ${working_dir} && ${command}`;
+    }
+
+    let processWait = async () => {
+      
     }
 
     masterData.setOnMultiSameListener("write_pipeline_" + job_id, (props) => {

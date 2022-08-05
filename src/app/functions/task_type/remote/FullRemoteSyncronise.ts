@@ -32,6 +32,7 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
     _data.command = "\r";
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
+    // NOTE YOU MUST ADD  \r for get trigger next task
     let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
 
     // console.log("mergeVarScheme :: ", mergeVarScheme);

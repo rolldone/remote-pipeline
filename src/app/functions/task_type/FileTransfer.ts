@@ -36,6 +36,8 @@ export default async function (props: TaskTypeInterface) {
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
     let _condition_values = _data.condition_values;
     let isPassed = false;
+
+    // NOTE YOU MUST ADD  \r for get trigger next task
     _data.command = "\r";
     let command = MustacheRender(_data.command.toString(), mergeVarScheme);
     // console.log("mergeVarScheme :: ", mergeVarScheme);
