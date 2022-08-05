@@ -3,6 +3,7 @@ import BasicCommand from "./BasicCommand";
 import ConditionalCommand from "./ConditionalCommand";
 import DownloadRequest from "./DownloadRequest";
 import FileTransfer from "./FileTransfer";
+import HttpRequest from "./HttpRequest";
 import NewQueueCommand from "./NewQueueCommand";
 import FullRemoteSyncronise from "./remote/FullRemoteSyncronise";
 import RepoInstall from "./RepoInstall";
@@ -32,5 +33,6 @@ export default {
   "transfer-remote": FullRemoteSyncronise,
   "download-request": DownloadRequest,
   "write-script": WriteScriptCode,
-  "new-queue": NewQueueCommand
+  "new-queue": NewQueueCommand,
+  "http-request": HttpRequest
 }
