@@ -186,7 +186,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               try {
                 let pathDirectory = upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path);
                 mkdirSync(pathDirectory, { recursive: true });
-                _data.asset_datas[r1].source_path = upath.normalize(_data.asset_datas[r1].source_path + "/*");
+                _data.asset_datas[r1].source_path = upath.normalize(_data.asset_datas[r1].source_path) + "/";
               } catch (ex: any) {
                 console.log("mkdirSync :: ", upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path));
                 masterData.saveData("data_pipeline_" + job_id + "_error", {
@@ -207,7 +207,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               /* Support multiple source too */
               source: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.asset_datas[r1].source_path,
               // source : upath.normalize(_local_path+'/'),
-              destination: "./" + _data.asset_datas[r1].target_path,
+              destination: "." + upath.normalize("/" + _data.asset_datas[r1].target_path),
               /* Include First */
               include: [],// extraWatchs[index].includes || [],
               /* Exclude after include */

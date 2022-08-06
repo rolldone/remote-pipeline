@@ -179,7 +179,9 @@ Task :
 
 ## Phase 4
 
-- [TaskType] : Add webhook component post data on Task Item
+- [TaskType] : Add webhook component post data on Task Item [Alpha]
+
+- [Host] : Activate deactivated host [Waiting]
 
 - [OAuthUSers] : Change table oauth_users  to be credentials [Consider]
 
