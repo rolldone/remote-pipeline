@@ -31,9 +31,9 @@ export default function (next: Function) {
       let sess = session({
         secret: 'ssshhhhh',
         store: new FileStore(fileStoreOptions),
-        reapInterval: 60
-        // resave: false,
-        // saveUninitialized: false,
+        reapInterval: 60,
+        resave: true,
+        saveUninitialized: false,
         // cookie: {
         //   secure: false, // if true only transmit cookie over https
         //   httpOnly: true, // if true prevent client side JS from reading the cookie 

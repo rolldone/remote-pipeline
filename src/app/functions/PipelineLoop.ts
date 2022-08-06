@@ -231,7 +231,8 @@ const PipelineLoop = async function (props: {
           try {
             let downloadInfo = await DownloadRepo({
               pipeline_id: execution.pipeline_id,
-              execution_id: execution.id
+              execution_id: execution.id,
+              job_id: job_id
             })
           } catch (ex) {
             console.log("DownloadRepo - ex :: ", ex);

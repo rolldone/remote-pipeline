@@ -48,7 +48,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
         return;
       }
       let ptyProcess = InitPtyProcess({
-        working_dir: process.cwd() + '/storage/app/executions/' + execution.id + '/repo/' + execution.branch,
+        working_dir: process.cwd() + '/storage/app/executions/' + execution.id + '/repo/' + execution.branch, // process.cwd() + '/storage/app/jobs/' + job_id + '/repo/' + execution.branch,
         commands: []
       });
       ptyProcess.on('data', (data: any) => {
