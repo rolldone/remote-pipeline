@@ -177,11 +177,16 @@ Task :
 - [Variable] : Add scheduling delete files not exist on database table variabe [Pending]
 
 
+## Revision phase 3
+
+- [Host] : Activate deactivated host [Waiting]
+
+- [WebhookHistory] : Fix ui/ux [Waiting]
+
+
 ## Phase 4
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
-
-- [Host] : Activate deactivated host [Waiting]
 
 - [OAuthUSers] : Change table oauth_users  to be credentials [Consider]
 
