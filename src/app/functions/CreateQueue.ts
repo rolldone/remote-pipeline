@@ -284,7 +284,7 @@ const CreateQueue = function (props: {
               for (let a = 0; a < _hosts_datas.length; a++) {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
-                  idJOb = (Math.random() + 1).toString(36).substring(7);
+                  idJOb = CreateUUID(); // (Math.random() + 1).toString(36).substring(7);
 
                   // copyAssetToJobAsset(idJOb, variable);
 
