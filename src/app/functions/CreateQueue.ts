@@ -15,6 +15,7 @@ import UserService, { UserServiceInterface } from "../services/UserService";
 import VariableService, { variableInterface } from "../services/VariableService";
 import upath from 'upath';
 import filendir from 'filendir';
+import CreateUUID from "./CreateUUID";
 
 declare let masterData: MasterDataInterface
 
@@ -208,7 +209,7 @@ const CreateQueue = function (props: {
               for (let a = 0; a < _hosts_datas.length; a++) {
                 for (let b = 0; b < _hosts_datas[a].data.length; b++) {
                   let hostDataItem = _hosts_datas[a].data[b];
-                  idJOb = (Math.random() + 1).toString(36).substring(7);
+                  idJOb = CreateUUID();// (Math.random() + 1).toString(36).substring(7);
 
                   // copyAssetToJobAsset(idJOb, variable);
 
