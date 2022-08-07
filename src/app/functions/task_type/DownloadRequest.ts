@@ -149,18 +149,20 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               })
 
               let killProcess = () => {
-                try {
-                  ptyProcess.kill();
-                } catch (err) {
+                setTimeout(()=>{
                   try {
-                    ptyProcess.kill('SIGKILL');
-                  } catch (e) {
-                    // couldn't kill the process
+                    ptyProcess.kill();
+                  } catch (err) {
+                    try {
+                      ptyProcess.kill('SIGKILL');
+                    } catch (e) {
+                      // couldn't kill the process
+                    }
                   }
-                }
-                setTimeout(() => {
-                  ptyProcess = null;
-                }, 3000);
+                  setTimeout(() => {
+                    ptyProcess = null;
+                  }, 3000);
+                },5000);
               }
               switch (true) {
                 case data.includes('Are you sure you want to continue connecting'):
@@ -173,8 +175,8 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 case data.includes('total size'):
                   _count_time_transfer += 1;
                   ptyProcess.write('exit' + '\r')
-                  killProcess();
                   if (_total_times_transfer == _count_time_transfer) {
+                    killProcess();
                     masterData.saveData("data_pipeline_" + job_id, {
                       pipeline_task_id: pipeline_task.id,
                       command: command,
