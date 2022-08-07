@@ -205,7 +205,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
 
             var rsync = Rsync.build({
               /* Support multiple source too */
-              source: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.asset_datas[r1].source_path,
+              source: filePRivateKey.username + '@' + filePRivateKey.host + ':' + upath.normalize("/" + _data.asset_datas[r1].source_path),
               // source : upath.normalize(_local_path+'/'),
               destination: "." + upath.normalize("/" + _data.asset_datas[r1].target_path),
               /* Include First */
