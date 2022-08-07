@@ -148,6 +148,20 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 commandString: data.toString()
               })
 
+              let killProcess = () => {
+                try {
+                  ptyProcess.kill();
+                } catch (err) {
+                  try {
+                    ptyProcess.kill('SIGKILL');
+                  } catch (e) {
+                    // couldn't kill the process
+                  }
+                }
+                setTimeout(() => {
+                  ptyProcess = null;
+                }, 3000);
+              }
               switch (true) {
                 case data.includes('Are you sure you want to continue connecting'):
                   ptyProcess.write('yes\r')
@@ -159,6 +173,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 case data.includes('total size'):
                   _count_time_transfer += 1;
                   ptyProcess.write('exit' + '\r')
+                  killProcess();
                   if (_total_times_transfer == _count_time_transfer) {
                     masterData.saveData("data_pipeline_" + job_id, {
                       pipeline_task_id: pipeline_task.id,
@@ -170,6 +185,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 case data.includes('No such file or directory'):
                 case data.includes('rsync error:'):
                   ptyProcess.write('exit' + '\r')
+                  killProcess();
                   masterData.saveData("data_pipeline_" + job_id + "_error", {
                     pipeline_task_id: pipeline_task.id,
                     command: command,
