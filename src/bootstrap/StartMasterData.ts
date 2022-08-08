@@ -9,6 +9,7 @@ export interface MasterDataInterface {
   setOnMultiSameListener: { (arg1: any, arg2?: any, arg3?: any): any }
   setOnListener: { (arg1: any, arg2?: any, arg3?: any): any }
   removeListener: { (listenerName: string, key?: string): void }
+  removeAllListener: { (listenerName: string, key?: string): void }
   saveData: { (key: string, props?: any, timeout?: number): void }
   updateData: { (key: string, props: any, timeout?: number): void }
   getData: { (key: string, props: any): void }
@@ -38,16 +39,16 @@ export default function (next: Function) {
       // let callOnInit = Object.prototype.toString.call(arg2)=='[object String]'?arg3==null?false:arg3:arg2;
       let key = typeof arg2 == "boolean" ? '' : arg2;
       let callOnInit = typeof arg2 == "string" ? arg3 == null ? false : arg3 : arg2;
-      var newKey = listenerName + key;
+      var newKey = listenerName; // + key;
       var newListenerKey = listenerName + callback.toString();
-      this.listeners[newListenerKey] = callback;
-      global.pubsub.on(newKey, this.listeners[newListenerKey]);
+      // this.listeners[newListenerKey] = callback;
+      global.pubsub.on(newKey, callback /* this.listeners[newListenerKey] */);
       if (callOnInit == true) {
         global.pubsub.emit(newKey, this.vars[newKey]);
       }
-      if (this.vars[newKey] != null) {
-        return this.vars[newKey];
-      }
+      // if (this.vars[newKey] != null) {
+      //   return this.vars[newKey];
+      // }
     },
     setOnListener: function () {
       if (process.browser == true) {
@@ -85,6 +86,9 @@ export default function (next: Function) {
           delete this.listeners[keyListeners];
         }
       }
+    },
+    removeAllListener: function (listenerName: string) {
+       global.pubsub.removeAllListeners(listenerName);
     },
     saveData: function (key, props = null, timeout = 0) {
       if (props != null) {
