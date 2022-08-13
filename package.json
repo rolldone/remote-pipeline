@@ -13,7 +13,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsc -w",
-    "build": "npx webpack --config webpack.config.js"
+    "build": "npx tsc",
+    "build-webpack": "npx webpack --config webpack.config.js"
   },
   "author": "",
   "license": "ISC",

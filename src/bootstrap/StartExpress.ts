@@ -12,7 +12,10 @@ var BodyParser = require("body-parser");
 var redis = require("redis");
 
 
-var fileStoreOptions = {};
+var fileStoreOptions = {
+  reapInterval: 3600,
+  retries: 0,
+};
 
 export default function (next: Function) {
   try {
@@ -31,8 +34,7 @@ export default function (next: Function) {
       let sess = session({
         secret: 'ssshhhhh',
         store: new FileStore(fileStoreOptions),
-        reapInterval: 60,
-        resave: true,
+        resave: false,
         saveUninitialized: false,
         // cookie: {
         //   secure: false, // if true only transmit cookie over https
