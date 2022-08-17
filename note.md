@@ -183,8 +183,15 @@ Task :
 
 - [WebhookHistory] : Fix ui/ux [Waiting]
 
+- [Files] : View the file if not binary like image, text [Waiting] 
+
+- [ModalNewScheduler] : Enable dropdown cronjob can used, and check one time scheduler too
+
+- [QueueRecords] : Add checkbox can deleted queue record and queue record details
 
 ## Phase 4
+
+- [QueueRecord] : Add viewer as guest with or without create password
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
 
