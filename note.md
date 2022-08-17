@@ -189,6 +189,8 @@ Task :
 
 - [QueueRecords] : Add checkbox can deleted queue record and queue record details
 
+- [QueueRecord] : Add menu button close queue connection worker, schedule, and job all
+
 ## Phase 4
 
 - [QueueRecord] : Add viewer as guest with or without create password

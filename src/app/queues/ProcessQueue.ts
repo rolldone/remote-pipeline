@@ -1,17 +1,43 @@
 import { Queue, QueueScheduler } from "bullmq";
 import { BasicExecutionWorkerInterface } from "../workers/BasicExecutionWorker";
 
-export default function (props: BasicExecutionWorkerInterface) {
-  const myQueueScheduler = new QueueScheduler(props.queue_name, {
-    connection: global.redis_bullmq,
-    // prefix: "bullmq_",
-  });
-  let _queue = new Queue(props.queue_name, {
-    connection: global.redis_bullmq,
-    // prefix: "bullmq_",
-    defaultJobOptions: {
-      removeOnComplete: true, removeOnFail: 1000
-    }
-  })
+const processQueStore: {
+  [key: string]: {
+    queue: Queue,
+    schedule: QueueScheduler
+  }
+} = {};
+const ProcessQueue = function (props: BasicExecutionWorkerInterface) {
+  let _queue: Queue = null;
+  if (processQueStore[props.queue_name] == null) {
+    console.log("new ProcessQueue queue")
+    const myQueueScheduler = new QueueScheduler(props.queue_name, {
+      connection: global.redis_bullmq,
+      // prefix: "bullmq_",
+    });
+    _queue = new Queue(props.queue_name, {
+      connection: global.redis_bullmq,
+      // prefix: "bullmq_",
+      defaultJobOptions: {
+        removeOnComplete: true, removeOnFail: true, // 1000
+      }
+    })
+    processQueStore[props.queue_name] = {
+      queue: _queue,
+      schedule: myQueueScheduler
+    };
+  } else {
+    console.log("exist ProcessQueue queue")
+    _queue = processQueStore[props.queue_name].queue;
+  }
   return _queue;
 }
+
+export const deleteProcessQueue = async (queue_name: string) => {
+  if (processQueStore[queue_name] != null) {
+    await processQueStore[queue_name].queue.close();
+    await processQueStore[queue_name].schedule.close();
+  }
+}
+
+export default ProcessQueue;

@@ -40,10 +40,18 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
     masterData.setOnListener('queue.request.sequential', function (props: QueueRequestInterface) {
       // console.log("QueueRequestInterface :: ", props);
       if (props == null) return;
-      if (_basicExecutions[props.queue_name] == null) {
+      let run = () => {
         _basicExecutions[props.queue_name] = BasicExecutionWorker({
           queue_name: props.queue_name,
         });
+      }
+      if (_basicExecutions[props.queue_name] == null) {
+        run();
+      } else {
+        console.log("_basicExecutions[props.queue_name].isRunning() :: ", _basicExecutions[props.queue_name].isRunning());
+        if (_basicExecutions[props.queue_name].isRunning() == false) {
+          run();
+        }
       }
       props.callback(_basicExecutions[props.queue_name]);
     }, false);
@@ -53,21 +61,35 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
     masterData.setOnListener('queue.request.parallel', function (props: QueueRequestInterface) {
       console.log("QueueRequestInterface :: ", props);
       if (props == null) return;
-      if (_parallelExecutions[props.queue_name] == null) {
+      let run = () => {
         _parallelExecutions[props.queue_name] = ParallelExecutionWorker({
           queue_name: props.queue_name,
           process_limit: props.process_limit
         });
+      }
+      if (_parallelExecutions[props.queue_name] == null) {
+        run();
+      } else {
+        if (_parallelExecutions[props.queue_name].isRunning() == false) {
+          run();
+        }
       }
       props.callback(_parallelExecutions[props.queue_name]);
     }, false);
 
     masterData.setOnListener('queue.request.flow.sequential', function (props: QueueRequestInterface) {
       if (props == null) return;
-      if (_basicGroupExecutions[props.queue_name] == null) {
+      let run = () => {
         _basicGroupExecutions[props.queue_name] = GroupExecutionWorker({
           queue_name: props.queue_name,
         });
+      }
+      if (_basicGroupExecutions[props.queue_name] == null) {
+        run();
+      } else {
+        if (_basicGroupExecutions[props.queue_name].isRunning() == false) {
+          run();
+        }
       }
       props.callback(_parallelExecutions[props.queue_name]);
     })
@@ -130,11 +152,18 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
     masterData.setOnListener('queue.webhook.execute.item.test', function (props: QueueWebhookInterface) {
       // console.log("QueueRequestInterface :: ", props);
       if (props == null) return;
-      if (_basicExecutions[props.queue_name] == null) {
+      let run = () => {
         _basicExecutions[props.queue_name] = WebhookWorker({
           ...props.data,
           queue_name: props.queue_name,
         });
+      }
+      if (_basicExecutions[props.queue_name] == null) {
+        run();
+      } else {
+        if (_basicExecutions[props.queue_name].isRunning() == false) {
+          run();
+        }
       }
       props.callback(_basicExecutions[props.queue_name]);
     }, false);
@@ -145,11 +174,18 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
     masterData.setOnListener('queue.webhook.execute', function (props: QueueWebhookInterface) {
       // console.log("QueueRequestInterface :: ", props);
       if (props == null) return;
-      if (_basicExecutions[props.queue_name] == null) {
+      let run = () => {
         _basicExecutions[props.queue_name] = WebhookWorker({
           ...props.data,
           queue_name: props.queue_name,
         });
+      }
+      if (_basicExecutions[props.queue_name] == null) {
+        run();
+      } else {
+        if (_basicExecutions[props.queue_name].isRunning() == false) {
+          run();
+        }
       }
       props.callback(_basicExecutions[props.queue_name]);
     }, false);

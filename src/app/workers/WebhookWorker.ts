@@ -69,7 +69,7 @@ const WebhookWorker = function (props: any) {
 
   queueEvents.on('completed', async (job) => {
     console.log(`${job.id} has completed and returned ${job.returnvalue}`);
-    job.remove();
+    await job.remove();
     onComplete({ job });
   });
 

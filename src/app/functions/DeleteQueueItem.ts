@@ -1,10 +1,14 @@
-import { Job, Queue } from "bullmq";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { QueueRequestInterface } from "@root/routes/v1/cli";
+import { Job, Queue, Worker } from "bullmq";
 import ProcessQueue from "../queues/ProcessQueue";
 import ProcessScheduleQueue from "../queues/ProcessScheduleQueue";
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
-import QueueRecordService from "../services/QueueRecordService";
+import QueueRecordService, { QueueRecordInterface } from "../services/QueueRecordService";
 import QueueSceduleService from "../services/QueueSceduleService";
 import SafeValue from "./base/SafeValue";
+
+declare let masterData: MasterDataInterface
 
 const DeleteQueueItem = async function (props: {
   queue_record_id?: number
@@ -30,7 +34,7 @@ const DeleteQueueItem = async function (props: {
 
 
     if (index == length - 1) {
-      let queueRecordData = await QueueRecordService.updateQueueRecord({
+      let queueRecordData: QueueRecordInterface = await QueueRecordService.updateQueueRecord({
         id: queue_record_id,
         status: SafeValue(queue_record_status, null)
       })
@@ -118,7 +122,7 @@ const DeleteQueueItem = async function (props: {
             }
 
             await _processQueue.drain(true);
-            
+
             resDataUpdate = await QueueRecordDetailService.updateQueueRecordDetail({
               id: queue_record_detail_id,
               queue_record_id: res_data_record_detail.qrec_id,
@@ -131,6 +135,7 @@ const DeleteQueueItem = async function (props: {
         }
         break;
     }
+
     // res.send(res_data_record_detail.queue_name + " with Job id : " + res_data_record_detail.job_id + " :: deleted!")
     return res_data_record_detail;
   } catch (ex) {
