@@ -254,9 +254,9 @@ const PipelineLoop = async function (props: {
             socket.write("echo error-error\r");
 
             // Remove the listener
-            masterData.removeListener("write_pipeline_" + job_id);
-            masterData.removeListener("data_pipeline_" + job_id);
-            masterData.removeListener("data_pipeline_" + job_id + "_error");
+            masterData.removeAllListener("write_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id + "_error");
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
@@ -271,9 +271,9 @@ const PipelineLoop = async function (props: {
             pipeline_task_id = props.pipeline_task_id;
             // Because event ignore nothing to do if this is last task return resolveDOne();
             if (lastStartParent == who_parent) {
-              masterData.removeListener("write_pipeline_" + job_id);
-              masterData.removeListener("data_pipeline_" + job_id);
-              masterData.removeListener("data_pipeline_" + job_id + "_error");
+              masterData.removeAllListener("write_pipeline_" + job_id);
+              masterData.removeAllListener("data_pipeline_" + job_id);
+              masterData.removeAllListener("data_pipeline_" + job_id + "_error");
               resolveDone();
             }
           });
@@ -369,9 +369,9 @@ const PipelineLoop = async function (props: {
                 if (lastStartParent == who_parent) {
                   console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
                   console.log("resolveDone::", resolveDone);
-                  masterData.removeListener("write_pipeline_" + job_id);
-                  masterData.removeListener("data_pipeline_" + job_id);
-                  masterData.removeListener("data_pipeline_" + job_id + "_error");
+                  masterData.removeAllListener("write_pipeline_" + job_id);
+                  masterData.removeAllListener("data_pipeline_" + job_id);
+                  masterData.removeAllListener("data_pipeline_" + job_id + "_error");
                   resolveDone();
                 }
               }, 2000);

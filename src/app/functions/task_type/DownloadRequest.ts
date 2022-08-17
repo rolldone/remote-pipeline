@@ -133,6 +133,8 @@ const DownloadRequest = function (props: TaskTypeInterface) {
           // Set max total times running node-pty. And go to  next pipeline task
           let _total_times_transfer = _data.asset_datas.length;
           let _count_time_transfer = 0;
+          console.log("_data.asset_datas :: ", _data.asset_datas.length);
+          console.log("_count_time_transfer :: ", _count_time_transfer);
           for (var r1 = 0; r1 < _data.asset_datas.length; r1++) {
             let ptyProcess = InitPtyProcess({
               commands: [],
@@ -148,22 +150,6 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 commandString: data.toString()
               })
 
-              let killProcess = () => {
-                setTimeout(()=>{
-                  try {
-                    ptyProcess.kill();
-                  } catch (err) {
-                    try {
-                      ptyProcess.kill('SIGKILL');
-                    } catch (e) {
-                      // couldn't kill the process
-                    }
-                  }
-                  setTimeout(() => {
-                    ptyProcess = null;
-                  }, 3000);
-                },5000);
-              }
               switch (true) {
                 case data.includes('Are you sure you want to continue connecting'):
                   ptyProcess.write('yes\r')
@@ -174,25 +160,23 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                   break;
                 case data.includes('total size'):
                   _count_time_transfer += 1;
-                  ptyProcess.write('exit' + '\r')
                   if (_total_times_transfer == _count_time_transfer) {
-                    killProcess();
                     masterData.saveData("data_pipeline_" + job_id, {
                       pipeline_task_id: pipeline_task.id,
                       command: command,
                       parent: pipeline_task.temp_id
                     })
                   }
+                  ptyProcess.write('exit' + '\r')
                   break;
                 case data.includes('No such file or directory'):
                 case data.includes('rsync error:'):
-                  ptyProcess.write('exit' + '\r')
-                  killProcess();
                   masterData.saveData("data_pipeline_" + job_id + "_error", {
                     pipeline_task_id: pipeline_task.id,
                     command: command,
                     parent: pipeline_task.temp_id
                   })
+                  ptyProcess.write('exit' + '\r')
                   break;
               }
             });
@@ -241,6 +225,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
             });
             ptyProcess.write(rsync.command() + '\r');
             ptyProcess.on('exit', (exitCode: any, signal: any) => {
+              console.log("Node-pty :: Exit");
               ptyProcess.kill();
               ptyProcess = null;
             });
@@ -252,8 +237,8 @@ const DownloadRequest = function (props: TaskTypeInterface) {
     masterData.setOnMultiSameListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         console.log("props.parent ", props.parent);
-        console.log("_parent_order_temp_ids[a]", _parent_order_temp_ids[a]);
         if (_parent_order_temp_ids[a] == props.parent) {
+          console.log("DownloadRequest :: _parent_order_temp_ids[a]", _parent_order_temp_ids[a]);
           processWait();
         }
       }
