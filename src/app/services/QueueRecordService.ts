@@ -211,6 +211,37 @@ export default {
       throw ex;
     }
   },
+  async getQueueRecordByIdAndUserId(id: number, user_id: number) {
+    try {
+      let query = preSelectQuery();
+      query = query.leftJoin('qrec_sch').on({
+        "qrec_sch.queue_record_id": "qrec.id"
+      });
+      query = query.leftJoin('exe').on({
+        "qrec.execution_id": "exe.id"
+      });
+      query = query.leftJoin("pip").on({
+        "pip.id": "exe.pipeline_id"
+      })
+      query = query.where({
+        "qrec.id": id,
+        "exe.user_id": user_id
+      })
+
+      query = query.where(sqlbricks.isNull("exe.deleted_at"));
+      query = query.where(sqlbricks.isNull("pip.deleted_at"));
+
+      query = query.orderBy("exe.id DESC");
+      query = query.limit(1);
+
+      let resQueueRecord = await SqlService.selectOne(query.toString());
+      if (resQueueRecord == null) return null;
+      resQueueRecord = returnFactoryColumn(resQueueRecord);
+      return resQueueRecord;
+    } catch (ex) {
+      throw ex;
+    }
+  },
   async getQueueRecordByKey(key: string) {
     try {
       let query = preSelectQuery();

@@ -172,6 +172,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/create", "xhr.queue.create", [upload.any()], QueueController.binding().createQueue);
       route.post("/update", "xhr.queue.update", [upload.any()], QueueController.binding().updateQueue);
       route.post("/delete", "xhr.queue.delete", [upload.any()], QueueController.binding().deleteQueue);
+      route.post("/stop-worker", "xhr.queue.stop_worker", [upload.any()], QueueController.binding().stopWorker);
       route.post("/delete-scheduler", "xhr.queue.delete_scheduler", [upload.any()], QueueController.binding().deleteQueueScheduler);
       route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);

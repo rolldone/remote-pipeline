@@ -55,6 +55,11 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       }
       props.callback(_basicExecutions[props.queue_name]);
     }, false);
+
+    masterData.setOnListener("queue.request.sequental.delete", async function (queue_name: string) {
+      await _basicExecutions[queue_name].close();
+      delete _basicExecutions[queue_name];
+    })
     /**
      * Listen only parallel queue
      */
@@ -76,6 +81,11 @@ const Cli = BaseRouteCli.extend<BaseRouteInterface>({
       }
       props.callback(_parallelExecutions[props.queue_name]);
     }, false);
+
+    masterData.setOnListener("queue.request.parallel.delete", async function (queue_name: string) {
+      await _parallelExecutions[queue_name].close();
+      delete _parallelExecutions[queue_name];
+    })
 
     masterData.setOnListener('queue.request.flow.sequential', function (props: QueueRequestInterface) {
       if (props == null) return;
