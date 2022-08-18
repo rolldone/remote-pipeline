@@ -35,12 +35,12 @@ const ProcessQueue = function (props: BasicExecutionWorkerInterface) {
 
 export const deleteProcessQueue = async (queue_name: string) => {
   if (processQueStore[queue_name] != null) {
-    let queue = processQueStore[queue_name].queue;
-    await queue.clean(0, 'delayed');
-    await queue.clean(0, 'wait');
-    await queue.clean(0, 'active');
-    await queue.clean(0, 'completed');
-    await queue.clean(0, 'failed');
+    // let queue = processQueStore[queue_name].queue;
+    // await queue.clean(0, 'delayed');
+    // await queue.clean(0, 'wait');
+    // await queue.clean(0, 'active');
+    // await queue.clean(0, 'completed');
+    // await queue.clean(0, 'failed');
     await processQueStore[queue_name].queue.close();
     await processQueStore[queue_name].schedule.close();
     delete processQueStore[queue_name];
