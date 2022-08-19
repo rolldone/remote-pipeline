@@ -7,6 +7,9 @@ import CreateQueue from "@root/app/functions/CreateQueue"
 import DeleteQueueItem from "@root/app/functions/DeleteQueueItem"
 import SafeValue from "@root/app/functions/base/SafeValue"
 import QueueRecordService from "@root/app/services/QueueRecordService"
+import GetAuthUser from "@root/app/functions/GetAuthUser"
+import StopQueueWorker from "@root/app/functions/StopQueueWorker"
+import CreateQueueName from "@root/app/functions/CreateQueueName"
 
 export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueueItem?: { (req: any, res: any): void }
@@ -16,6 +19,7 @@ export interface QueueControllerInterface extends BaseControllerInterface {
   deleteQueue?: { (req: any, res: any): void }
   deleteQueueScheduler?: { (req: any, res: any): void }
   updateQueue?: { (req: any, res: any): void }
+  stopWorker?: { (req: any, res: any): void }
   getQueues?: { (req: any, res: any): void }
   getQueue?: { (req: any, res: any): void }
 }
@@ -81,7 +85,7 @@ export default BaseController.extend<QueueControllerInterface>({
       let variable_extra = JSON.parse(req.body.data || "{}");
       let process_mode = req.body.process_mode;
       let process_limit = parseInt(SafeValue(req.body.process_limit, 1));
-      let queue_name = "queue_" + process_mode + "_" + id;
+      let queue_name = CreateQueueName(process_mode, id)// "queue_" + process_mode + "_" + id;
       let delay = parseInt(SafeValue(req.body.delay, 3000));
       let resQueueRecord = await CreateQueue({ id, variable_extra, process_mode, process_limit, queue_name, delay });
       res.send({
@@ -140,6 +144,23 @@ export default BaseController.extend<QueueControllerInterface>({
         });
       }
       res.send("Deleted!");
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async stopWorker(req, res) {
+    try {
+      let id = req.body.id;
+      let user = await GetAuthUser(req);
+      let props = {} as any;
+      props.id = id;
+      props.user_id = user.id;
+      let resData = await StopQueueWorker(props);
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
     } catch (ex) {
       return res.status(400).send(ex);
     }

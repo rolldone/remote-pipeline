@@ -13,8 +13,9 @@ var redis = require("redis");
 
 
 var fileStoreOptions = {
-  reapInterval: 3600,
-  retries: 0,
+  reapInterval: -1,
+  // ttl: 10
+  // retries: 0,
 };
 
 export default function (next: Function) {
@@ -36,6 +37,9 @@ export default function (next: Function) {
         store: new FileStore(fileStoreOptions),
         resave: false,
         saveUninitialized: false,
+        cookie  : {
+          expires: (1000 * 60) * 60
+        }
         // cookie: {
         //   secure: false, // if true only transmit cookie over https
         //   httpOnly: true, // if true prevent client side JS from reading the cookie 

@@ -34,6 +34,7 @@ const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
     // autorun: false,
     concurrency: 1,
     connection: global.redis_bullmq,
+
     // prefix:"bullmq_"
   });
 
@@ -66,7 +67,7 @@ const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
     } = job.data;
 
     console.log(`${job_id} alias from ${job.id} has completed and returned ${job.returnvalue}`);
-    job.remove();
+    await job.remove();
     onComplete({ job });
   });
 

@@ -20,6 +20,9 @@ process.on('SIGINT', (props: any, props2: any) => {
   }
 });
 
+// Warning message from stack trace :
+process.on('warning', e => console.warn(e.stack));
+
 BaseStart({
   port: null,
   init: [
@@ -42,6 +45,6 @@ BaseStart({
     }
   ],
   run: function () {
-
+    process.setMaxListeners(100);
   }
 } as AppInterface);
