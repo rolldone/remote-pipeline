@@ -12,6 +12,7 @@ import ConnectToHost from "./ConnectOnSShPromise";
 import DownloadRepo from "./DownloadRepo";
 import RecordCommandToFileLog, { ResetCommandToFileLog } from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
+import WaitingTimeout from "./WaitingTimeout";
 
 declare let masterData: MasterDataInterface;
 
@@ -246,9 +247,9 @@ const PipelineLoop = async function (props: {
           let debounceee: DebouncedFunc<any> = null;
 
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
-            
+
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
-            
+
             pipeline_task_id = props.pipeline_task_id;
             socket.write("echo " + props.message + "\r");
             socket.write("echo error-error\r");
@@ -415,6 +416,7 @@ const PipelineLoop = async function (props: {
     return true;
   } catch (ex) {
     console.log("PipelineLoop - ex  :: ", ex)
+    await WaitingTimeout(3000);
     RecordCommandToFileLog({
       fileName: lastFileNameForClose,
       commandString: "error-error" + "\n"
