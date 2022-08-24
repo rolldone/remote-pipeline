@@ -3,8 +3,9 @@ import { StorageManager } from "@slynova/flydrive"
 import CreateDate from "../functions/base/CreateDate"
 import SqlService from "./SqlService"
 import upath from 'upath';
-import { rmdirSync } from "fs";
+import { readFileSync, rmdirSync } from "fs";
 import FlyDriveConfig from "@root/config/FlyDriveConfig";
+import mimeType from 'mime-types';
 
 export interface File2Interface {
   id?: number
@@ -602,5 +603,28 @@ export default {
     } catch (ex) {
       throw ex;
     }
-  }
+  },
+  getFile: async function (file_id: number, user_id: number): Promise<{
+    mime: string | boolean
+    data: Buffer,
+    full_path: string
+  }> {
+    try {
+      let queueDetailData = await this.getFileById_UserId(file_id, user_id);
+      if (queueDetailData == null) {
+        throw new Error("Job is not found!");
+      }
+      let path = queueDetailData.url_path;
+      // If you prefer, you can also use promises
+      let _mimeType = mimeType.lookup(process.cwd() + "/storage/app/files/" + path);
+      let _file = readFileSync(process.cwd() + "/storage/app/files/" + path);
+      return {
+        mime: _mimeType,
+        data: _file,
+        full_path: process.cwd() + "/storage/app/files/" + path
+      }
+    } catch (ex) {
+      throw ex;
+    }
+  },
 }

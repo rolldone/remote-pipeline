@@ -3,6 +3,7 @@ import HostService from "@root/app/services/HostService";
 import PipelineItemService from "@root/app/services/PipelineItemService"
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
 import BaseController from "@root/base/BaseController"
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 
 export interface HostControllerInterface extends BaseControllerInterface {
   getHost: { (req: any, res: any): void }
@@ -11,6 +12,8 @@ export interface HostControllerInterface extends BaseControllerInterface {
   addHost: { (req: any, res: any): void }
   deleteHosts: { (req: any, res: any): void }
 }
+
+declare let masterData: MasterDataInterface;
 
 export default BaseController.extend<HostControllerInterface>({
   async getHosts(req, res) {
@@ -57,6 +60,7 @@ export default BaseController.extend<HostControllerInterface>({
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
       let resData = await HostService.addHost(props);
+      masterData.saveData("host.clear",{});
       res.send({
         status: 'success',
         status_code: 200,
@@ -73,6 +77,7 @@ export default BaseController.extend<HostControllerInterface>({
       props.user_id = user.id;
       props.data = JSON.parse(props.data || '[]');
       let resData = await HostService.updateHost(props);
+      masterData.saveData("host.clear",{});
       res.send({
         status: 'success',
         status_code: 200,
@@ -91,6 +96,7 @@ export default BaseController.extend<HostControllerInterface>({
         ids,
         force_deleted: req.body.force_deleted || false
       });
+      masterData.saveData("host.clear",{});
       res.send({
         status: 'success',
         status_code: 200,

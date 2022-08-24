@@ -4,6 +4,7 @@ import File2Service from "@root/app/services/File2Service";
 import { StorageManager } from "@slynova/flydrive";
 import BaseController from "base/BaseController";
 import upath from 'upath';
+const marked = require("marked");
 
 export interface File2ControllerInterface extends BaseControllerInterface {
   getFiles: { (req: any, res: any): void }
@@ -191,8 +192,26 @@ const File2Controller = BaseController.extend<File2ControllerInterface>({
       return res.status(400).send(ex);
     }
   },
-  display(req, res) {
-
+  async display(req, res) {
+    try {
+      let user = await GetAuthUser(req);
+      let file_id = req.params.id;
+      let resData = await File2Service.getFile(file_id, user.id);
+      if (resData.mime != false) {
+        res.contentType(resData.mime);
+      } else {
+        res.contentType(resData.full_path);
+      }
+      console.log(marked);
+      switch (resData.mime) {
+        case 'text/markdown':
+          res.contentType("text/html");
+          return res.send(marked.parse(resData.data.toString()));
+      }
+      res.send(resData.data);
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
   },
 });
 

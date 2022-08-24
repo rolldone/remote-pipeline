@@ -151,6 +151,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/rename", "xhr.file2.rename", [upload.any()], File2Controller.binding().rename)
       route.get("/files", "xhr.file2.files", [], File2Controller.binding().getFiles);
       route.get("/:id/view", "xhr.file2.file", [], File2Controller.binding().getFile);
+      route.get("/display/:id", "xhr.file2.display", [], File2Controller.binding().display);
     });
 
 

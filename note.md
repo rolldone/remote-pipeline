@@ -179,17 +179,17 @@ Task :
 
 ## Revision phase 3
 
-- [Host] : Activate deactivated host [Waiting]
+- [Host] : Activate deactivated host [Alpha]
 
 - [WebhookHistory] : Fix ui/ux [Waiting]
 
-- [Files] : View the file if not binary like image, text [Waiting] 
+- [Files] : View the file if not binary like image, text [Alpha] 
 
 - [ModalNewScheduler] : Enable dropdown cronjob can used, and check one time scheduler too
 
 - [QueueRecords] : Add checkbox can deleted queue record and queue record details
 
-- [QueueRecord] : Add menu button close queue connection worker, schedule, and job all
+- [QueueRecord] : Add menu button close queue connection worker, schedule, and job all [onProgress]
 
 ## Phase 4
 

@@ -171,6 +171,19 @@ const CreateQueue = function (props: {
             }
           }
 
+          /**
+           * Delete if status false
+           */
+          for (let _hostI = 0; _hostI < _hosts_datas.length; _hostI++) {
+            for (let _hostI2 = 0; _hostI2 < _hosts_datas[_hostI].data.length; _hostI2++) {
+              let _hostDataItem = _hosts_datas[_hostI].data[_hostI2];
+              if (_hostDataItem.status == false) {
+                _hosts_datas[_hostI].data.splice(_hostI2, 1);
+                _hostI2--;
+              }
+            }
+          }
+
           switch (resQueueRecord.exe_access_host_type) {
             case 'one_to_one':
               _hosts_datas = [_hosts_datas[Math.floor(Math.random() * _hosts_datas.length)]]
