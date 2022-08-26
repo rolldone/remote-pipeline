@@ -39,6 +39,9 @@ export default BaseController.extend<QueueControllerInterface>({
         queue_record_status: QueueRecordService.STATUS.STAND_BY,
         queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
       });
+      if (res_data_record_detail == null) {
+        return res.status(200).send("Ignore it!");
+      }
       res.send(res_data_record_detail.queue_name + " with Job id : " + res_data_record_detail.job_id + " :: deleted!")
     } catch (ex) {
       return res.status(400).send(ex);

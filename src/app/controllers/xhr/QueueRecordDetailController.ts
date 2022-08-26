@@ -21,6 +21,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getIdsStatus: { (req: any, res: any): void }
   getDirectories: { (req: any, res: any): void }
   getFile: { (req: any, res: any): void }
+  deleteQueueRecordDetails: { (req: any, res: any): void }
 }
 
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
@@ -231,6 +232,20 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       return res.status(400).send(ex);
     }
   },
+  async deleteQueueRecordDetails(req, res) {
+    try {
+      let user = await GetAuthUser(req);
+      let ids = JSON.parse(req.body.ids || '[]');
+      let resData = await QueueRecordDetailService.deleteQueueFromIds_UserId(ids, user.id);
+      return res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  }
 });
 
 export default QueueRecordDetailController;

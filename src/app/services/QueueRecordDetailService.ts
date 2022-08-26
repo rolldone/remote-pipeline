@@ -1,15 +1,15 @@
-import sqlbricks from "@root/tool/SqlBricks";
-import { UpdateStatement } from "@root/tool/SqlBricks/sql-bricks";
+import SqlBricks from "@root/tool/SqlBricks";
 import { Knex } from "knex";
 import SqlService from "./SqlService";
 import dirToJson from 'dir-to-json';
 import mimeType from 'mime-types';
-import { existsSync, mkdirSync, readFileSync, renameSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmdirSync, unlinkSync } from "fs";
 import SafeValue from "../functions/base/SafeValue";
 import CreateDate from "../functions/base/CreateDate";
 import upath from 'upath'
 import filendir from 'filendir';
 import AppConfig from "@root/config/AppConfig";
+import readdirp from 'readdirp';
 
 declare let db: Knex;
 
@@ -80,13 +80,13 @@ export interface QueueRecordDetailServiceInterface extends QueueRecordDetailInte
 }
 
 const preSelectQuery = () => {
-  sqlbricks.aliasExpansions({
+  SqlBricks.aliasExpansions({
     "qrec_detail": "queue_record_details",
     'qrec': "queue_records",
     'qrec_sch': "queue_schedules",
     'exe': "executions",
   });
-  let query_record_detail = sqlbricks.select(
+  let query_record_detail = SqlBricks.select(
     'qrec_detail.id as id',
     'qrec_detail.queue_record_id as queue_record_id',
     'qrec_detail.queue_name as queue_name',
@@ -145,6 +145,9 @@ export default {
         })
       if (props.queue_record_id != null) {
         query_record_detail.where("qrec.id", props.queue_record_id);
+      }
+      if (props.queue_record_ids != null) {
+        query_record_detail.where(SqlBricks.in("qrec.id", props.queue_record_ids));
       }
       if (props.status != null) {
         query_record_detail.where("qrec_detail.status", props.status);
@@ -256,7 +259,7 @@ export default {
   async addQueueRecordDetail(props: QueueRecordDetailInterface) {
     try {
       console.log("addQueueRecordDetail props :: ", props);
-      let queryInsert = sqlbricks.insert("queue_record_details", CreateDate({
+      let queryInsert = SqlBricks.insert("queue_record_details", CreateDate({
         queue_record_id: props.queue_record_id,
         queue_name: props.queue_name,
         job_id: props.job_id,
@@ -286,7 +289,7 @@ export default {
         throw new Error("Not found data");
       }
       console.log("addQueueRecordDetail props :: ", props);
-      let queryUpdate = sqlbricks.update("queue_record_details", CreateDate({
+      let queryUpdate = SqlBricks.update("queue_record_details", CreateDate({
         queue_record_id: SafeValue(props.queue_record_id, queueData.queue_record_id),
         queue_name: SafeValue(props.queue_name, queueData.queue_name),
         job_id: SafeValue(props.job_id, queueData.job_id),
@@ -311,7 +314,7 @@ export default {
   async updateQueueRecordDetailWhere(props: QueueRecordDetailInterface, propsCondition: QueueRecordDetailServiceInterface) {
     try {
       console.log("addQueueRecordDetail props :: ", props);
-      let queryUpdate = sqlbricks.update("queue_record_details", {
+      let queryUpdate = SqlBricks.update("queue_record_details", {
         ...props
       });
       for (var key in propsCondition) {
@@ -354,13 +357,13 @@ export default {
     user_id: number
   }) {
     try {
-      sqlbricks.aliasExpansions({
+      SqlBricks.aliasExpansions({
         "qrec_detail": "queue_record_details",
         'qrec': "queue_records",
         'qrec_sch': "queue_schedules",
         'exe': "executions",
       });
-      let query_record_detail = sqlbricks.select(
+      let query_record_detail = SqlBricks.select(
         'qrec_detail.id as id',
         'qrec_detail.status as status',
       ).from("qrec_detail");
@@ -375,7 +378,7 @@ export default {
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
         })
-      query_record_detail.where(sqlbricks.in("qrec_detail.id", props.ids || []));
+      query_record_detail.where(SqlBricks.in("qrec_detail.id", props.ids || []));
       query_record_detail.where("exe.user_id", props.user_id);
       let resData = await SqlService.select(query_record_detail.toString());
       return resData;
@@ -418,53 +421,132 @@ export default {
       throw ex;
     }
   },
-  async deleteFrom(props: QueueRecordDetailServiceInterface) {
+  async deleteQueueFromIds_UserId(ids: Array<number>, user_id?: number) {
     try {
-      sqlbricks.aliasExpansions({
+      SqlBricks.aliasExpansions({
         "qrec_detail": "queue_record_details",
         'qrec': "queue_records",
+        'qrec_sch': "queue_schedules",
         'exe': "executions",
-        'pip': "pipelines",
-        'pro': "projects"
       });
-
-      let selectQuery = sqlbricks.select(
-        "qrec_detail.queue_record_id"
+      let query_record_detail = SqlBricks.select(
+        'qrec_detail.id as id',
+        'qrec_detail.status as status',
+        'qrec_detail.job_id as job_id'
       ).from("qrec_detail");
 
-      selectQuery = selectQuery.leftJoin("qrec").on({
-        "qrec_detail.queue_record_id": "qrec.id"
-      }).leftJoin("exe").on({
-        "exe.id": "qrec.execution_id"
-      }).leftJoin("pip").on({
-        "pip.id": "exe.pipeline_id"
-      }).leftJoin("pro").on({
-        "pro.id": "exe.project_id"
+      query_record_detail
+        .leftJoin("qrec").on({
+          "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
+        .leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        });
+      if (user_id != null) {
+        query_record_detail.where("exe.user_id", user_id);
+      }
+      query_record_detail.where(SqlBricks.in("qrec_detail.id", ids)).where(SqlBricks.not(SqlBricks.in("qrec_detail.status", [this.STATUS.RUNNING])));
+      let queueRecordDatas = await SqlService.select(query_record_detail.toString());
+      let _ids_filter = [];
+      for (var a = 0; a < queueRecordDatas.length; a++) {
+        _ids_filter.push(queueRecordDatas[a].id);
+        try {
+          rmdirSync(upath.normalize(process.cwd() + "/storage/app/jobs/" + queueRecordDatas[a].job_id), {
+            recursive: true
+          });
+        } catch (ex) {
+          console.log("deleteQueueFromIds_UserId - 2mvadfvmk3kvadfijv :: ", ex);
+        }
+        try {
+          let filereadDirP = await readdirp.promise(upath.normalize(process.cwd() + "/storage/app/command/log"), {
+            fileFilter: "job_id_" + queueRecordDatas[a].job_id + "*",
+            type: 'files',
+            depth: 1
+          });
+          for (let _fr = 0; _fr < filereadDirP.length; _fr++) {
+            unlinkSync(filereadDirP[_fr].fullPath);
+          }
+        } catch (ex) {
+          console.log("deleteQueueFromIds_UserId - 29mvjdf7hqnvfydvg :: ", ex);
+        }
+      }
+      let query_delete = SqlBricks.delete("queue_record_details");
+      query_delete.where(SqlBricks.in("id", _ids_filter));
+      let deleteQueueRecordData = await SqlService.delete(query_delete.toString());
+      return deleteQueueRecordData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async deleteQueueFromIds(ids: Array<number>) {
+    return this.deleteQueueFromIds_UserId(ids);
+  },
+  async deleteFrom(props: QueueRecordDetailServiceInterface) {
+    try {
+      let getQUeueREcordIds = () => {
+        SqlBricks.aliasExpansions({
+          "qrec_detail": "queue_record_details",
+          'qrec': "queue_records",
+          'exe': "executions",
+          'pip': "pipelines",
+          'pro': "projects"
+        });
+
+        let selectQuery = SqlBricks.select(
+          "qrec_detail.queue_record_id",
+        ).from("qrec_detail");
+
+        selectQuery = selectQuery.leftJoin("qrec").on({
+          "qrec_detail.queue_record_id": "qrec.id"
+        }).leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        }).leftJoin("pip").on({
+          "pip.id": "exe.pipeline_id"
+        }).leftJoin("pro").on({
+          "pro.id": "exe.project_id"
+        });
+
+        if (props.project_ids != null) {
+          selectQuery = selectQuery.where(SqlBricks.in("pro.id", props.project_ids));
+        }
+
+        if (props.pipeline_ids != null) {
+          selectQuery = selectQuery.where(SqlBricks.in("pip.id", props.pipeline_ids));
+        }
+
+        if (props.execution_ids != null) {
+          selectQuery = selectQuery.where(SqlBricks.in("exe.id", props.execution_ids));
+        }
+
+        if (props.queue_record_ids != null) {
+          selectQuery = selectQuery.where(SqlBricks.in("qrec.id", props.queue_record_ids));
+        }
+        return selectQuery;
+      }
+
+      let selectQuerynya = getQUeueREcordIds().toString();
+
+      // Delete file on storage job and storage log
+      let _ids = [];
+      let resSelecQueueRecordDetails: Array<QueueRecordDetailServiceInterface> = await this.getQueueRecordDetails({
+        queue_record_ids: props.queue_record_ids
       });
-
-      if (props.project_ids != null) {
-        selectQuery = selectQuery.where(sqlbricks.in("pro.id", props.project_ids));
+      for (let _ii = 0; _ii < resSelecQueueRecordDetails.length; _ii++) {
+        _ids.push(resSelecQueueRecordDetails[_ii].id);
       }
-
-      if (props.pipeline_ids != null) {
-        selectQuery = selectQuery.where(sqlbricks.in("pip.id", props.pipeline_ids));
-      }
-
-      if (props.execution_ids != null) {
-        selectQuery = selectQuery.where(sqlbricks.in("exe.id", props.execution_ids));
-      }
-
-      if (props.queue_record_ids != null) {
-        selectQuery = selectQuery.where(sqlbricks.in("qrec.id", props.queue_record_ids));
-      }
+      await this.deleteQueueFromIds(_ids);
 
       let resDeleteQuery = await SqlService.delete(`
         DELETE FROM queue_record_details WHERE queue_record_id IN (
-          ${selectQuery.toString()}
+          ${selectQuerynya}
         )
       `);
       return resDeleteQuery;
     } catch (ex) {
+      console.log("deleteFrom - 2nvdfnv2890vnidfnv :: ", ex);
       throw ex;
     }
   },

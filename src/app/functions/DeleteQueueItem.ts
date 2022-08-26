@@ -44,6 +44,10 @@ const DeleteQueueItem = async function (props: {
       return;
     }
 
+    if (res_data_record_detail.status != QueueRecordDetailService.STATUS.RUNNING) {
+      return;
+    }
+
     let _processQueue: Queue = null;
     let resDataUpdate = null;
     console.log("DeleteQueueItem - queue_record_details data :: ", res_data_record_detail.qrec_type)

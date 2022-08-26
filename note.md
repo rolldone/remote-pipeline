@@ -187,7 +187,7 @@ Task :
 
 - [ModalNewScheduler] : Enable dropdown cronjob can used, and check one time scheduler too
 
-- [QueueRecords] : Add checkbox can deleted queue record and queue record details
+- [QueueRecords] : Add checkbox can deleted queue record details [alpha]
 
 - [QueueRecord] : Add menu button close queue connection worker, schedule, and job all [onProgress]
 

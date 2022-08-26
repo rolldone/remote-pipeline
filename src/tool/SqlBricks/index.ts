@@ -1,4 +1,3 @@
-import { isEmpty } from "lodash";
 import rr from "sql-bricks";
 import { SelectStatement, UpdateStatement, SqlBricksFn, InsertStatement } from "./sql-bricks";
 

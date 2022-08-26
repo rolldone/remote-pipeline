@@ -196,6 +196,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/ids/status", "xhr.queue_record_detail.ids.status", [], QueueRecordDetailController.binding().getIdsStatus);
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
+      route.post("/deletes", "xhr.queue_record_detail.deletes", [upload.any()], QueueRecordDetailController.binding().deleteQueueRecordDetails);
     });
     self.use('/xhr/queue-record-schedule', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record_schedule.add", [upload.any()], QueueRecordScheduleController.binding().addQueueRecordSchedule);
