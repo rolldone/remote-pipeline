@@ -20,6 +20,9 @@ process.on('SIGINT', (props: any, props2: any) => {
   }
 });
 
+// process.setMaxListeners(0);
+require('events').EventEmitter.defaultMaxListeners = 100; 
+
 // Warning message from stack trace :
 process.on('warning', e => console.warn(e.stack));
 
@@ -44,7 +47,5 @@ BaseStart({
       callback(null);
     }
   ],
-  run: function () {
-    process.setMaxListeners(100);
-  }
+  run: function () {}
 } as AppInterface);
