@@ -1,18 +1,17 @@
-import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
-import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { uniq } from "lodash";
-import WritePrivateKeyToVariable from "../WritePrivateKeyToVariable";
-import { TaskTypeInterface } from ".";
+import MergeVarScheme from "../../MergeVarScheme";
+import WritePrivateKeyToVariable from "../../WritePrivateKeyToVariable";
 import Rsync from "@root/tool/rsync";
-import InitPtyProcess from "../InitPtyProcess";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
-import MustacheRender from "../MustacheRender";
-import { StorageManager } from "@slynova/flydrive";
+import InitPtyProcess from "../../InitPtyProcess";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
+import MustacheRender from "../../MustacheRender";
 import upath from 'upath';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import FlyDriveConfig from "@root/config/FlyDriveConfig";
 import File2Service from "@root/app/services/File2Service";
+import { StorageManager } from "@slynova/flydrive";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { uniq } from "lodash";
+import { TaskTypeInterface } from "..";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 
 declare let masterData: MasterDataInterface
 declare let storage: StorageManager

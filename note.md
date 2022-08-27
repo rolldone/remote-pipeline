@@ -185,17 +185,18 @@ Task :
 
 - [Files] : View the file if not binary like image, text [Alpha] 
 
-- [ModalNewScheduler] : Enable dropdown cronjob can used, and check one time scheduler too
+- [ModalNewScheduler] : Enable dropdown cronjob can used, and check one time scheduler too [Alpha]
 
-- [QueueRecords] : Add checkbox can deleted queue record details [alpha]
+- [QueueRecords] : Add checkbox can deleted queue record details [Alpha]
 
-- [QueueRecord] : Add menu button close queue connection worker, schedule, and job all [onProgress]
+- [QueueRecord] : Add menu button close queue connection worker, schedule, and job all [Alpha]
 
-- [Guest] : Display as guest registered
 
 ## Phase 4
 
-- [QueueRecord] : Add viewer as guest with or without create password
+- [Pipeline] : Add non ssh pipeline and pipeline task [Alpha]
+
+- [QueueRecord] : Add viewer as guest with or without create password [Waiting]
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
 

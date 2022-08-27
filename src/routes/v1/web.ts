@@ -36,7 +36,6 @@ import VariableItemController from "@root/app/controllers/xhr/VariableItemContro
 import File2Controller from "@root/app/controllers/xhr/File2Controller";
 import { FlydriveStorageEngine, MulterFlydriveOptionsFunction } from 'multer-flydrive-engine';
 import { StorageManager } from "@slynova/flydrive";
-import GetAuthUser from "@root/app/functions/GetAuthUser";
 import upath from 'upath';
 
 const storageTemp = multer.diskStorage({
@@ -104,6 +103,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/queue-detail/result/add", "xhr.outside.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
     });
 
+    // Will deprecated
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.file.add", [function (req, res, next) {
         console.log("before-multer-res.body", req.body);
@@ -129,7 +129,6 @@ export default BaseRoute.extend<BaseRouteInterface>({
       }], FileController.binding().moveFile)
     });
 
-
     self.use("/xhr/file2", [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/put", "xhr.file2.put", [function (req, res, next) {
         let _middleware = upload2.any()
@@ -154,7 +153,6 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/display/:id", "xhr.file2.display", [], File2Controller.binding().display);
     });
 
-
     self.use("/xhr/configuration", [], function (route: BaseRouteInterface) {
       route.get("/", "xhr.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
     });
@@ -166,6 +164,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/update", "xhr.sql.update", [], SqlQueryController.binding().update);
       route.post("/delete", "xhr.sql.delete", [], SqlQueryController.binding().delete);
     });
+
     self.use('/xhr/queue', [], function (route: BaseRouteInterface) {
       route.post("/delete-item", "xhr.queue.delete_item", [upload.any()], QueueController.binding().deleteQueueItem);
       route.post("/create-item", "xhr.queue.create_item", [upload.any()], QueueController.binding().createQueueItem);
@@ -178,9 +177,11 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/queues", "xhr.queue.queues", [], QueueController.binding().getQueues);
       route.get("/:id/view", "xhr.queue.queue", [], QueueController.binding().getQueue);
     });
+
     self.use('/xhr/queue-group', [], function (route: BaseRouteInterface) {
       route.post("/create", "xhr.queue_group.create", [upload.any()], QueueController.binding().createQueueGroup);
     });
+
     self.use('/xhr/queue-record', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record.add", [upload.any()], QueueRecordController.binding().addQueueRecord);
       route.post("/update", "xhr.queue_record.update", [upload.any()], QueueRecordController.binding().updateQueueRecord);
@@ -189,6 +190,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/ids/status", "xhr.queue_record.ids.status", [], QueueRecordController.binding().getQueueIdsstatus);
       route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
     });
+
     self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {
       route.get("/display-data/:job_id/file", "xhr.queue_record_detail.file", [], QueueRecordDetailController.binding().getFile);
       route.get("/display-data/:job_id/directories", "xhr.queue_record_detail.directories", [], QueueRecordDetailController.binding().getDirectories);
@@ -198,6 +200,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
       route.post("/deletes", "xhr.queue_record_detail.deletes", [upload.any()], QueueRecordDetailController.binding().deleteQueueRecordDetails);
     });
+
     self.use('/xhr/queue-record-schedule', [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.queue_record_schedule.add", [upload.any()], QueueRecordScheduleController.binding().addQueueRecordSchedule);
       route.post("/update", "xhr.queue_record_schedule.update", [upload.any()], QueueRecordScheduleController.binding().updateQueueRecordSchedule);
@@ -205,6 +208,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/queue-record-schedules", "xhr.queue_record_schedule.queue_record_schedules", [], QueueRecordScheduleController.binding().getQueueRecordSchedules);
       route.get("/:id/view", "xhr.queue_record_schedule.queue_record_schedule", [], QueueRecordScheduleController.binding().getQueueRecordSchedule);
     });
+
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
       route.post('/login/oauth/generate', 'xhr.auth.login.oauth.generate', [upload.any()], AuthController.binding().oAuthGenerate);
       route.post("/login", "xhr.auth.login", [upload.any()], AuthController.binding().login);
@@ -214,6 +218,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
       route.get("/register-expired-check", 'xhr.auth.register_expired_check', [], AuthController.binding().registerExpiredCheck);
     })
+    
     self.use('/xhr/oauth-user', [DashboardAuth], function (route: BaseRouteInterface) {
       route.get('/oauth-users', 'xhr.oauth-user.oauth-users', [], OAuthUserController.binding().getOAuthUsers);
       route.get('/:id/view', 'xhr.oauth-user.oauth-user', [], OAuthUserController.binding().getOAuthUser);
@@ -221,6 +226,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post('/update', 'xhr.oauth-user.update', [upload.any()], OAuthUserController.binding().updateOAuthUser);
       route.post('/delete', 'xhr.oauth-user.delete', [upload.any()], OAuthUserController.binding().deleteOAuthUsers);
     })
+
     self.use("/xhr/user", [DashboardAuth], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.user.add", [upload.any()], UserController.binding().addUser);
       route.post("/update", "xhr.user.update", [upload.any()], UserController.binding().updateUser);
@@ -230,6 +236,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/users", "xhr.user.users", [], UserController.binding().getUsers);
       route.get("/:id/view", "xhr.user.user", [], UserController.binding().getUser);
     });
+
     self.use("/xhr/group", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.group.add", [upload.any()], GroupController.binding().addGroup);
       route.post("/update", "xhr.group.update", [upload.any()], GroupController.binding().updateGroup);
@@ -237,6 +244,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/groups", "xhr.group.groups", [], GroupController.binding().getGroups);
       route.get("/:id", "xhr.group.group", [], GroupController.binding().getGroup);
     });
+
     self.use("/xhr/group-user", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.group_user.add", [upload.any()], GroupUserController.binding().addGroupUser);
       route.post("/update", "xhr.group_user.update", [upload.any()], GroupUserController.binding().updateGroupUser);
@@ -251,6 +259,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/projects", "xhr.project.projects", [], ProjectController.binding().getProjects);
       route.get("/:id/view", "xhr.project.project", [], ProjectController.binding().getProject);
     });
+
     self.use("/xhr/pipeline", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.pipeline.add", [upload.any()], PipelineController.binding().addPipeline);
       route.post("/update", "xhr.pipeline.update", [upload.any()], PipelineController.binding().updatePipeline);
@@ -258,6 +267,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/pipelines", "xhr.pipeline.pipelines", [], PipelineController.binding().getPipelines);
       route.get("/:id/view", "xhr.pipeline.pipeline", [], PipelineController.binding().getPipeline);
     });
+
     self.use("/xhr/pipeline-item", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.pipeline_item.add", [upload.any()], PipelineItemController.binding().addPipelineItem);
       route.post("/update", "xhr.pipeline_item.update", [upload.any()], PipelineItemController.binding().updatePipline);
@@ -265,6 +275,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/pipeline-items", "xhr.pipeline_item.pipeline_items", [], PipelineItemController.binding().getPipelines);
       route.get("/:id/view", "xhr.pipeline_item.pipeline_item", [], PipelineItemController.binding().getPipeline);
     });
+
     self.use("/xhr/pipeline-task", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.pipeline_task.add", [upload.any()], PipelineTaskController.binding().addPipelineTask);
       route.post("/update", "xhr.pipeline_task.update", [upload.any()], PipelineTaskController.binding().updatePipelineTask);
@@ -273,6 +284,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/pipeline-tasks", "xhr.pipeline_task.pipeline_tasks", [], PipelineTaskController.binding().getPipelineTasks);
       route.get("/:id/view", "xhr.pipeline_item.pipeline_task", [], PipelineTaskController.binding().getPipelineTask);
     });
+
     self.use("/xhr/host", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.host.add", [upload.any()], HostController.binding().addHost);
       route.post("/update", "xhr.host.update", [upload.any()], HostController.binding().updateHost);
@@ -280,6 +292,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/hosts", "xhr.host.hosts", [], HostController.binding().getHosts);
       route.get("/:id/view", "xhr.host.host", [], HostController.binding().getHost);
     });
+
     self.use("/xhr/execution", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.execution.add", [upload.any()], ExecutionController.binding().addExecution);
       route.post("/update", "xhr.execution.update", [upload.any()], ExecutionController.binding().updateExecution);
@@ -287,6 +300,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/executions", "xhr.execution.executions", [], ExecutionController.binding().getExecutions);
       route.get("/:id/view", "xhr.execution.execution", [], ExecutionController.binding().getExecution);
     });
+
     self.use("/xhr/variable", [], function (route: BaseRouteInterface) {
       route.post("/add", "xhr.variable.add", [upload.any()], VariableController.binding().addVariable);
       route.post("/update", "xhr.variable.update", [upload.any()], VariableController.binding().updateVariable);
@@ -311,6 +325,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:repo_name/view", "xhr.repository.repository", [], RepositoryController.binding().getRepository);
       route.post("/select", "xhr.repository.select", [upload.any()], RepositoryController.binding().selectRepository);
     })
+
     self.use("/xhr/webhook", [], function (route: BaseRouteInterface) {
       route.get("/webhooks", "xhr.webhook.webhooks", [DashboardAuth], WebHookController.binding().getWebHooks);
       route.get("/:id/view", "xhr.webhook.webhook", [DashboardAuth], WebHookController.binding().getWebHook);

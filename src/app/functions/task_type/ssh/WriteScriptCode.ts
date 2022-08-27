@@ -1,15 +1,16 @@
-import { TaskTypeInterface } from ".";
-import MergeVarScheme from "../MergeVarScheme";
-import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { uniq } from "lodash";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
-import MustacheRender from "../MustacheRender";
-import MkdirReqursive from "../sftp/Mkdir";
+
+import MergeVarScheme from "../../MergeVarScheme";
+import MustacheRender from "../../MustacheRender";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
+import upath from 'upath';
 import path from "path";
+import MkdirReqursive from "../../sftp/Mkdir";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { TaskTypeInterface } from "..";
 
 declare let masterData: MasterDataInterface;
 
-const WriteTransfer = function (props: TaskTypeInterface) {
+const WriteScriptCode = (props: TaskTypeInterface) => {
   let {
     sshPromise,
     variable,
@@ -23,7 +24,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     extra_var
   } = props;
   try {
-    console.log("WriteTransfer ::::: ", props);
+    console.log("'WriteScriptCode' ::::: ", props);
     let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     _data.command = "\r";
@@ -41,19 +42,33 @@ const WriteTransfer = function (props: TaskTypeInterface) {
 
     let processWait = async () => {
       try {
-        console.log("File Write command ::  Called  ");
+        console.log("File Write command ::  Called ");
         let _files = [];
         let sftp = await sshPromise.sftp();
-        for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
-          let _content_data = mergeVarScheme[_data.asset_datas[au2].name];
-          // Check if path have variable rendered
-          _data.asset_datas[au2].target_path = MustacheRender(_data.asset_datas[au2].target_path, mergeVarScheme);
+        // console.log("WriteScriptCode - script_datas ::: ", _data.script_datas);
+        for (var au2 = 0; au2 < _data.script_datas.length; au2++) {
+          let _content_data = _data.script_datas[au2].content;
+          let _allow_var_environment = _data.script_datas[au2].allow_var_environment || false;
+          _content_data = _content_data.join("\r\n");
+          if (_allow_var_environment == true) {
+            _content_data = MustacheRender(_content_data, mergeVarScheme);
+          }
+          let _write_to = upath.normalizeSafe(_data.working_dir + "/" + _data.script_datas[au2].file_path);
 
-          await MkdirReqursive(sftp, path.dirname(_data.asset_datas[au2].target_path));
-          await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
+          // Check if path have variable rendered
+          _write_to = MustacheRender(_write_to, mergeVarScheme);
+          // console.log("_content_data ::: ", _content_data);
+          try {
+            console.log("path.dirname(_write_to) :: ", path.dirname(_write_to));
+            await MkdirReqursive(sftp, path.dirname(_write_to));
+          } catch (ex) {
+            console.log("MkdirReqursive :: ", ex);
+          }
+          console.log("_write_to ::: ", _write_to);
+          await sftp.writeFile(_write_to, _content_data, {});
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-            commandString: "Write File :: " + _data.asset_datas[au2].target_path + "\n"
+            commandString: "Write File :: " + _write_to + "\n"
           })
         }
         masterData.saveData("data_pipeline_" + job_id, {
@@ -69,8 +84,8 @@ const WriteTransfer = function (props: TaskTypeInterface) {
           parent: pipeline_task.temp_id
         })
       }
-    }
-    // console.log("command :::: ", command);
+    };
+
     masterData.setOnMultiSameListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         console.log("props.parent ", props.parent);
@@ -90,4 +105,4 @@ const WriteTransfer = function (props: TaskTypeInterface) {
   }
 }
 
-export default WriteTransfer;
+export default WriteScriptCode;

@@ -16,6 +16,7 @@ import VariableService, { variableInterface } from "../services/VariableService"
 import upath from 'upath';
 import filendir from 'filendir';
 import CreateUUID from "./CreateUUID";
+import PipelineService from "../services/PipelineService";
 
 declare let masterData: MasterDataInterface
 
@@ -72,7 +73,6 @@ const CreateQueue = function (props: {
               variable_item_name: execution.variable_option
             })
           }
-
 
           switch (true) {
             case execution == null:
@@ -219,20 +219,58 @@ const CreateQueue = function (props: {
               _processQueue = ProcessQueue({
                 queue_name: queue_name
               })
-              for (let a = 0; a < _hosts_datas.length; a++) {
-                for (let b = 0; b < _hosts_datas[a].data.length; b++) {
-                  let hostDataItem = _hosts_datas[a].data[b];
+              switch (execution.pip_connection_type) {
+                case PipelineService.CONNECTION_TYPE.SSH:
+                  for (let a = 0; a < _hosts_datas.length; a++) {
+                    for (let b = 0; b < _hosts_datas[a].data.length; b++) {
+                      let hostDataItem = _hosts_datas[a].data[b];
+                      idJOb = CreateUUID();// (Math.random() + 1).toString(36).substring(7);
+
+                      // copyAssetToJobAsset(idJOb, variable);
+
+                      theJOb = await _processQueue.add("host_" + idJOb + "_" + hostDataItem.ip_address, {
+                        queue_record_id: id,
+                        host_id: _hosts_datas[a].id,
+                        job_id: idJOb,
+                        index: indexHostItem,
+                        total: _total_host_item,
+                        host_data: hostDataItem,
+                        extra: variable_extra
+                      }, {
+                        jobId: idJOb,//id + "-" + resQueueRecords.exe_host_ids[a],
+                        // timeout: 5000,
+                        delay: delay
+                      });
+
+                      // Insert to queue record detail 
+                      let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
+                        queue_record_id: id,
+                        queue_name: theJOb.queueName,
+                        job_id: idJOb,
+                        job_data: theJOb.data,
+                        status: QueueRecordDetailService.STATUS.RUNNING,
+                        // planning also record
+                        variable,
+                        execution,
+                        variable_extra
+                      });
+
+                      indexHostItem += 1;
+                    }
+                  }
+                  break;
+                case PipelineService.CONNECTION_TYPE.BASIC:
                   idJOb = CreateUUID();// (Math.random() + 1).toString(36).substring(7);
 
                   // copyAssetToJobAsset(idJOb, variable);
 
-                  theJOb = await _processQueue.add("host_" + idJOb + "_" + hostDataItem.ip_address, {
+                  theJOb = await _processQueue.add("host_" + idJOb + "_basic", {
                     queue_record_id: id,
-                    host_id: _hosts_datas[a].id,
+                    host_id: null,
                     job_id: idJOb,
                     index: indexHostItem,
-                    total: _total_host_item,
-                    host_data: hostDataItem,
+                    total: 1,
+                    host_data: null,
                     extra: variable_extra
                   }, {
                     jobId: idJOb,//id + "-" + resQueueRecords.exe_host_ids[a],
@@ -253,8 +291,7 @@ const CreateQueue = function (props: {
                     variable_extra
                   });
 
-                  indexHostItem += 1;
-                }
+                  break;
               }
               break;
             case QueueRecordService.TYPE.SCHEDULE:
@@ -294,21 +331,60 @@ const CreateQueue = function (props: {
                   console.log("_timeout :: ", _delay);
                   break;
               }
-              for (let a = 0; a < _hosts_datas.length; a++) {
-                for (let b = 0; b < _hosts_datas[a].data.length; b++) {
-                  let hostDataItem = _hosts_datas[a].data[b];
+
+              switch (execution.pip_connection_type) {
+                case PipelineService.CONNECTION_TYPE.SSH:
+                  for (let a = 0; a < _hosts_datas.length; a++) {
+                    for (let b = 0; b < _hosts_datas[a].data.length; b++) {
+                      let hostDataItem = _hosts_datas[a].data[b];
+                      idJOb = CreateUUID(); // (Math.random() + 1).toString(36).substring(7);
+
+                      // copyAssetToJobAsset(idJOb, variable);
+
+                      // Repeatable is different, you cannot keep fixed the jobId it still create new every loop
+                      theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
+                        queue_record_id: id,
+                        host_id: _hosts_datas[a].id,
+                        index: indexHostItem,
+                        job_id: idJOb,
+                        total: _total_host_item,
+                        host_data: hostDataItem,
+                        schedule_type: qrec_sch_data.schedule_type,
+                        extra: variable_extra
+                      }, {
+                        // jobId: id + "-" + resQueueRecords.exe_host_ids[a],
+                        jobId: idJOb,
+                        delay: _delay,
+                        repeat: _repeat,
+
+                      });
+                      // console.log("theJOB ::: ", theJOb.);
+                      // Insert to queue record detail 
+                      let resDataInsert = await QueueRecordDetailService.addQueueRecordDetail({
+                        queue_record_id: id,
+                        queue_name: theJOb.queueName,
+                        job_id: idJOb,
+                        job_data: theJOb.data,
+                        status: QueueRecordDetailService.STATUS.RUNNING,
+                        // planning also record
+                        variable,
+                        execution,
+                        variable_extra
+                      });
+
+                      indexHostItem += 1;
+                    }
+                  }
+                  break;
+                case PipelineService.CONNECTION_TYPE.BASIC:
                   idJOb = CreateUUID(); // (Math.random() + 1).toString(36).substring(7);
-
-                  // copyAssetToJobAsset(idJOb, variable);
-
-                  // Repeatable is different, you cannot keep fixed the jobId it still create new every loop
-                  theJOb = await _processQueue.add("host_" + hostDataItem.ip_address, {
+                  theJOb = await _processQueue.add("host_basic", {
                     queue_record_id: id,
-                    host_id: _hosts_datas[a].id,
+                    host_id: null,
                     index: indexHostItem,
                     job_id: idJOb,
-                    total: _total_host_item,
-                    host_data: hostDataItem,
+                    total: 1,
+                    host_data: null,
                     schedule_type: qrec_sch_data.schedule_type,
                     extra: variable_extra
                   }, {
@@ -331,9 +407,7 @@ const CreateQueue = function (props: {
                     execution,
                     variable_extra
                   });
-
-                  indexHostItem += 1;
-                }
+                  break;
               }
               break;
           }

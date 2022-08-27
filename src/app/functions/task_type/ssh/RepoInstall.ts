@@ -1,13 +1,12 @@
-import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
-import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import InitPtyProcess from "../InitPtyProcess";
+import MergeVarScheme from "../../MergeVarScheme";
+import InitPtyProcess from "../../InitPtyProcess";
 import Rsync from "@root/tool/rsync";
-import WritePrivateKeyToVariable from "../WritePrivateKeyToVariable";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
-import MustacheRender from "../MustacheRender";
-import MkdirReqursive from "../sftp/Mkdir";
+import WritePrivateKeyToVariable from "../../WritePrivateKeyToVariable";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
+import MustacheRender from "../../MustacheRender";
+import MkdirReqursive from "../../sftp/Mkdir";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { TaskTypeInterface } from "..";
 
 declare let masterData: MasterDataInterface;
 

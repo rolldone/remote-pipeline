@@ -1,17 +1,12 @@
-import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
-import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import MustacheRender from "../MustacheRender";
-import upath from 'upath';
-import path from "path";
-import MkdirReqursive from "../sftp/Mkdir";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
+import MergeVarScheme from "../../MergeVarScheme";
+import MustacheRender from "../../MustacheRender";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
 import QueueRecordService from "@root/app/services/QueueRecordService";
-import CreateQueue from "../CreateQueue";
-import SafeValue from "../base/SafeValue";
+import CreateQueue from "../../CreateQueue";
+import SafeValue from "../../base/SafeValue";
 import VariableItemService from "@root/app/services/VariableItemService";
-
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { TaskTypeInterface } from "..";
 
 declare let masterData: MasterDataInterface;
 

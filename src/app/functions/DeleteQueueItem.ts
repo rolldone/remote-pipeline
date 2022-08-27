@@ -45,7 +45,9 @@ const DeleteQueueItem = async function (props: {
     }
 
     if (res_data_record_detail.status != QueueRecordDetailService.STATUS.RUNNING) {
-      return;
+      if (res_data_record_detail.status != QueueRecordDetailService.STATUS.FAILED) {
+        return;
+      }
     }
 
     let _processQueue: Queue = null;

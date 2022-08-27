@@ -1,21 +1,19 @@
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import MergeVarScheme from "../MergeVarScheme";
-import MustacheRender from "../MustacheRender";
-import RecordCommandToFileLog from "../RecordCommandToFileLog";
+import { TaskTypeInterface } from "..";
+import MergeVarScheme from "../../MergeVarScheme";
+import MustacheRender from "../../MustacheRender";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
 import axios from 'axios';
 import FormData from "form-data";
-import SafeValue from "../base/SafeValue";
+import SafeValue from "../../base/SafeValue";
 
 declare let masterData: MasterDataInterface;
 
 const HttpRequest = (props: TaskTypeInterface) => {
   let {
-    sshPromise,
     variable,
     schema,
     pipeline_task,
-    socket,
     raw_variable,
     execution,
     job_id,
@@ -25,14 +23,14 @@ const HttpRequest = (props: TaskTypeInterface) => {
   try {
     let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
-
+    console.log("mvkdfvmkdfvmk :: ", _data);
     // Render first to get data from tag
     _data = JSON.parse(MustacheRender(JSON.stringify(_data), mergeVarScheme));
 
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
 
     // NOTE YOU MUST ADD  \r for get trigger next task
-    let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+    let command = MustacheRender((_data.command == null ? "" : _data.command.toString()) + "\r", mergeVarScheme);
 
     let processWait = async () => {
       try {

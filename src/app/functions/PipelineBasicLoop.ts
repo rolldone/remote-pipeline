@@ -1,42 +1,33 @@
-import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import AppConfig from "@root/config/AppConfig";
-import { debounce, DebouncedFunc } from "lodash";
-import SSH2Promise from "ssh2-promise";
 import ExecutionService from "../services/ExecutionService";
 import PipelineItemService from "../services/PipelineItemService";
 import PipelineTaskService from "../services/PipelineTaskService";
-import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
-import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
-import ConnectToHost from "./ConnectOnSShPromise";
-import DownloadRepo from "./DownloadRepo";
-import RecordCommandToFileLog, { ResetCommandToFileLog } from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
 import WaitingTimeout from "./WaitingTimeout";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import { debounce, DebouncedFunc } from "lodash";
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
+import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../services/QueueRecordService";
+import RecordCommandToFileLog, { ResetCommandToFileLog } from "./RecordCommandToFileLog";
 
 declare let masterData: MasterDataInterface;
-
 
 type FunctionREcur = {
   pipeline_item_id?: number
   parent?: any
-  sshPromise?: SSH2Promise
   socket?: any
   resolve?: Function
   rejected?: Function
 }
 
-const PipelineLoop = async function (props: {
+const PipelineBasicLoop = async (props: {
   queue_record_id: number
-  host_id: number
-  host_data: any,
   job_id: string,
   extra: any
-}) {
+}) => {
   let {
     queue_record_id,
-    host_id,
-    host_data,
     job_id,
     extra
   } = props;
@@ -113,7 +104,6 @@ const PipelineLoop = async function (props: {
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
-      let sshPromise = null;
       let resolveDone = null;
       let resolveReject = null;
       let firstStart = null;
@@ -178,7 +168,6 @@ const PipelineLoop = async function (props: {
 
           let isnnn = await theTaskTYpeFunc({
             raw_variable: variable,
-            sshPromise: props.sshPromise,
             variable: _var_data,
             schema: _var_scheme,
             pipeline_task: _pipeline_task[a2],
@@ -196,7 +185,6 @@ const PipelineLoop = async function (props: {
 
           await recursiveFunc({
             pipeline_item_id: props.pipeline_item_id,
-            sshPromise: props.sshPromise,
             parent: _pipeline_task[a2].temp_id,
             socket: props.socket,
             resolve: props.resolve,
@@ -221,26 +209,6 @@ const PipelineLoop = async function (props: {
         case PipelineItemService.TYPE.BASIC:
         default:
 
-          // Try create connection ssh
-          sshPromise = await ConnectToHost({
-            host_data,
-            host_id
-          })
-
-          // Download repository from pipeline and branch on execution
-          // If there is no repo on pipeline return null
-          try {
-            let downloadInfo = await DownloadRepo({
-              pipeline_id: execution.pipeline_id,
-              execution_id: execution.id,
-              job_id: job_id
-            })
-          } catch (ex) {
-            console.log("DownloadRepo - ex :: ", ex);
-            throw ex;
-          }
-
-          let socket = await sshPromise.shell();
           let who_parent = null;
           let pipeline_task_id = null;
           let command_history = "";
@@ -251,8 +219,6 @@ const PipelineLoop = async function (props: {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
 
             pipeline_task_id = props.pipeline_task_id;
-            socket.write("echo " + props.message + "\r");
-            socket.write("echo error-error\r");
 
             // Remove the listener
             masterData.removeAllListener("write_pipeline_" + job_id);
@@ -261,6 +227,29 @@ const PipelineLoop = async function (props: {
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
+
+          let callNextCommand = () => {
+            if (debounceee != null) {
+              debounceee.cancel();
+            }
+            debounceee = debounce((_command_history: string) => {
+              masterData.saveData("write_pipeline_" + job_id, {
+                parent: who_parent,
+                data: _command_history
+              })
+              command_history = "";
+              if (lastStartParent == who_parent) {
+                console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
+                console.log("resolveDone::", resolveDone);
+                masterData.removeAllListener("write_pipeline_" + job_id);
+                masterData.removeAllListener("data_pipeline_" + job_id);
+                masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+                resolveDone();
+              }
+            }, 2000);
+            debounceee(command_history);
+          }
+
           masterData.setOnListener("data_pipeline_" + job_id + "_ignore", (props) => {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
             RecordCommandToFileLog({
@@ -268,7 +257,6 @@ const PipelineLoop = async function (props: {
               commandString: props.message
             })
             who_parent = props.parent;
-            socket.write("\n");
             pipeline_task_id = props.pipeline_task_id;
             // Because event ignore nothing to do if this is last task return resolveDOne();
             if (lastStartParent == who_parent) {
@@ -276,8 +264,11 @@ const PipelineLoop = async function (props: {
               masterData.removeAllListener("data_pipeline_" + job_id);
               masterData.removeAllListener("data_pipeline_" + job_id + "_error");
               resolveDone();
+            } else {
+              callNextCommand();
             }
           });
+
           masterData.setOnListener("data_pipeline_" + job_id, (props) => {
             if (props.message != null) {
               lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
@@ -287,110 +278,15 @@ const PipelineLoop = async function (props: {
               })
             }
             who_parent = props.parent;
-            socket.write(props.command);
             pipeline_task_id = props.pipeline_task_id;
+            callNextCommand();
           });
-          socket.on("exit", async () => {
-            console.log("Get call exit from command");
-            resolveDone();
-          })
-          socket.on("data", async (data) => {
-            let _split = data.toString().split(/\n/);
-            let _isDone = false;
-            let _isError = false;
-            for (let aes = 0; aes < _split.length; aes++) {
-              _split[aes] = _split[aes].replace(/\r/g, "");
-              switch (_split[aes]) {
-                case '':
-                case '\r':
-                case '\u001b[32m\r':
-                  break;
-                default:
-                  if (_split[aes].toString().replace(/ /g, '') == "done-done") {
-                    _isDone = true;
-                    break;
-                  }
-                  if (_split[aes].toString().replace(/ /g, '') == "error-error") {
-                    _isError = true;
-                    break;
-                  }
-                  break;
-              }
-              if (_isDone == true) {
-                break;
-              }
-              if (_isError == true) {
-                break;
-              }
-            }
-            console.log("Console :: ", data.toString());
-            switch (true) {
-              case data.toString().includes('done-done') == true:
-              case data.toString().includes('echo done-done') == true:
-                break;
-              default:
-                command_history += data.toString();
-                // console.log(data.toString());
-                if (pipeline_task_id != null) {
-                  if (data.toString() != "") {
-                    lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id;
-                    RecordCommandToFileLog({
-                      fileName: lastFileNameForClose,
-                      commandString: data.toString() + "\n"
-                    })
-                    // masterData.saveData("ws.commit", {
-                    //   user_id: user_id,
-                    //   pipeline_task_id,
-                    //   data: data.toString()
-                    // });
-                  }
-                }
-                break;
-            }
-            if (debounceee != null) {
-              debounceee.cancel();
-            }
-            if (_isError == true) {
-              await sshPromise.close();
-              masterData.saveData("data_pipeline_" + job_id + "_error", {
-                pipeline_task_id: pipeline_task_id,
-                command: '',
-                parent: who_parent,
-                message: "Your pipeline get force stop by some condition"
-              })
-              return;
-            }
-            if (_isDone == true) {
-              debounceee = debounce((_command_history: string, dataString: string) => {
-                masterData.saveData("write_pipeline_" + job_id, {
-                  parent: who_parent,
-                  data: _command_history
-                })
-                command_history = "";
-                if (lastStartParent == who_parent) {
-                  console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
-                  console.log("resolveDone::", resolveDone);
-                  masterData.removeAllListener("write_pipeline_" + job_id);
-                  masterData.removeAllListener("data_pipeline_" + job_id);
-                  masterData.removeAllListener("data_pipeline_" + job_id + "_error");
-                  resolveDone();
-                }
-              }, 2000);
-              debounceee(command_history, data.toString());
-            } else {
-              debounceee = debounce((_command_history: string, dataString: string) => {
-                socket.write('echo done-done\r');
-              }, 1000);
-              debounceee(command_history, data.toString());
-            }
-          });
+
           let resTask = () => {
             return new Promise(async (resolve: Function, rejected: Function) => {
               await _recursiveTasks({
                 parent: "NULL",
                 pipeline_item_id: _pipeline_item_ids[a],
-                sshPromise,
-                socket,
                 resolve,
                 rejected,
               }, _recursiveTasks);
@@ -398,11 +294,7 @@ const PipelineLoop = async function (props: {
           }
           try {
             await resTask();
-            await sshPromise.close();
           } catch (ex) {
-            try {
-              await sshPromise.close();
-            } catch (ex) { }
             throw ex;
           }
           break;
@@ -425,4 +317,4 @@ const PipelineLoop = async function (props: {
   }
 }
 
-export default PipelineLoop;
+export default PipelineBasicLoop;

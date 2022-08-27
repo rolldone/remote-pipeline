@@ -1,8 +1,8 @@
 import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
+import MergeVarScheme from "../../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import MustacheRender from "../MustacheRender";
+import { TaskTypeInterface } from "..";
+import MustacheRender from "../../MustacheRender";
 
 declare let masterData: MasterDataInterface;
 

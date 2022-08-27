@@ -1,18 +1,15 @@
-import SSH2Promise from "ssh2-promise";
-import MergeVarScheme from "../MergeVarScheme";
+import MergeVarScheme from "../../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
-import { TaskTypeInterface } from ".";
-import MustacheRender from "../MustacheRender";
+import { TaskTypeInterface } from "..";
+import MustacheRender from "../../MustacheRender";
 
 declare let masterData: MasterDataInterface
 
 export default async function (props: TaskTypeInterface) {
   let {
-    sshPromise,
     variable,
     schema,
     pipeline_task,
-    socket,
     extra_var,
     job_id
   } = props;
@@ -33,10 +30,6 @@ export default async function (props: TaskTypeInterface) {
 
     if (working_dir != null) {
       command = `cd ${working_dir} && ${command}`;
-    }
-
-    let processWait = async () => {
-      
     }
 
     masterData.setOnMultiSameListener("write_pipeline_" + job_id, (props) => {

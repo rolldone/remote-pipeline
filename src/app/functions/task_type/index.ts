@@ -1,18 +1,18 @@
 import SSH2Promise from "ssh2-promise";
-import BasicCommand from "./BasicCommand";
-import ConditionalCommand from "./ConditionalCommand";
-import DownloadRequest from "./DownloadRequest";
-import FileTransfer from "./FileTransfer";
-import HttpRequest from "./HttpRequest";
-import NewQueueCommand from "./NewQueueCommand";
-import FullRemoteSyncronise from "./remote/FullRemoteSyncronise";
-import RepoInstall from "./RepoInstall";
-import WriteScriptCode from "./WriteScriptCode";
-import WriteTransfer from "./WriteTransfer";
+import BasicCommand from "./ssh/BasicCommand";
+import ConditionalCommand from "./basic/ConditionalCommand";
+import DownloadRequest from "./ssh/DownloadRequest";
+import FileTransfer from "./ssh/FileTransfer";
+import HttpRequest from "./basic/HttpRequest";
+import NewQueueCommand from "./ssh/NewQueueCommand";
+import FullRemoteSyncronise from "./ssh/remote/FullRemoteSyncronise";
+import RepoInstall from "./ssh/RepoInstall";
+import WriteScriptCode from "./ssh/WriteScriptCode";
+import WriteTransfer from "./ssh/WriteTransfer";
 
 export interface TaskTypeInterface {
   raw_variable: any,
-  sshPromise: SSH2Promise,
+  sshPromise?: SSH2Promise,
   variable: any
   schema: any
   pipeline_task: any

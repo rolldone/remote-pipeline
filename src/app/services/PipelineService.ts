@@ -20,6 +20,7 @@ export interface PipelineServiceInterface {
   description?: string
   project_id?: number
   oauth_user_id?: number
+  connection_type?: string
   repo_data?: {
     credential_id?: number // GIt
     repo_id?: number // Gitlab
@@ -43,6 +44,30 @@ export interface PipelineServiceInterface {
   pipeline_tasks?: Array<PipelineTaskInterface>
 }
 
+const preSelectQuery = () => {
+  Sqlbricks.aliasExpansions({
+    'pro': "projects",
+    "pip": "pipelines"
+  });
+  let query = Sqlbricks.select(
+    "pip.id as id",
+    "pip.connection_type as connection_type",
+    "pip.project_id as project_id",
+    "pip.oauth_user_id as oauth_user_id",
+    "pip.source_type as source_type",
+    "pip.repo_name as repo_name",
+    "pip.from_provider as from_provider",
+    "pip.name as name",
+    "pip.repo_data as repo_data",
+    "pip.repo_id as repo_id",
+    "pip.created_at as created_at",
+    "pip.updated_at as updated_at",
+    "pro.id as pro_id",
+    "pro.name as pro_name"
+  ).from("pip");
+  return query;
+}
+
 const returnFactoryColumn = async (props: PipelineServiceInterface) => {
   props.repo_data = JSON.parse(props.repo_data as any || '{}');
   props.pipeline_items = await PipelineItemService.getPipelineItems({
@@ -62,6 +87,10 @@ const returnFactoryColumn = async (props: PipelineServiceInterface) => {
 }
 
 export default {
+  CONNECTION_TYPE: {
+    SSH: 'ssh',
+    BASIC: 'basic'
+  },
   async addPipeline(props: PipelineServiceInterface): Promise<any> {
     try {
       let resData = await db.raw(Sqlbricks.insert('pipelines', CreateDate({
@@ -69,6 +98,7 @@ export default {
         description: props.description,
         project_id: props.project_id,
         oauth_user_id: props.oauth_user_id,
+        connection_type: props.connection_type,
         // repo_name: props.repo_name,
         // repo_id: props.repo_id,
         // from_provider: props.from_provider,
@@ -94,6 +124,7 @@ export default {
       }
       let resData = await SqlService.update(Sqlbricks.update('pipelines', CreateDate({
         name: SafeValue(props.name, pipelineData.name),
+        connection_type: SafeValue(props.connection_type, pipelineData.connection_type),
         description: SafeValue(props.description, pipelineData.description),
         project_id: SafeValue(props.project_id, pipelineData.project_id),
         oauth_user_id: SafeValue(props.oauth_user_id, pipelineData.oauth_user_id),
@@ -122,25 +153,7 @@ export default {
   },
   async getPipelines(props: PipelineServiceInterface): Promise<any> {
     try {
-      Sqlbricks.aliasExpansions({
-        'pro': "projects",
-        "pip": "pipelines"
-      });
-      let query = Sqlbricks.select(
-        "pip.id as id",
-        "pip.project_id as project_id",
-        "pip.oauth_user_id as oauth_user_id",
-        "pip.source_type as source_type",
-        "pip.repo_name as repo_name",
-        "pip.from_provider as from_provider",
-        "pip.name as name",
-        "pip.repo_data as repo_data",
-        "pip.repo_id as repo_id",
-        "pip.created_at as created_at",
-        "pip.updated_at as updated_at",
-        "pro.id as pro_id",
-        "pro.name as pro_name"
-      ).from("pip");
+      let query = preSelectQuery();
       query = query.leftJoin("pro").on("pro.id", "pip.project_id");
       if (props.project_id != null) {
         query = query.where("pro.id", props.project_id);

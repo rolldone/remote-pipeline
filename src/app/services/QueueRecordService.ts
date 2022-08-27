@@ -38,6 +38,8 @@ export interface QueueRecordInterface {
   exe_access_host_type?: string
   // Schedule
   qrec_sch_data?: any
+  // Pipeline
+  pip_connection_type?: string
 }
 
 export interface QueueRecordServiceInterface extends QueueRecordInterface {
@@ -98,7 +100,8 @@ const preSelectQuery = () => {
     'exe.description as exe_description',
     'exe.delay as exe_delay',
     'exe.access_host_type as exe_access_host_type',
-    'pip.name as pip_name'
+    'pip.name as pip_name',
+    'pip.connection_type as pip_connection_type'
   ).from("qrec");
   return query;
 }

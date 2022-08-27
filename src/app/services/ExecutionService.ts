@@ -43,6 +43,8 @@ export interface Execution {
   hosts?: Array<Host>
   parent_id?: number
   execution_type?: string
+
+  pip_connection_type?: string
 }
 
 export interface ExecutionServiceInterface extends Execution {
@@ -85,6 +87,7 @@ const defineQuery = () => {
     'exe.execution_type as execution_type',
     'pro.name as pro_name',
     'pip.name as pip_name',
+    'pip.connection_type as pip_connection_type',
     'var.name as var_name',
   ).from("exe");
 
