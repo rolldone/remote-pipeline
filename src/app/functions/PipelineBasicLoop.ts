@@ -256,6 +256,7 @@ const PipelineBasicLoop = async (props: {
               fileName: lastFileNameForClose,
               commandString: props.message
             })
+            command_history += props.message;
             who_parent = props.parent;
             pipeline_task_id = props.pipeline_task_id;
             // Because event ignore nothing to do if this is last task return resolveDOne();
@@ -277,6 +278,7 @@ const PipelineBasicLoop = async (props: {
                 commandString: props.message + "\n"
               })
             }
+            command_history += props.message;
             who_parent = props.parent;
             pipeline_task_id = props.pipeline_task_id;
             callNextCommand();

@@ -32,6 +32,7 @@ const HttpRequest = (props: TaskTypeInterface) => {
     // NOTE YOU MUST ADD  \r for get trigger next task
     let command = MustacheRender((_data.command == null ? "" : _data.command.toString()) + "\r", mergeVarScheme);
 
+    let resData = null;
     let processWait = async () => {
       try {
         let {
@@ -87,7 +88,7 @@ const HttpRequest = (props: TaskTypeInterface) => {
             break;
         }
 
-        let resData = await axios({
+        resData = await axios({
           url: url,
           method: verb,
           headers: _headers,
@@ -122,24 +123,33 @@ const HttpRequest = (props: TaskTypeInterface) => {
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
-          parent: pipeline_task.temp_id
+          parent: pipeline_task.temp_id,
+          message: resData.data
         })
 
       } catch (ex: any) {
-        console.log("Conditional Command - JOB ID ::", job_id);
+        console.log("cConditional Command - JOB ID ::", job_id);
         console.log("Conditional Command ::: ", ex);
-        RecordCommandToFileLog({
-          fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
-          commandString: "Error :: " + ex.message + "\n" // "Write File :: " + _write_to + "\n"
+        // RecordCommandToFileLog({
+        //   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
+        //   commandString: "Error :: " + ex.message + "\n" // "Write File :: " + _write_to + "\n"
+        // })
+        // setTimeout(() => {
+        //   masterData.saveData("data_pipeline_" + job_id + "_error", {
+        //     pipeline_task_id: pipeline_task.id,
+        //     command: command || resData.data,
+        //     parent: pipeline_task.temp_id,
+        //     message: "On Pipeline Task Key :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: Get problem from your http request"
+        //   })
+        // }, 2000);
+        
+        // You get error or not just passed it!
+        masterData.saveData("data_pipeline_" + job_id, {
+          pipeline_task_id: pipeline_task.id,
+          command: command,
+          parent: pipeline_task.temp_id,
+          message: ex.message
         })
-        setTimeout(() => {
-          masterData.saveData("data_pipeline_" + job_id + "_error", {
-            pipeline_task_id: pipeline_task.id,
-            command: command,
-            parent: pipeline_task.temp_id,
-            message: "On Pipeline Task Key :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: Get problem from your http request"
-          })
-        }, 2000);
       }
     }
 
