@@ -27,7 +27,7 @@
 
 - [addResultQueueDetailData] = POST 
 
-	url : {{HOST}}/xhr/outside/queue-detail/result/add 
+	url : {{HOST}}/client/queue/item/result/add 
 	response: url
 
 	body:
@@ -36,10 +36,11 @@
 	- file_name: string
 	- files : files data
 
-- [createQueue] = POST
+- [createQueue] = Add Queue
 
-	url : {{HOST}}/xhr/outside/queue/:queue_key
-	response: status
+	method: POST
+	url : {{HOST}}/client/queue/add
+	response: [short_token, job_id]
 	
 	body:
 	- delay : number
@@ -47,7 +48,24 @@
 	- process_limit : string
 	- data : JSON
 
-- [webhook] = POST | GET | DELETE
+- [createQueue] = Get Queue
+
+	method: GET
+	url : {{HOST}}/client/queue/:job_id
+
+- [createQueue] = Stop Queue
+
+	method: GET
+	url : {{HOST}}/client/queue/:job_id/stop
+
+- [webhook] = Add webhook
+
+	method: POST
+	url : {{HOST}}/client/webhook/add
+
+	body:
+	- webhook_key : string
+
 - [file] = POST | GET | DELETE
 - [variable] = POST | GET | DELETE
 
@@ -196,7 +214,19 @@ Task :
 
 - [Pipeline] : Add non ssh pipeline and pipeline task [Alpha]
 
+- [PipelineTask] : Add init process like connect ssh, and pull git repository [Waiting]
+
+- [TaskType] : Create new component basic command with prompt mode [Waiting]
+
+- [Variable] : Create secure text [Waiting]
+
+- [PipelineLoop] : If possible convert secure from variable text to be xxxx when write to log [Waiting]
+
 - [QueueRecord] : Add viewer as guest with or without create password [Waiting]
+
+- [ConnectSSH] : Add both combination privatekey and password ssh connection [Waiting]
+
+- [TestingTool] : Create page testing tool queue [Waiting]
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
 
