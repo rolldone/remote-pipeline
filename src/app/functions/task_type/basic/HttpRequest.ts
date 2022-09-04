@@ -6,7 +6,13 @@ import RecordCommandToFileLog from "../../RecordCommandToFileLog";
 import axios from 'axios';
 import FormData from "form-data";
 import SafeValue from "../../base/SafeValue";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import upath from 'upath';
+import File2Service from "@root/app/services/File2Service";
+import FlyDriveConfig from "@root/config/FlyDriveConfig";
+import { StorageManager } from "@slynova/flydrive";
 
+declare let storage: StorageManager
 declare let masterData: MasterDataInterface;
 
 const HttpRequest = (props: TaskTypeInterface) => {
@@ -39,10 +45,13 @@ const HttpRequest = (props: TaskTypeInterface) => {
           headers,
           params,
           body_datas,
+          file_datas,
           url,
           verb,
           content_type
         } = _data;
+
+        console.log("file_datas :: ", file_datas);
 
         let _headers = {};
         for (let _aHeaders = 0; _aHeaders < SafeValue(headers, []).length; _aHeaders++) {
@@ -66,11 +75,35 @@ const HttpRequest = (props: TaskTypeInterface) => {
             _headers["Content-type"] = content_type;
             break;
           case 'multipart/form-data':
-            _formData = new FormData();
-            for (let _aBodys = 0; _aBodys < SafeValue(body_datas, []).length; _aBodys++) {
-              _formData.append(body_datas[_aBodys].key, body_datas[_aBodys].value);
+            let _formDataM = new FormData();
+            try {
+              if (existsSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files`)) == false) {
+                mkdirSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files`), {
+                  recursive: true
+                });
+              }
+              for (let fileIdx = 0; fileIdx < file_datas.length; fileIdx++) {
+                let assetData = await File2Service.getFileById(file_datas[fileIdx].id);
+                let readFile = await storage.disk(FlyDriveConfig.FLY_DRIVE_DRIVER).getBuffer(upath.normalize(`${assetData.user_id}/${assetData.path}/${assetData.name}`));
+                // writeFileSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files/${assetData.name}`), readFile.content);
+                // console.log("file_datas[fileIdx].key :: ", file_datas[fileIdx].key);
+                // console.log("readFile.content :: ", readFile.content);
+                _formDataM.append(file_datas[fileIdx].key, readFile.content, assetData.name);
+              }
+            } catch (ex: any) {
+              masterData.saveData("data_pipeline_" + job_id + "_error", {
+                pipeline_task_id: pipeline_task.id,
+                command: command,
+                parent: pipeline_task.temp_id,
+                message: "Error :: " + pipeline_task.temp_id + " - " + pipeline_task.name + ` :: ex :: ` + ex.message
+              })
+              break;
             }
-            // _headers["Content-type"] = content_type;
+            for (let _aBodys = 0; _aBodys < SafeValue(body_datas, []).length; _aBodys++) {
+              _formDataM.append(body_datas[_aBodys].key, body_datas[_aBodys].value);
+            }
+            _headers["Content-type"] = content_type;
+            _formData = _formDataM;
             break;
           case 'application/json':
             _formData = {};
@@ -142,7 +175,7 @@ const HttpRequest = (props: TaskTypeInterface) => {
         //     message: "On Pipeline Task Key :: " + pipeline_task.temp_id + " - " + pipeline_task.name + " :: Get problem from your http request"
         //   })
         // }, 2000);
-        
+
         // You get error or not just passed it!
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,

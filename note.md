@@ -214,30 +214,34 @@ Task :
 
 - [Pipeline] : Add non ssh pipeline and pipeline task [Alpha]
 
-- [PipelineTask] : Add init process like connect ssh, and pull git repository [Waiting]
+- [PipelineTask] : Add init process like connect ssh, and pull git repository [Alpha]
 
-- [TaskType] : Create new component basic command with prompt mode [Waiting]
+- [TaskType] : Create new component basic command with prompt mode [Alpha]
 
-- [Variable] : Create secure text [Waiting]
+- [TaskType] : Add new component copy or move file from job to files [Cancel]
 
-- [PipelineLoop] : If possible convert secure from variable text to be xxxx when write to log [Waiting]
+- [TaskType] : Improve Http Client component add upload from files [Alpha]
 
 - [QueueRecord] : Add viewer as guest with or without create password [Waiting]
-
-- [ConnectSSH] : Add both combination privatekey and password ssh connection [Waiting]
-
-- [TestingTool] : Create page testing tool queue [Waiting]
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
 
 - [OAuthUSers] : Change table oauth_users  to be credentials [Consider]
 
-- [User] : Manage join group share project [Waiting]
-
 
 ## Phase 5
 
+- [TestingTool] : Create page testing tool queue [Waiting]
+
 - [QueueRecordDetail] : From host can post data value to queue record detail.
+
+- [Variable] : Create secure text [Waiting]
+
+- [PipelineLoop] : If possible convert secure from variable text to be xxxx when write to log [Waiting]
+
+- [ConnectSSH] : Add both combination privatekey and password ssh connection [Waiting]
+
+- [User] : Manage join group share project [Waiting]
 
 
 ## Pending

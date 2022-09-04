@@ -201,6 +201,17 @@ const PipelineBasicLoop = async (props: {
         pipeline_id: execution.pipeline_id
       });
 
+      masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
+        lastFileNameForClose = "job_id_" + job_id + "_init";
+        RecordCommandToFileLog({
+          fileName: lastFileNameForClose,
+          commandString: props.message
+        })
+      });
+
+      masterData.saveData("data_pipeline_" + job_id + "_init", {
+        message: "Start Queue :)\n"
+      })
 
       // Filter processing by type
       switch (_pipeline_item.type) {
@@ -223,6 +234,7 @@ const PipelineBasicLoop = async (props: {
             // Remove the listener
             masterData.removeAllListener("write_pipeline_" + job_id);
             masterData.removeAllListener("data_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id + "_init");
             masterData.removeAllListener("data_pipeline_" + job_id + "_error");
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
@@ -243,6 +255,7 @@ const PipelineBasicLoop = async (props: {
                 console.log("resolveDone::", resolveDone);
                 masterData.removeAllListener("write_pipeline_" + job_id);
                 masterData.removeAllListener("data_pipeline_" + job_id);
+                masterData.removeAllListener("data_pipeline_" + job_id + "_init");
                 masterData.removeAllListener("data_pipeline_" + job_id + "_error");
                 resolveDone();
               }
@@ -263,6 +276,7 @@ const PipelineBasicLoop = async (props: {
             if (lastStartParent == who_parent) {
               masterData.removeAllListener("write_pipeline_" + job_id);
               masterData.removeAllListener("data_pipeline_" + job_id);
+              masterData.removeAllListener("data_pipeline_" + job_id + "_init");
               masterData.removeAllListener("data_pipeline_" + job_id + "_error");
               resolveDone();
             } else {

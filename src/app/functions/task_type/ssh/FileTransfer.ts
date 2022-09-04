@@ -56,14 +56,14 @@ export default async function (props: TaskTypeInterface) {
           // }
           if (_ioir.name != null) {
             try {
-              if (existsSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}`)) == false) {
-                mkdirSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}`), {
+              if (existsSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files`)) == false) {
+                mkdirSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files`), {
                   recursive: true
                 });
               }
               let assetData = await File2Service.getFileById(_ioir.id);
               let readFile = await storage.disk(FlyDriveConfig.FLY_DRIVE_DRIVER).getBuffer(upath.normalize(`${assetData.user_id}/${assetData.path}/${assetData.name}`));
-              writeFileSync(upath.normalize(`${process.cwd()}/storage/app/variables/${raw_variable.id}/${_ioir.name}`), readFile.content);
+              writeFileSync(upath.normalize(`${process.cwd()}/storage/app/executions/${execution.id}/files/${_ioir.name}`), readFile.content);
             } catch (ex) {
               masterData.saveData("data_pipeline_" + job_id + "_error", {
                 pipeline_task_id: pipeline_task.id,
@@ -79,7 +79,7 @@ export default async function (props: TaskTypeInterface) {
       }
       // Remove duplicate data on array
       _files = uniq(_files);
-      // Store the privateKey string to be file and save it to storage/app/variables/{var_id}
+      // Store the privateKey string to be file and save it to storage/app/executions/{var_id}
       let filePRivateKey = await WritePrivateKeyToVariable.writePrivateKey({ sshPromise, execution });
 
       console.log("File Transfer command :: Called ");
@@ -89,7 +89,7 @@ export default async function (props: TaskTypeInterface) {
             let sftp = await sshPromise.sftp();
             for (var aq2 = 0; aq2 < _data.asset_datas.length; aq2++) {
               for (var amg2 = 0; amg2 < _files.length; amg2++) {
-                await sftp.fastPut(process.cwd() + '/storage/app/variables/' + raw_variable.id + "/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
+                await sftp.fastPut(process.cwd() + '/storage/app/executions/' + execution.id + "/files/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
                 RecordCommandToFileLog({
                   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
                   commandString: "Fash Put :: " + _data.asset_datas[aq2].target_path + "/" + _files[amg2] + "\n"
@@ -176,7 +176,7 @@ export default async function (props: TaskTypeInterface) {
               }
             });
 
-            ptyProcess.write("cd " + process.cwd() + '/storage/app/variables/' + raw_variable.id + "/\r");
+            ptyProcess.write("cd " + process.cwd() + '/storage/app/executions/' + execution.id + "/files\r");
             // Set privatekey permission to valid for auth ssh
             if (filePRivateKey.identityFile != null) {
               ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");

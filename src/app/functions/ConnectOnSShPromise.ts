@@ -1,16 +1,21 @@
 import HostService from "../services/HostService";
 import ssh2Promise from 'ssh2-promise';
 import CredentialService, { CredentialInterface, CredentialServiceInterface } from "../services/CredentialService";
+import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+
+declare let masterData: MasterDataInterface;
 
 const ConnectOnSShPromise = async function (props: {
   host_data: any
   host_id: any
+  job_id: string
 }) {
+  let {
+    host_data,
+    host_id,
+    job_id
+  } = props;
   try {
-    let {
-      host_data,
-      host_id
-    } = props;
     let auth_value = null;
     let sshconfig = null;
     console.log("host_data.auth_type :: ", host_data.auth_type);
@@ -72,12 +77,17 @@ const ConnectOnSShPromise = async function (props: {
         }
         break;
     }
-    console.log("ooooooooooooooooooooo :: ", sshconfig);
     var ssh = new ssh2Promise(sshconfig);
     await ssh.connect();
     console.log("Connection established");
+    masterData.saveData("data_pipeline_" + job_id + "_init", {
+      message: "Connect to host :: Connection established \n"
+    });
     return ssh;
-  } catch (ex) {
+  } catch (ex: any) {
+    masterData.saveData("data_pipeline_" + job_id + "_init", {
+      message: "Connect to host :: " + ex.message
+    })
     throw ex;
   }
 }

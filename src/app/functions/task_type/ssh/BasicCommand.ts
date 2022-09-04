@@ -58,7 +58,11 @@ export default function (props: TaskTypeInterface) {
         if (working_dir != null) {
           command = `cd ${working_dir} && ${command}`;
         }
-
+        let prompt_datas = _data.prompt_datas || [];
+        for (var prmIdx = 0; prmIdx < prompt_datas.length; prmIdx++) {
+          prompt_datas[prmIdx].value = MustacheRender(prompt_datas[prmIdx].value, mergeVarScheme);
+        }
+        masterData.saveData("watch_prompt_datas_"+job_id, prompt_datas);
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,

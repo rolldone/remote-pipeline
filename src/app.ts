@@ -4,7 +4,7 @@ import minimist from "minimist";
 import BaseStart, { BaseStartInterface } from './base/BaseStart';
 import bootstrap from './bootstrap';
 import { MasterDataInterface } from './bootstrap/StartMasterData';
-import { Cli, Web } from './routes/v1';
+import { Cli, Web, Api } from './routes/v1';
 
 declare var masterData: MasterDataInterface;
 
@@ -36,7 +36,7 @@ BaseStart({
       /* You can Define route here */
       Web.create(global.app);
       Cli.create(global.app);
-      // Api.create(global.app);
+      Api.create(global.app);
       // Socket.create(global.app);
       // Redis.create(global.app);
       callback(null);

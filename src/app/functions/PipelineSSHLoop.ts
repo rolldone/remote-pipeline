@@ -112,6 +112,7 @@ const PipelineSSHLoop = async function (props: {
     let pendingCallCommand: DebouncedFunc<any> = null;
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
+    let putInitToFirstLog = null;
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
       let sshPromise = null;
       let resolveDone = null;
@@ -159,7 +160,9 @@ const PipelineSSHLoop = async function (props: {
         }
 
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
-
+          if (a2 == 0) {
+            putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[a2].id;
+          }
           // Reset or create empty file log first
           ResetCommandToFileLog("job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[a2].id)
 
@@ -221,10 +224,23 @@ const PipelineSSHLoop = async function (props: {
         case PipelineItemService.TYPE.BASIC:
         default:
 
+          masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
+            lastFileNameForClose = putInitToFirstLog;
+            RecordCommandToFileLog({
+              fileName: lastFileNameForClose,
+              commandString: props.message
+            })
+          });
+
+          masterData.saveData("data_pipeline_" + job_id + "_init", {
+            message: "Start Queue :)\n"
+          })
+
           // Try create connection ssh
           sshPromise = await ConnectToHost({
             host_data,
-            host_id
+            host_id,
+            job_id
           })
 
           // Download repository from pipeline and branch on execution
@@ -246,6 +262,7 @@ const PipelineSSHLoop = async function (props: {
           let command_history = "";
           let debounceee: DebouncedFunc<any> = null;
 
+          console.log("job_id ::::::::: ", job_id);
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
 
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
@@ -257,7 +274,9 @@ const PipelineSSHLoop = async function (props: {
             // Remove the listener
             masterData.removeAllListener("write_pipeline_" + job_id);
             masterData.removeAllListener("data_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id + "_init");
             masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+            masterData.removeAllListener("watch_prompt_datas_" + job_id);
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
@@ -275,7 +294,9 @@ const PipelineSSHLoop = async function (props: {
             if (lastStartParent == who_parent) {
               masterData.removeAllListener("write_pipeline_" + job_id);
               masterData.removeAllListener("data_pipeline_" + job_id);
+              masterData.removeAllListener("data_pipeline_" + job_id + "_init");
               masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+              masterData.removeAllListener("watch_prompt_datas_" + job_id);
               resolveDone();
             }
           });
@@ -296,6 +317,19 @@ const PipelineSSHLoop = async function (props: {
             resolveDone();
           })
           socket.on("data", async (data) => {
+            /* Catch if get prompt datas */
+            let _watch_prompt_datas: Array<{
+              key: string
+              value: string
+            }> = await masterData.getData("watch_prompt_datas_" + job_id, []) as any;
+            for (var prIdx = 0; prIdx < _watch_prompt_datas.length; prIdx++) {
+              if (data.includes(_watch_prompt_datas[prIdx].key) == true) {
+                socket.write(_watch_prompt_datas[prIdx].value + '\r');
+                _watch_prompt_datas.splice(prIdx, 1);
+                await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
+                break;
+              }
+            }
             let _split = data.toString().split(/\n/);
             let _isDone = false;
             let _isError = false;
@@ -373,7 +407,9 @@ const PipelineSSHLoop = async function (props: {
                   console.log("resolveDone::", resolveDone);
                   masterData.removeAllListener("write_pipeline_" + job_id);
                   masterData.removeAllListener("data_pipeline_" + job_id);
+                  masterData.removeAllListener("data_pipeline_" + job_id + "_init");
                   masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+                  masterData.removeAllListener("watch_prompt_datas_" + job_id);
                   resolveDone();
                 }
               }, 2000);

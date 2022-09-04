@@ -81,10 +81,18 @@ const DownloadRepo = (props: {
       masterData.saveData("repo_execution_" + execution_id, false);
       masterData.removeListener("repo_execution_" + execution_id);
       console.log("file download :: ", response);
+      if (response != null) {
+        masterData.saveData("data_pipeline_" + job_id + "_init", {
+          message: "Download repo :: " + response.toString() + "\n"
+        })
+      }
       resolve();
-    } catch (ex) {
+    } catch (ex: any) {
       masterData.saveData("repo_execution_" + execution_id, false);
       masterData.removeListener("repo_execution_" + execution_id);
+      masterData.saveData("data_pipeline_" + job_id + "_init", {
+        message: "Download repo :: " + ex.message + "\n"
+      })
       reject(ex);
     }
   })

@@ -140,7 +140,14 @@ export default {
       } catch (ex) {
         console.log("uploadFile - storage.disk().delete(destPath) :: ", ex);
       }
-
+      let directory = upath.dirname(upath.normalize(`${props.path}/${props.name}`));
+      await this.addDir({
+        user_id: props.user_id,
+        path: directory,
+        name: "",
+        type: "directory",
+        status: props.status
+      });
       // Move the file
       await storage.disk("").move(upath.normalize(props.temp_path + "/" + props.temp_name), destPath);
 
@@ -148,7 +155,7 @@ export default {
       let { size, modified, raw } = await storage.disk("").getStat(destPath);
 
       props.size = size;
-
+      props.path = upath.normalize("/" + props.path)
       let resData = await this.getFileByNamePath_UserId(props.name, props.path, props.user_id);
       // If exist update it
       if (resData != null) {
@@ -181,14 +188,39 @@ export default {
       throw ex;
     }
   },
-  addDir(props?: File2Interface) {
+  async addDir(props?: File2Interface) {
     try {
+      // Create a directory first
+      let arrayPath = props.path.split("/");
+      let newPath = "";
+      let lastCreated = null;
+      for (let a = 0; a < arrayPath.length; a++) {
+        newPath = newPath + (arrayPath[a - 1] || '') + "/";
+        // if (newPath == "/") {
+        //   newPath = "";
+        // }
+        if (arrayPath[a] == "") { }
+        else {
+          lastCreated = await this.create({
+            name: arrayPath[a],
+            type: "directory",
+            size: '',
+            status: props.status,
+            path: newPath,
+            user_id: props.user_id,
+          }, "")
+        }
+      }
+      // IF props.name empty just get last created
+      if (props.name == "") {
+        return lastCreated;
+      }
       return this.create({
         name: props.name,
         type: props.type,
         size: props.size,
         status: props.status,
-        path: props.path,
+        path: "/" + (upath.normalize(props.path) == "." ? "" : upath.normalize(props.path)),
         user_id: props.user_id,
       }, "")
     } catch (ex) {
@@ -259,7 +291,11 @@ export default {
         if (_filter.search != null && _filter.search != "") {
           query.where(SqlBricks.like("file.name", `%${_filter.search}%`));
         } else {
-          query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+          query.where(SqlBricks.or(
+            { "file.path": upath.normalize("/" + props.path) },
+            { "file.path": upath.normalize("/" + props.path + "/") },
+            { "file.path": upath.normalize(props.path) }
+          ));
         }
         //   if (props.search != null && props.search == "") {
         //     query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
@@ -267,7 +303,7 @@ export default {
         // } else {
         //   query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
       } else {
-        query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": props.path }));
+        query.where(SqlBricks.or({ "file.path": upath.normalize("/" + props.path) }, { "file.path": upath.normalize("/" + props.path + "/") }));
       }
 
       query.orderBy("file.type <> 'directory'");
