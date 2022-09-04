@@ -77,6 +77,8 @@ export default async function (props: TaskTypeInterface) {
           }
         }
       }
+      
+
       // Remove duplicate data on array
       _files = uniq(_files);
       // Store the privateKey string to be file and save it to storage/app/executions/{var_id}
@@ -89,6 +91,10 @@ export default async function (props: TaskTypeInterface) {
             let sftp = await sshPromise.sftp();
             for (var aq2 = 0; aq2 < _data.asset_datas.length; aq2++) {
               for (var amg2 = 0; amg2 < _files.length; amg2++) {
+
+                // Check if contain mustache 
+                _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
+                
                 await sftp.fastPut(process.cwd() + '/storage/app/executions/' + execution.id + "/files/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
                 RecordCommandToFileLog({
                   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
@@ -176,6 +182,9 @@ export default async function (props: TaskTypeInterface) {
               }
             });
 
+            // Check if contain mustache 
+            _data.asset_datas[r1].target_path = MustacheRender(_data.asset_datas[r1].target_path, mergeVarScheme);
+            
             ptyProcess.write("cd " + process.cwd() + '/storage/app/executions/' + execution.id + "/files\r");
             // Set privatekey permission to valid for auth ssh
             if (filePRivateKey.identityFile != null) {
