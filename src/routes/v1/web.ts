@@ -310,6 +310,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
 
     self.use("/xhr/variable-item", [], function (route: BaseRouteInterface) {
+      route.post("/render", "xhr.variable_item.render", [upload.any()], VariableItemController.binding().renderVarScheme);
       route.post("/add", "xhr.variable_item.add", [upload.any()], VariableItemController.binding().addVariableItem);
       route.post("/update", "xhr.variable_item.update", [upload.any()], VariableItemController.binding().updateVariableItem);
       route.post("/delete", "xhr.variable_item.delete", [upload.any()], VariableItemController.binding().deleteVariableItem);

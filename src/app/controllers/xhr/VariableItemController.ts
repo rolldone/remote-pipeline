@@ -13,6 +13,7 @@ export interface VariableItemControllerInterface extends BaseControllerInterface
   deleteVariableItem: { (req: any, res: any): void }
   getVariableItems: { (req: any, res: any): void }
   getVariableItem: { (req: any, res: any): void }
+  renderVarScheme: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<VariableItemControllerInterface>({
@@ -130,4 +131,19 @@ export default BaseController.extend<VariableItemControllerInterface>({
       return res.status(400).send(ex);
     }
   },
+  async renderVarScheme(req,res){
+    try{
+      let props = req.body;
+      props.datas = JSON.parse(props.datas || '[]');
+      props.var_schema = JSON.parse(props.var_schema || '[]');
+      let resData = MergeVarScheme(props.datas, props.var_schema, {});
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    }catch(ex){
+      return res.status(400).send(ex);
+    }
+  }
 })
