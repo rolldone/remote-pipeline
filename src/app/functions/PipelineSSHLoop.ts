@@ -325,8 +325,8 @@ const PipelineSSHLoop = async function (props: {
             for (var prIdx = 0; prIdx < _watch_prompt_datas.length; prIdx++) {
               if (data.includes(_watch_prompt_datas[prIdx].key) == true) {
                 socket.write(_watch_prompt_datas[prIdx].value + '\r');
-                _watch_prompt_datas.splice(prIdx, 1);
-                await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
+                // _watch_prompt_datas.splice(prIdx, 1);
+                // await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
                 break;
               }
             }
@@ -397,19 +397,32 @@ const PipelineSSHLoop = async function (props: {
             }
             if (_isDone == true) {
               debounceee = debounce((_command_history: string, dataString: string) => {
+                
+                // Clear the watch prompt Datas
+                masterData.removeAllListener("watch_prompt_datas_" + job_id);
+
+                // Call next pipeline task
                 masterData.saveData("write_pipeline_" + job_id, {
                   parent: who_parent,
                   data: _command_history
                 })
+                
+                // Clear the command history
                 command_history = "";
+
+                // If same with the last close it
                 if (lastStartParent == who_parent) {
                   console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
                   console.log("resolveDone::", resolveDone);
+
+                  // Clear all 
                   masterData.removeAllListener("write_pipeline_" + job_id);
                   masterData.removeAllListener("data_pipeline_" + job_id);
                   masterData.removeAllListener("data_pipeline_" + job_id + "_init");
                   masterData.removeAllListener("data_pipeline_" + job_id + "_error");
                   masterData.removeAllListener("watch_prompt_datas_" + job_id);
+                  
+                  // Finish it
                   resolveDone();
                 }
               }, 2000);
