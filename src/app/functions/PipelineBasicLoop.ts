@@ -103,11 +103,34 @@ const PipelineBasicLoop = async (props: {
     let pendingCallCommand: DebouncedFunc<any> = null;
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
+    let putInitToFirstLog = null;
+
+    // Listen init message
+    let saveTempFirst = "";
+    masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
+      // If putInitToFirstLog save the props.message first
+      if (putInitToFirstLog == null) {
+        saveTempFirst += props.message;
+        return;
+      };
+      if (saveTempFirst != null) {
+        saveTempFirst += props.message;
+        props.message = saveTempFirst;
+      }
+      RecordCommandToFileLog({
+        fileName: putInitToFirstLog,
+        commandString: props.message
+      })
+      saveTempFirst = null;
+    });
+
+
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
       let resolveDone = null;
       let resolveReject = null;
       let firstStart = null;
       let lastStartParent = null;
+      let _pipeline_item = null;
       // Create the recursive function
 
       let _recursiveTasks = async (props: FunctionREcur, recursiveFunc?: { (props: FunctionREcur, Function): void }) => {
@@ -148,6 +171,11 @@ const PipelineBasicLoop = async (props: {
           return;
         }
 
+        // Just catch if first _pipeline_item
+        if (putInitToFirstLog == null) {
+          putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[0].id;
+        }
+
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
 
           // Reset or create empty file log first
@@ -181,6 +209,9 @@ const PipelineBasicLoop = async (props: {
 
           if (props.parent == "NULL") {
             firstStart = isnnn;
+            masterData.saveData("data_pipeline_" + job_id + "_init", {
+              message: "Start Queue :)\n"
+            })
           }
 
           await recursiveFunc({
@@ -195,23 +226,11 @@ const PipelineBasicLoop = async (props: {
 
 
       // Get pipeline item by id
-      let _pipeline_item = await PipelineItemService.getPipelineItem({
+      _pipeline_item = await PipelineItemService.getPipelineItem({
         id: _pipeline_item_ids[a],
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
-
-      masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
-        lastFileNameForClose = "job_id_" + job_id + "_init";
-        RecordCommandToFileLog({
-          fileName: lastFileNameForClose,
-          commandString: props.message
-        })
-      });
-
-      masterData.saveData("data_pipeline_" + job_id + "_init", {
-        message: "Start Queue :)\n"
-      })
 
       // Filter processing by type
       switch (_pipeline_item.type) {

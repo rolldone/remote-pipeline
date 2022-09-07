@@ -113,12 +113,34 @@ const PipelineSSHLoop = async function (props: {
     // Loop the pipeline_item_ids;
     let _pipeline_item_ids = execution.pipeline_item_ids;
     let putInitToFirstLog = null;
+
+    // Listen init message
+    let saveTempFirst = "";
+    masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
+      // If putInitToFirstLog save the props.message first
+      console.log("")
+      if (putInitToFirstLog == null) {
+        saveTempFirst += props.message;
+        return;
+      };
+      if (saveTempFirst != null) {
+        saveTempFirst += props.message;
+        props.message = saveTempFirst;
+      }
+      RecordCommandToFileLog({
+        fileName: putInitToFirstLog,
+        commandString: props.message
+      })
+      saveTempFirst = null;
+    });
+
     for (var a = 0; a < _pipeline_item_ids.length; a++) {
       let sshPromise = null;
       let resolveDone = null;
       let resolveReject = null;
       let firstStart = null;
       let lastStartParent = null;
+      let _pipeline_item = null;
       // Create the recursive function
 
       let _recursiveTasks = async (props: FunctionREcur, recursiveFunc?: { (props: FunctionREcur, Function): void }) => {
@@ -159,10 +181,13 @@ const PipelineSSHLoop = async function (props: {
           return;
         }
 
+        // Just catch if first _pipeline_item
+        if (putInitToFirstLog == null) {
+          putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[0].id;
+        }
+
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
-          if (a2 == 0) {
-            putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[a2].id;
-          }
+
           // Reset or create empty file log first
           ResetCommandToFileLog("job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[a2].id)
 
@@ -195,6 +220,9 @@ const PipelineSSHLoop = async function (props: {
 
           if (props.parent == "NULL") {
             firstStart = isnnn;
+            masterData.saveData("data_pipeline_" + job_id + "_init", {
+              message: "Start Queue :)\n"
+            })
           }
 
           await recursiveFunc({
@@ -210,12 +238,11 @@ const PipelineSSHLoop = async function (props: {
 
 
       // Get pipeline item by id
-      let _pipeline_item = await PipelineItemService.getPipelineItem({
+      _pipeline_item = await PipelineItemService.getPipelineItem({
         id: _pipeline_item_ids[a],
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
-
 
       // Filter processing by type
       switch (_pipeline_item.type) {
@@ -223,18 +250,6 @@ const PipelineSSHLoop = async function (props: {
           break;
         case PipelineItemService.TYPE.BASIC:
         default:
-
-          masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
-            lastFileNameForClose = putInitToFirstLog;
-            RecordCommandToFileLog({
-              fileName: lastFileNameForClose,
-              commandString: props.message
-            })
-          });
-
-          masterData.saveData("data_pipeline_" + job_id + "_init", {
-            message: "Start Queue :)\n"
-          })
 
           // Try create connection ssh
           sshPromise = await ConnectToHost({
@@ -397,7 +412,7 @@ const PipelineSSHLoop = async function (props: {
             }
             if (_isDone == true) {
               debounceee = debounce((_command_history: string, dataString: string) => {
-                
+
                 // Clear the watch prompt Datas
                 masterData.removeAllListener("watch_prompt_datas_" + job_id);
 
@@ -406,7 +421,7 @@ const PipelineSSHLoop = async function (props: {
                   parent: who_parent,
                   data: _command_history
                 })
-                
+
                 // Clear the command history
                 command_history = "";
 
@@ -421,7 +436,7 @@ const PipelineSSHLoop = async function (props: {
                   masterData.removeAllListener("data_pipeline_" + job_id + "_init");
                   masterData.removeAllListener("data_pipeline_" + job_id + "_error");
                   masterData.removeAllListener("watch_prompt_datas_" + job_id);
-                  
+
                   // Finish it
                   resolveDone();
                 }
