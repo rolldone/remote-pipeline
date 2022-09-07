@@ -232,6 +232,15 @@ const PipelineBasicLoop = async (props: {
         pipeline_id: execution.pipeline_id
       });
 
+      let removeAllListeners = ()=>{
+
+        masterData.removeAllListener("write_pipeline_" + job_id);
+        masterData.removeAllListener("data_pipeline_" + job_id);
+        masterData.removeAllListener("data_pipeline_" + job_id + "_init");
+        masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+
+      }
+
       // Filter processing by type
       switch (_pipeline_item.type) {
         case PipelineItemService.TYPE.ANSIBLE:
@@ -251,10 +260,7 @@ const PipelineBasicLoop = async (props: {
             pipeline_task_id = props.pipeline_task_id;
 
             // Remove the listener
-            masterData.removeAllListener("write_pipeline_" + job_id);
-            masterData.removeAllListener("data_pipeline_" + job_id);
-            masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-            masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+            removeAllListeners();
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
@@ -272,10 +278,8 @@ const PipelineBasicLoop = async (props: {
               if (lastStartParent == who_parent) {
                 console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
                 console.log("resolveDone::", resolveDone);
-                masterData.removeAllListener("write_pipeline_" + job_id);
-                masterData.removeAllListener("data_pipeline_" + job_id);
-                masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-                masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+                removeAllListeners();
+                if(resolveDone == null) return;
                 resolveDone();
               }
             }, 2000);
@@ -293,10 +297,8 @@ const PipelineBasicLoop = async (props: {
             pipeline_task_id = props.pipeline_task_id;
             // Because event ignore nothing to do if this is last task return resolveDOne();
             if (lastStartParent == who_parent) {
-              masterData.removeAllListener("write_pipeline_" + job_id);
-              masterData.removeAllListener("data_pipeline_" + job_id);
-              masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-              masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+              removeAllListeners();
+              if(resolveDone == null) return;
               resolveDone();
             } else {
               callNextCommand();

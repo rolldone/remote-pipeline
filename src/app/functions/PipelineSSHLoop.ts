@@ -278,6 +278,15 @@ const PipelineSSHLoop = async function (props: {
           let debounceee: DebouncedFunc<any> = null;
 
           console.log("job_id ::::::::: ", job_id);
+
+          let removeAllListeners = ()=>{
+            masterData.removeAllListener("write_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id);
+            masterData.removeAllListener("data_pipeline_" + job_id + "_init");
+            masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+            masterData.removeAllListener("watch_prompt_datas_" + job_id);
+          }
+
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
 
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
@@ -287,11 +296,7 @@ const PipelineSSHLoop = async function (props: {
             socket.write("echo error-error\r");
 
             // Remove the listener
-            masterData.removeAllListener("write_pipeline_" + job_id);
-            masterData.removeAllListener("data_pipeline_" + job_id);
-            masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-            masterData.removeAllListener("data_pipeline_" + job_id + "_error");
-            masterData.removeAllListener("watch_prompt_datas_" + job_id);
+            removeAllListeners();
 
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
@@ -307,11 +312,9 @@ const PipelineSSHLoop = async function (props: {
             // Because event ignore nothing to do if this is last task return resolveDOne();
             // For condition if this task is last task
             if (lastStartParent == who_parent) {
-              masterData.removeAllListener("write_pipeline_" + job_id);
-              masterData.removeAllListener("data_pipeline_" + job_id);
-              masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-              masterData.removeAllListener("data_pipeline_" + job_id + "_error");
-              masterData.removeAllListener("watch_prompt_datas_" + job_id);
+              // Remove the listener
+              removeAllListeners();
+              if(resolveDone == null) return;
               resolveDone();
             }
           });
@@ -329,6 +332,7 @@ const PipelineSSHLoop = async function (props: {
           });
           socket.on("exit", async () => {
             console.log("Get call exit from command");
+            if(resolveDone == null) return;
             resolveDone();
           })
           socket.on("data", async (data) => {
@@ -431,13 +435,10 @@ const PipelineSSHLoop = async function (props: {
                   console.log("resolveDone::", resolveDone);
 
                   // Clear all 
-                  masterData.removeAllListener("write_pipeline_" + job_id);
-                  masterData.removeAllListener("data_pipeline_" + job_id);
-                  masterData.removeAllListener("data_pipeline_" + job_id + "_init");
-                  masterData.removeAllListener("data_pipeline_" + job_id + "_error");
-                  masterData.removeAllListener("watch_prompt_datas_" + job_id);
+                  removeAllListeners();
 
                   // Finish it
+                  if(resolveDone == null) return;
                   resolveDone();
                 }
               }, 2000);
