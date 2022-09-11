@@ -37,6 +37,8 @@ import File2Controller from "@root/app/controllers/xhr/File2Controller";
 import { FlydriveStorageEngine, MulterFlydriveOptionsFunction } from 'multer-flydrive-engine';
 import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
+import PagePublisherController from "@root/app/controllers/xhr/PagePublisherController";
+import PagePublisherUserController from "@root/app/controllers/xhr/PagePublisherUserController";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -352,6 +354,23 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.post("/add", "xhr.credential.new", [upload.any(), DashboardAuth], CredentialController.binding().addCredential);
       route.post("/update", "xhr.credential.update", [upload.any(), DashboardAuth], CredentialController.binding().updateCredential);
       route.post("/delete", "xhr.credential.delete", [upload.any(), DashboardAuth], CredentialController.binding().deleteCredential);
+    })
+
+    self.use("/xhr/page-publisher", [], function (route: BaseRouteInterface) {
+      route.get("/", "xhr.page_publisher.page_publishers", [DashboardAuth], PagePublisherController.binding().gets);
+      route.get("/:page_name/:table_id/view","xhr.page_publisher.page_publisher_page_name_table_id", [DashboardAuth], PagePublisherController.binding().getByPageNameTableId);
+      route.get("/:id/view", "xhr.page_publisher.page_publisher", [DashboardAuth], PagePublisherController.binding().get);
+      route.post("/add", "xhr.page_publisher.add", [upload.any(), DashboardAuth], PagePublisherController.binding().add);
+      route.post("/update", "xhr.page_publisher.update", [upload.any(), DashboardAuth], PagePublisherController.binding().update);
+      route.post("/deletes", "xhr.page_publisher.deletes", [upload.any(), DashboardAuth], PagePublisherController.binding().deletes);
+    })
+
+    self.use("/xhr/page-publisher-user", [], function (route: BaseRouteInterface) {
+      route.get("/", "xhr.page_publisher_user.page_publisher_users", [DashboardAuth], PagePublisherUserController.binding().gets);
+      route.get("/:id/view", "xhr.page_publisher_user.page_publisher_user", [DashboardAuth], PagePublisherUserController.binding().get);
+      route.post("/add", "xhr.page_publisher_user.add", [upload.any(), DashboardAuth], PagePublisherUserController.binding().add);
+      route.post("/update", "xhr.page_publisher_user.update", [upload.any(), DashboardAuth], PagePublisherUserController.binding().update);
+      route.post("/deletes", "xhr.page_publisher_user.deletes", [upload.any(), DashboardAuth], PagePublisherUserController.binding().deletes);
     })
   }
 });

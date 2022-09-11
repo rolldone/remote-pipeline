@@ -116,10 +116,13 @@ export default {
       }
       query.limit(1);
       query.offset(0);
-      let _hosts_data = await SqlService.selectOne(query.toString());
-      _hosts_data.data = JSON.parse(_hosts_data.data || '{}');
-      delete _hosts_data.password;
-      return _hosts_data;
+      let userData = await SqlService.selectOne(query.toString());
+      if (userData == null) {
+        return null;
+      }
+      userData.data = JSON.parse(userData.data || '{}');
+      delete userData.password;
+      return userData;
     } catch (ex) {
       throw ex;
     }
@@ -196,6 +199,15 @@ export default {
   updateSelf(props: UserServiceInterface) {
     try {
       return this.updateUser(props);
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  getUserByEmail(email: string) {
+    try {
+      return this.getUser({
+        email: email,
+      });
     } catch (ex) {
       throw ex;
     }
