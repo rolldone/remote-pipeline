@@ -222,7 +222,7 @@ Task :
 
 - [TaskType] : Improve Http Client component add upload from files [Alpha]
 
-- [QueueRecord] : Add viewer as guest with or without create password [OnProgress]
+- [QueueRecord] : Add viewer as guest with or without create password [Alpha]
 
 - [TaskType] : Add webhook component post data on Task Item [Alpha]
 
