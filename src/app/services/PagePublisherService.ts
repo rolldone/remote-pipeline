@@ -162,6 +162,24 @@ const PagePublisherService = {
     } catch (ex) {
       throw ex;
     }
+  },
+  async generateShareKey(data : any, props: {
+    page_name_field: string
+    table_id_field: string
+    value: string,
+    identity_value: any
+  }) {
+    try {
+      data.share_key = await CryptoData.encryptData(JSON.stringify({
+        page_name: props.page_name_field,
+        table_id: data[props.table_id_field],
+        value: data[props.value],
+        identity_value: props.identity_value,
+      }));
+      return data;
+    } catch (ex) {
+      throw ex;
+    }
   }
 }
 

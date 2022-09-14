@@ -3,12 +3,14 @@ import AppConfig from "@root/config/AppConfig";
 import { debounce, DebouncedFunc } from "lodash";
 import SSH2Promise from "ssh2-promise";
 import ExecutionService from "../services/ExecutionService";
+import PagePublisherService from "../services/PagePublisherService";
 import PipelineItemService from "../services/PipelineItemService";
 import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
 import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
 import ConnectToHost from "./ConnectOnSShPromise";
+import CryptoData from "./CryptoData";
 import DownloadRepo from "./DownloadRepo";
 import RecordCommandToFileLog, { ResetCommandToFileLog } from "./RecordCommandToFileLog";
 import task_type, { TaskTypeInterface } from "./task_type";
@@ -196,10 +198,18 @@ const PipelineSSHLoop = async function (props: {
           if (theTaskTYpeFunc == null) {
             throw new Error("I think your forgot define the task_type, check your file on app/functions/task_type/index.ts");
           }
+
+          let queue_record_detail_new = await PagePublisherService.generateShareKey(queue_record_detail, {
+            page_name_field: "queue_records",
+            table_id_field: "queue_record_id",
+            value: "job_id",
+            identity_value: queue_record.exe_user_id,
+          }) as any;
+
           let extraVar = {
-            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job/" + job_id,
+            link: AppConfig.ROOT_DOMAIN + "/dashboard/queue-record/job?share_key=" + queue_record_detail_new.share_key,
             link_add_data: AppConfig.ROOT_DOMAIN + "/xhr/outside/queue-detail/result/add",
-            link_display_data: AppConfig.ROOT_DOMAIN + "/xhr/queue-record-detail/display-data/" + job_id + "/file",
+            link_display_data: AppConfig.ROOT_DOMAIN + "/xhr/queue-record-detail/display-data/file?share_key=" + queue_record_detail_new.share_key,
             ...extra,
             job_id,
           }
@@ -279,7 +289,7 @@ const PipelineSSHLoop = async function (props: {
 
           console.log("job_id ::::::::: ", job_id);
 
-          let removeAllListeners = ()=>{
+          let removeAllListeners = () => {
             masterData.removeAllListener("write_pipeline_" + job_id);
             masterData.removeAllListener("data_pipeline_" + job_id);
             masterData.removeAllListener("data_pipeline_" + job_id + "_init");
@@ -314,7 +324,7 @@ const PipelineSSHLoop = async function (props: {
             if (lastStartParent == who_parent) {
               // Remove the listener
               removeAllListeners();
-              if(resolveDone == null) return;
+              if (resolveDone == null) return;
               resolveDone();
             }
           });
@@ -332,7 +342,7 @@ const PipelineSSHLoop = async function (props: {
           });
           socket.on("exit", async () => {
             console.log("Get call exit from command");
-            if(resolveDone == null) return;
+            if (resolveDone == null) return;
             resolveDone();
           })
           socket.on("data", async (data) => {
@@ -438,7 +448,7 @@ const PipelineSSHLoop = async function (props: {
                   removeAllListeners();
 
                   // Finish it
-                  if(resolveDone == null) return;
+                  if (resolveDone == null) return;
                   resolveDone();
                 }
               }, 2000);
