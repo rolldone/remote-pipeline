@@ -1,6 +1,12 @@
+import SafeValue from "@root/app/functions/base/SafeValue"
 import StoreValue from "@root/app/functions/base/StoreValue"
+import CryptoData from "@root/app/functions/CryptoData"
 import AuthService from "@root/app/services/AuthService"
 import OAuthService from "@root/app/services/OAuthService"
+import PagePublisherService from "@root/app/services/PagePublisherService"
+import PagePublisherUserService from "@root/app/services/PagePublisherUserService"
+import QueueRecordDetailService, { QueueRecordDetailInterface } from "@root/app/services/QueueRecordDetailService"
+import QueueRecordService from "@root/app/services/QueueRecordService"
 import BaseController from "@root/base/BaseController"
 import AppConfig from "@root/config/AppConfig"
 import OAuth from "@root/config/OAuth"
@@ -8,8 +14,10 @@ import { createHash, randomBytes } from "crypto"
 import moment from 'moment'
 
 export interface AuthControllerInterface extends BaseControllerInterface {
+  requestPin: { (req: any, res: any): void }
   oAuthGenerate: { (req: any, res: any): void }
   login: { (req: any, res: any): void }
+  loginPagePublisher: { (req: any, res: any): void }
   register: { (req: any, res: any): void }
   logout: { (req: any, res: any): void }
   forgotPassword: { (req: any, res: any): void }
@@ -30,6 +38,31 @@ function sha256(buffer) {
 }
 
 export default BaseController.extend<AuthControllerInterface>({
+  async requestPin(req, res) {
+    try {
+      let props = req.body;
+      let email = props.email;
+      let resData = null;
+      let pinCode = null;
+      let redirectString = props.redirect;
+      let share_key = props.share_key;
+      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
+      let table_id = dataParse.table_id;
+      let page_name = dataParse.page_name;
+      resData = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
+      pinCode = await PagePublisherUserService.requestPin();
+      await PagePublisherUserService.registerSecretCodeByPublisherId_ByEmail(resData.id, email, pinCode.secret_code);
+      // Ini Seharusnya kirim lewat email tapi nanti dulu 
+      // return disini aja dulu
+      return res.send({
+        status: "success",
+        status_code: 200,
+        return: pinCode.pin_code
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
   oAuthGenerate(req, res) {
     let from_provider = req.body.from_provider || null;
     let call_query: any = {
@@ -76,6 +109,33 @@ export default BaseController.extend<AuthControllerInterface>({
         status: "success",
         status_code: 200,
         return: resData
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async loginPagePublisher(req, res) {
+    try {
+      let props = req.body;
+      let email = props.email;
+      let pin_code = props.pin_code;
+      let resData = null;
+      let job_id = null;
+      let share_key = props.share_key;
+      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
+      let table_id = dataParse.table_id;
+      let page_name = dataParse.page_name;
+      resData = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
+      resData = await PagePublisherUserService.validatePin(resData.id, email, pin_code);
+
+      let newCryuptData = await CryptoData.encryptData(JSON.stringify({
+        ...dataParse,
+        identity_value: email
+      }))
+      return res.send({
+        status: "success",
+        status_code: 200,
+        return: newCryuptData
       });
     } catch (ex) {
       return res.status(400).send(ex);

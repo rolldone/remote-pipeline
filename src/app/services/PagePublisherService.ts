@@ -2,7 +2,9 @@ import Sqlbricks from "@root/tool/SqlBricks";
 import CreateDate from "../functions/base/CreateDate";
 import SafeValue from "../functions/base/SafeValue";
 import PagePublisherUserService from "./PagePublisherUserService";
+import QueueRecordService from "./QueueRecordService";
 import SqlService from "./SqlService";
+import CryptoData from "../functions/CryptoData";
 
 export interface PagePublisherInterface {
   id?: number
@@ -39,6 +41,7 @@ const preSelectQuery = () => {
     "pagepub.share_mode as share_mode",
     "pagepub.privileges as privileges",
     "pagepub.data as data",
+    "pagepub.user_id as user_id",
     "pagepub.created_at as created_at",
     "pagepub.updated_at as updated_at",
     "user.email as user_email"
@@ -114,6 +117,10 @@ const PagePublisherService = {
       let querySelect = preSelectQuery();
       querySelect.where("pagepub.id", id);
       let resData = await SqlService.selectOne(querySelect.toString());
+      if (resData == null) {
+        return;
+      }
+      resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
       throw ex;
@@ -135,6 +142,26 @@ const PagePublisherService = {
   },
   deletesPagePublishersByIds_UserId(ids: Array<number>, user_id: number) {
 
+  },
+  async generateShareKeys(datas: Array<any>, props: {
+    page_name_field: string
+    table_id_field: string
+    value: string,
+    identity_value: any
+  }) {
+    try {
+      for (var a = 0; a < datas.length; a++) {
+        datas[a].share_key = await CryptoData.encryptData(JSON.stringify({
+          page_name: props.page_name_field,
+          table_id: datas[a][props.table_id_field],
+          value: datas[a][props.value],
+          identity_value: props.identity_value,
+        }));
+      }
+      return datas;
+    } catch (ex) {
+      throw ex;
+    }
   }
 }
 

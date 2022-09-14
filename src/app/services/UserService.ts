@@ -127,6 +127,11 @@ export default {
       throw ex;
     }
   },
+  async getUserById(id: number) {
+    return this.getUser({
+      id: id || -1000
+    })
+  },
   async addUser(props: UserServiceInterface) {
     try {
       let _hash = await bcrypt.hash(props.password, saltRounds);

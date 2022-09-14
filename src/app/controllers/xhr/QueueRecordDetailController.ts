@@ -1,7 +1,10 @@
 
+import SafeValue from "@root/app/functions/base/SafeValue";
+import CryptoData from "@root/app/functions/CryptoData";
 import GetAuthUser from "@root/app/functions/GetAuthUser";
 import { ReadRecordCOmmandFileLog, TailRecordCommandFileLog } from "@root/app/functions/RecordCommandToFileLog";
 import ExecutionService from "@root/app/services/ExecutionService";
+import PagePublisherService from "@root/app/services/PagePublisherService";
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
 import QueueRecordDetailService, { QueueRecordDetailServiceInterface } from "@root/app/services/QueueRecordDetailService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
@@ -27,8 +30,15 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
   async getQueueRecordDetails(req, res) {
     try {
+      let user = await GetAuthUser(req);
       let props = req.query;
       let resData = await QueueRecordDetailService.getQueueRecordDetails(props);
+      resData = await PagePublisherService.generateShareKeys(resData, {
+        page_name_field: "queue_records",
+        table_id_field: "queue_record_id",
+        value: "job_id",
+        identity_value: user.id
+      });
       return res.send({
         status: 'success',
         status_code: 200,
@@ -191,9 +201,10 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getDirectories(req, res) {
     try {
-      let user = await GetAuthUser(req);
-      let job_id = req.params.job_id;
-      let resData = await QueueRecordDetailService.getDirectories(job_id, user.id);
+      let share_key = req.query.share_key;
+      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
+      let job_id = dataParse.value;
+      let resData = await QueueRecordDetailService.getDirectories(job_id);
       return res.send({
         status: 'success',
         status_code: 200,
@@ -206,10 +217,11 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getFile(req, res) {
     try {
-      let user = await GetAuthUser(req);
+      let share_key = req.query.share_key;
+      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
       let path = req.query.path;
-      let job_id = req.params.job_id;
-      let resData = await QueueRecordDetailService.getFile(path, job_id, user.id);
+      let job_id = dataParse.value;
+      let resData = await QueueRecordDetailService.getFile(path, job_id);
       if (resData.mime != false) {
         res.contentType(resData.mime);
       } else {

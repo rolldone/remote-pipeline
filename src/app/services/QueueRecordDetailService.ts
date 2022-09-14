@@ -54,6 +54,7 @@ export interface QueueRecordDetailInterface {
   qrec_type?: string
   qrec_id?: number
   qrec_data?: any
+  qrec_queue_key?: string
   // Queue schedule
   qrec_sch_schedule_type?: string
   qrec_sch_data?: any
@@ -170,7 +171,35 @@ export default {
       throw ex;
     }
   },
-  async getQueueRecordDetailByJobId(job_id: string, queue_record_id: number) {
+  async getQueueRecordDetailByJobId(job_id: string) {
+    try {
+      let query_record_detail = preSelectQuery();
+      query_record_detail
+        .leftJoin("qrec").on({
+          "qrec.id": "qrec_detail.queue_record_id"
+        })
+        .leftJoin("qrec_sch").on({
+          "qrec_sch.queue_record_id": "qrec.id"
+        })
+        .leftJoin("exe").on({
+          "exe.id": "qrec.execution_id"
+        })
+      query_record_detail.where({
+        "qrec_detail.job_id": job_id,
+      });
+      // query_record_detail.limit(1);
+      let queryString = query_record_detail.toString();
+      console.log("query :: ", queryString);
+      let res_data_record_detail = await SqlService.selectOne(queryString);
+      // If null
+      if (res_data_record_detail == null) return null;
+      res_data_record_detail = transformColumn(res_data_record_detail);
+      return res_data_record_detail;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getQueueRecordDetailByJobId_ByQueueId(job_id: string, queue_record_id: number) {
     try {
       let query_record_detail = preSelectQuery();
       query_record_detail
@@ -386,9 +415,9 @@ export default {
       throw ex;
     }
   },
-  async getDirectories(job_id: string, user_id: number) {
+  async getDirectories(job_id: string) {
     try {
-      let queueDetailData = await this.getQueueRecordDetailByJobIdAndUserId(job_id, user_id);
+      let queueDetailData = await this.getQueueRecordDetailByJobId(job_id);
       if (queueDetailData == null) {
         throw new Error("Job is not found!");
       }
@@ -399,13 +428,13 @@ export default {
       throw ex;
     }
   },
-  getFile: async function (path: string, job_id: string, user_id: number): Promise<{
+  getFile: async function (path: string, job_id: string): Promise<{
     mime: string | boolean
     data: Buffer,
     full_path: string
   }> {
     try {
-      let queueDetailData = await this.getQueueRecordDetailByJobIdAndUserId(job_id, user_id);
+      let queueDetailData = await this.getQueueRecordDetailByJobId(job_id);
       if (queueDetailData == null) {
         throw new Error("Job is not found!");
       }

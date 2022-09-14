@@ -55,7 +55,7 @@ const PipelineSSHLoop = async function (props: {
       return false;
     }
 
-    let queue_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId(job_id, queue_record.id);
+    let queue_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId_ByQueueId(job_id, queue_record.id);
 
     console.log("job_id :: ", job_id);
     console.log("queue_record_id :: ", queue_record.id);

@@ -14,17 +14,15 @@ export default function (req): Promise<any> {
         if (psTokenData == null) {
           return reject("The token is not valid or expired");
         }
-        
-        if(psTokenData.expired_date != null || psTokenData.expired_date != ""){
+
+        if (psTokenData.expired_date != null || psTokenData.expired_date != "") {
           console.log("psTokenData.expired_date :: ", Moment(psTokenData.expired_date, "YYYY-MM-DD"))
           if (Moment(psTokenData.expired_date, "YYYY-MM-DD") < Moment()) {
             return reject("The token is expired");
           }
         }
 
-        let user = await UserService.getUser({
-          id: psTokenData.user_id
-        })
+        let user = await UserService.getUserById(psTokenData.user_id)
         resolve(user);
       } catch (ex) {
         reject(ex);
@@ -33,6 +31,10 @@ export default function (req): Promise<any> {
   }
 
   if (req.session.user) {
-    return req.session.user;
+    return new Promise(async (resolve: Function) => {
+      let user = req.session.user;
+      let userData = await UserService.getUserById(user.id);
+      resolve(userData || user);
+    })
   }
 }

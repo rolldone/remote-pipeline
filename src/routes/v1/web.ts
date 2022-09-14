@@ -39,6 +39,8 @@ import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
 import PagePublisherController from "@root/app/controllers/xhr/PagePublisherController";
 import PagePublisherUserController from "@root/app/controllers/xhr/PagePublisherUserController";
+import PagePublisherAuth from "@root/app/middlewares/PagePublisherAuth";
+import GenerateSessionIdentity from "@root/app/middlewares/GenerateSessionIdentity";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -88,12 +90,13 @@ export default BaseRoute.extend<BaseRouteInterface>({
   baseRoute: '',
   onready() {
     let self = this;
-    self.use('/', [], function (route: BaseRouteInterface) {
+    self.use('/', [GenerateSessionIdentity], function (route: BaseRouteInterface) {
       route.get('', 'front.index', [], HomeController.binding().displayIndex);
+      route.get("/dashboard/login-page-publisher", "front.dashboard.login_page_publisher", [], DashboardController.binding().displayView);
       route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
       route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
       route.get("/dashboard/login/oauth2/code*", "front.dashboard.oauth_redirect", [DashboardAuth], DashboardController.binding().oauthRedirect)
-      // route.get("/dashboard/queue-record/job/:job_id", "front.dashboard.queue_record.job", [], DashboardController.binding().displayView);
+      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [PagePublisherAuth], DashboardController.binding().displayView);
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
@@ -193,9 +196,12 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecord);
     });
 
+    self.use('/xhr/queue-record-detail', [], function (route: BaseRouteInterface) {
+      route.get("/display-data/file", "xhr.queue_record_detail.file", [], QueueRecordDetailController.binding().getFile);
+      route.get("/display-data/directories", "xhr.queue_record_detail.directories", [], QueueRecordDetailController.binding().getDirectories);
+    });
+
     self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {
-      route.get("/display-data/:job_id/file", "xhr.queue_record_detail.file", [], QueueRecordDetailController.binding().getFile);
-      route.get("/display-data/:job_id/directories", "xhr.queue_record_detail.directories", [], QueueRecordDetailController.binding().getDirectories);
       route.get("/queue-record-details", "xhr.queue_record_detail.queue_record_details", [], QueueRecordDetailController.binding().getQueueRecordDetails);
       route.get("/ids/status", "xhr.queue_record_detail.ids.status", [], QueueRecordDetailController.binding().getIdsStatus);
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
@@ -212,7 +218,9 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
 
     self.use('/xhr/auth', [], function (route: BaseRouteInterface) {
+      route.post("/request-pin", "xhr.auth.request_pin", [upload.any()], AuthController.binding().requestPin);
       route.post('/login/oauth/generate', 'xhr.auth.login.oauth.generate', [upload.any()], AuthController.binding().oAuthGenerate);
+      route.post("/login-page-publisher", "xhr.auth.login_page_publisher", [upload.any()], AuthController.binding().loginPagePublisher);
       route.post("/login", "xhr.auth.login", [upload.any()], AuthController.binding().login);
       route.post("/forgot-password", "xhr.auth.forgot-password", [upload.any()], AuthController.binding().forgotPassword);
       route.post("/register", "xhr.auth.register", [upload.any()], AuthController.binding().register);
@@ -358,7 +366,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
 
     self.use("/xhr/page-publisher", [], function (route: BaseRouteInterface) {
       route.get("/", "xhr.page_publisher.page_publishers", [DashboardAuth], PagePublisherController.binding().gets);
-      route.get("/:page_name/:table_id/view","xhr.page_publisher.page_publisher_page_name_table_id", [DashboardAuth], PagePublisherController.binding().getByPageNameTableId);
+      route.get("/:page_name/:table_id/view", "xhr.page_publisher.page_publisher_page_name_table_id", [DashboardAuth], PagePublisherController.binding().getByPageNameTableId);
       route.get("/:id/view", "xhr.page_publisher.page_publisher", [DashboardAuth], PagePublisherController.binding().get);
       route.post("/add", "xhr.page_publisher.add", [upload.any(), DashboardAuth], PagePublisherController.binding().add);
       route.post("/update", "xhr.page_publisher.update", [upload.any(), DashboardAuth], PagePublisherController.binding().update);

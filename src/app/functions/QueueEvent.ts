@@ -66,7 +66,7 @@ export const onActive = async (props: {
       job_id,
       queue_record_id
     } = job.data;
-    let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId(job_id, queue_record_id)
+    let res_data_record_detail: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetailByJobId_ByQueueId(job_id, queue_record_id)
     // Use set timeout for waiting complete on conCOmplete event on repeatable queue
     switch (res_data_record_detail.status) {
       case QueueRecordDetailService.STATUS.FAILED:

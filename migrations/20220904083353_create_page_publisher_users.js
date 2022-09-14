@@ -8,6 +8,7 @@ exports.up = function (knex) {
     tableBuilder.integer("page_publisher_id");
     tableBuilder.integer("user_id");
     tableBuilder.string("email");
+    tableBuilder.text("secret_code");
     tableBuilder.json("privileges");
     tableBuilder.dateTime("deleted_at");
     tableBuilder.dateTime("created_at");
