@@ -192,7 +192,7 @@ const PipelineBasicLoop = async (props: {
             page_name_field: "queue_records",
             table_id_field: "queue_record_id",
             value: "job_id",
-            identity_value: queue_record.exe_user_id
+            identity_value: null
           }) as any;
 
           let extraVar = {
