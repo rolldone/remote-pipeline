@@ -38,22 +38,27 @@ export default function (req, res, next) {
       if (user.id == identity_value && identity_value != null) {
         return next();
       }
-      if(identity_value != null){
-        let page_name = dataParse.page_name;
-        let table_id = dataParse.table_id;
-        let pubPageData: PagePublisherInterface = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
-        if (pubPageData != null) {
-          if (pubPageData.share_mode == "public") {
-            return next();
-          }
-          let pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByUserId(pubPageData.id, identity_value);
-          if (pubUserPageData != null) {
-            return next();
-          }
-          pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByEmail(pubPageData.id, identity_value);
-          if (pubUserPageData != null) {
-            return next();
-          }
+      let page_name = dataParse.page_name;
+      let table_id = dataParse.table_id;
+      let pubPageData: PagePublisherInterface = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
+      if (pubPageData != null) {
+        if (pubPageData.share_mode == "public") {
+          return next();
+        }
+
+        // For member initialize if open other link
+        if(identity_value == null){
+          identity_value = user.id;
+        }
+        
+        let pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByUserId(pubPageData.id, identity_value);
+        if (pubUserPageData != null) {
+          return next();
+        }
+        
+        pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByEmail(pubPageData.id, identity_value);
+        if (pubUserPageData != null) {
+          return next();
         }
       }
       return res.redirect("/dashboard/login-page-publisher?redirect=" + (AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));

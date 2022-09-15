@@ -87,8 +87,10 @@ const PagePublisherUserService = {
       let querySelect = preSelectQuery();
       querySelect.where("pagepub_user.user_id", id);
       querySelect.where("pagepub_user.page_publisher_id", page_publisher_id);
+      // Dont let user_id is null
+      querySelect.where(Sqlbricks.isNotNull("pagepub_user.user_id"));
       let resData = await SqlService.selectOne(querySelect.toString());
-      if (resData == null) return;
+      if (resData == null) return null;
       resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
@@ -100,7 +102,7 @@ const PagePublisherUserService = {
       let querySelect = preSelectQuery();
       querySelect.where("pagepub_user.id", id);
       let resData = await SqlService.selectOne(querySelect.toString());
-      if (resData == null) return;
+      if (resData == null) return null;
       resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
@@ -112,6 +114,8 @@ const PagePublisherUserService = {
       let querySelect = preSelectQuery();
       querySelect.where("pagepub_user.email", email);
       querySelect.where("pagepub_user.page_publisher_id", page_publisher_id);
+      // Dont let email is null
+      querySelect.where(Sqlbricks.isNotNull("pagepub_user.email"));
       let resData = await SqlService.selectOne(querySelect.toString());
       if (resData == null) return;
       resData = await returnFactoryColumn(resData);
