@@ -37,7 +37,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
         page_name_field: "queue_records",
         table_id_field: "queue_record_id",
         value: "job_id",
-        identity_value: user.id
+        identity_value: null
       });
       return res.send({
         status: 'success',
