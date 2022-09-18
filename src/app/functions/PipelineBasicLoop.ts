@@ -241,6 +241,11 @@ const PipelineBasicLoop = async (props: {
         pipeline_id: execution.pipeline_id
       });
 
+      let _firstPipelineTask = await PipelineTaskService.getPipelineTaskFirsOrderNumberByPipelineId(_pipeline_item.id);
+      console.log("_firstPipelineTask ::: ", _firstPipelineTask);
+      putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _firstPipelineTask.id
+
+
       let removeAllListeners = () => {
 
         masterData.removeAllListener("write_pipeline_" + job_id);

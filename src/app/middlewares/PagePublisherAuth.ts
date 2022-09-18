@@ -42,20 +42,25 @@ export default function (req, res, next) {
       let table_id = dataParse.table_id;
       let pubPageData: PagePublisherInterface = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
       if (pubPageData != null) {
+
+        if (user.id == pubPageData.user_id) {
+          return next();
+        }
+
         if (pubPageData.share_mode == "public") {
           return next();
         }
 
         // For member initialize if open other link
-        if(identity_value == null){
+        if (identity_value == null) {
           identity_value = user.id;
         }
-        
+
         let pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByUserId(pubPageData.id, identity_value);
         if (pubUserPageData != null) {
           return next();
         }
-        
+
         pubUserPageData = await PagePublisherUserService.getPagePublisherUserByPagePublisherId_ByEmail(pubPageData.id, identity_value);
         if (pubUserPageData != null) {
           return next();

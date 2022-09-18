@@ -77,7 +77,7 @@ export default async function (props: TaskTypeInterface) {
           }
         }
       }
-      
+
 
       // Remove duplicate data on array
       _files = uniq(_files);
@@ -94,7 +94,7 @@ export default async function (props: TaskTypeInterface) {
 
                 // Check if contain mustache 
                 _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
-                
+
                 await sftp.fastPut(process.cwd() + '/storage/app/executions/' + execution.id + "/files/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
                 RecordCommandToFileLog({
                   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
@@ -127,6 +127,9 @@ export default async function (props: TaskTypeInterface) {
               commands: [],
               working_dir: process.cwd()
             }, filePRivateKey);
+
+            let selectdConfigPrivate = null;
+
             ptyProcess.on('data', (data: any) => {
               let _split = data.split(/\n/);
               if (_split != "") {
@@ -151,13 +154,21 @@ export default async function (props: TaskTypeInterface) {
                 commandString: data.toString()
               })
 
+              for (let afr = 0; afr < filePRivateKey.length; afr++) {
+                switch (true) {
+                  case data.includes(filePRivateKey[afr].catchString):
+                    selectdConfigPrivate = filePRivateKey[afr];
+                    break;
+                }
+              }
+
               switch (true) {
                 case data.includes('Are you sure you want to continue connecting'):
                   ptyProcess.write('yes\r')
                   break;
                 case data.includes('Enter passphrase for key'):
                 case data.includes('password:'):
-                  ptyProcess.write(filePRivateKey.password + '\r')
+                  ptyProcess.write(selectdConfigPrivate.password + '\r')
                   break;
                 case data.includes('total size'):
                   _count_time_transfer += 1;
@@ -169,6 +180,9 @@ export default async function (props: TaskTypeInterface) {
                       parent: pipeline_task.temp_id
                     })
                   }
+                  break;
+                case data.includes('key_load_public: No such file or directory'):
+                  // Ignore
                   break;
                 case data.includes('No such file or directory'):
                 case data.includes('rsync error:'):
@@ -184,17 +198,31 @@ export default async function (props: TaskTypeInterface) {
 
             // Check if contain mustache 
             _data.asset_datas[r1].target_path = MustacheRender(_data.asset_datas[r1].target_path, mergeVarScheme);
-            
+
             ptyProcess.write("cd " + process.cwd() + '/storage/app/executions/' + execution.id + "/files\r");
             // Set privatekey permission to valid for auth ssh
-            if (filePRivateKey.identityFile != null) {
-              ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
+            // if (filePRivateKey.identityFile != null) {
+            //   ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
+            // }
+
+            for (let afr = 0; afr < filePRivateKey.length; afr++) {
+              ptyProcess.write("chmod 600 " + filePRivateKey[afr].identityFile + "\r");
             }
+
+            let lastFilePRivateKey = filePRivateKey[filePRivateKey.length - 1];
+
+            let shellSSHForRsync = null;
+            if (lastFilePRivateKey.proxyCommand == null) {
+              shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile}`;
+            } else {
+              shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile} -o ProxyCommand="${lastFilePRivateKey.proxyCommand}"`;
+            }
+
             var rsync = Rsync.build({
               /* Support multiple source too */
               source: "./",
               // source : upath.normalize(_local_path+'/'),
-              destination: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.asset_datas[r1].target_path,
+              destination: lastFilePRivateKey.username + '@' + lastFilePRivateKey.host + ':' + _data.asset_datas[r1].target_path,
               /* Include First */
               include: ((_files) => {
                 let _asset = [];
@@ -212,7 +240,11 @@ export default async function (props: TaskTypeInterface) {
               // set : '--no-perms --no-owner --no-group',
               // set : '--chmod=D777,F777',
               // set : '--perms --chmod=u=rwx,g=rwx,o=,Dg+s',
-              shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+              // shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+
+              // DONT USE SSH CONFIG NAME FOR FIRST RUN RSYNC
+              // You WILL GET BAD SEND COMMAND ON RSYNC SERVER
+              shell: shellSSHForRsync
             });
             ptyProcess.write(rsync.command() + '\r');
             ptyProcess.on('exit', (exitCode: any, signal: any) => {

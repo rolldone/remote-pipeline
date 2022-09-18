@@ -50,6 +50,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
         working_dir: process.cwd() + '/storage/app/executions/' + execution.id + '/repo/' + execution.branch, // process.cwd() + '/storage/app/jobs/' + job_id + '/repo/' + execution.branch,
         commands: []
       });
+      let selectdConfigPrivate = null;
       ptyProcess.on('data', (data: any) => {
         let _split = data.split(/\n/);
         if (_split != "") {
@@ -72,13 +73,23 @@ const RepoInstall = function (props: TaskTypeInterface) {
           fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
           commandString: data.toString()
         })
+
+        for (let afr = 0; afr < filePRivateKey.length; afr++) {
+          switch (true) {
+            case data.includes(filePRivateKey[afr].catchString):
+              selectdConfigPrivate = filePRivateKey[afr];
+              break;
+          }
+        }
+
         switch (true) {
+
           case data.includes('Are you sure you want to continue connecting'):
             ptyProcess.write('yes\r')
             break;
           case data.includes('Enter passphrase for key'):
           case data.includes('password:'):
-            ptyProcess.write(filePRivateKey.password + '\r')
+            ptyProcess.write(selectdConfigPrivate.password + '\r')
             break;
           case data.includes('total size'):
             ptyProcess.write('exit' + '\r')
@@ -87,6 +98,9 @@ const RepoInstall = function (props: TaskTypeInterface) {
               command: command,
               parent: pipeline_task.temp_id
             })
+            break;
+          case data.includes('key_load_public: No such file or directory'):
+            // Ignore
             break;
           case data.includes('No such file or directory'):
           case data.includes('rsync error:'):
@@ -99,20 +113,30 @@ const RepoInstall = function (props: TaskTypeInterface) {
             break;
         }
       });
-      // Set privatekey permission to valid for auth ssh
-      if (filePRivateKey.identityFile != null) {
-        ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
+
+      for (let afr = 0; afr < filePRivateKey.length; afr++) {
+        ptyProcess.write("chmod 600 " + filePRivateKey[afr].identityFile + "\r");
       }
-      
+
+      let lastFilePRivateKey = filePRivateKey[filePRivateKey.length - 1];
+
       // Check if path have variable rendered
-      _data.target_path = MustacheRender(_data.target_path,mergeVarScheme);
+      _data.target_path = MustacheRender(_data.target_path, mergeVarScheme);
 
       let _delete_mode_active = _data.transfer_mode == "force" ? true : false;
+
+      let shellSSHForRsync = null;
+      if (lastFilePRivateKey.proxyCommand == null) {
+        shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile}`;
+      } else {
+        shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile} -o ProxyCommand="${lastFilePRivateKey.proxyCommand}"`;
+      }
+      
       var rsync = Rsync.build({
         /* Support multiple source too */
         source: "./",
         // source : upath.normalize(_local_path+'/'),
-        destination: filePRivateKey.username + '@' + filePRivateKey.host + ':' + _data.target_path,
+        destination: lastFilePRivateKey.username + '@' + lastFilePRivateKey.host + ':' + _data.target_path,
         /* Include First */
         include: [],
         /* Exclude after include */
@@ -123,7 +147,11 @@ const RepoInstall = function (props: TaskTypeInterface) {
         // set : '--no-perms --no-owner --no-group',
         // set : '--chmod=D777,F777',
         // set : '--perms --chmod=u=rwx,g=rwx,o=,Dg+s',
-        shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+        // shell: 'ssh -v -i ' + lastFilePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+
+        // DONT USE SSH CONFIG NAME FOR FIRST RUN RSYNC
+        // You WILL GET BAD SEND COMMAND ON RSYNC SERVER
+        shell: shellSSHForRsync
       });
 
       // Use sftp to create folder first

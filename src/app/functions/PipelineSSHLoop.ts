@@ -120,7 +120,6 @@ const PipelineSSHLoop = async function (props: {
     let saveTempFirst = "";
     masterData.setOnListener("data_pipeline_" + job_id + "_init", (props) => {
       // If putInitToFirstLog save the props.message first
-      console.log("")
       if (putInitToFirstLog == null) {
         saveTempFirst += props.message;
         return;
@@ -145,6 +144,7 @@ const PipelineSSHLoop = async function (props: {
       let _pipeline_item = null;
       // Create the recursive function
 
+
       let _recursiveTasks = async (props: FunctionREcur, recursiveFunc?: { (props: FunctionREcur, Function): void }) => {
 
         let _pipeline_task: Array<any> = await PipelineTaskService.getPipelineTasks({
@@ -153,7 +153,6 @@ const PipelineSSHLoop = async function (props: {
           parent: props.parent || null
         });
 
-        // console.log("_pipeline_task :::::: ", _pipeline_task);
         // console.log("_pipeline_task :::: ", _pipeline_task);
         // console.log("_pipeline_task - " + props.parent + " :: ", _pipeline_task);
 
@@ -253,6 +252,11 @@ const PipelineSSHLoop = async function (props: {
         project_id: execution.project_id,
         pipeline_id: execution.pipeline_id
       });
+
+
+      let _firstPipelineTask = await PipelineTaskService.getPipelineTaskFirsOrderNumberByPipelineId(_pipeline_item.id);
+      console.log("_firstPipelineTask ::: ", _firstPipelineTask);
+      putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _firstPipelineTask.id
 
       // Filter processing by type
       switch (_pipeline_item.type) {

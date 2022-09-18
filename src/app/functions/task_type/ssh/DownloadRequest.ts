@@ -137,6 +137,8 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               commands: [],
               working_dir: base_working_dir
             }, filePRivateKey);
+
+            let selectdConfigPrivate = null;
             ptyProcess.on('data', (data: any) => {
               if (data.includes('failed: Not a directory')) {
                 // _is_file = true;
@@ -147,13 +149,21 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 commandString: data.toString()
               })
 
+              for (let afr = 0; afr < filePRivateKey.length; afr++) {
+                switch (true) {
+                  case data.includes(filePRivateKey[afr].catchString):
+                    selectdConfigPrivate = filePRivateKey[afr];
+                    break;
+                }
+              }
+
               switch (true) {
                 case data.includes('Are you sure you want to continue connecting'):
                   ptyProcess.write('yes\r')
                   break;
                 case data.includes('Enter passphrase for key'):
                 case data.includes('password:'):
-                  ptyProcess.write(filePRivateKey.password + '\r')
+                  ptyProcess.write(selectdConfigPrivate.password + '\r')
                   break;
                 case data.includes('total size'):
                   _count_time_transfer += 1;
@@ -165,6 +175,9 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                     })
                   }
                   ptyProcess.write('exit' + '\r')
+                  break;
+                case data.includes('key_load_public: No such file or directory'):
+                  // Ignore
                   break;
                 case data.includes('No such file or directory'):
                 case data.includes('rsync error:'):
@@ -198,13 +211,27 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               }
             }
             // Set privatekey permission to valid for auth ssh
-            if (filePRivateKey.identityFile != null) {
-              ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
+            // if (filePRivateKey.identityFile != null) {
+            //   ptyProcess.write("chmod 600 " + filePRivateKey.identityFile + "\r");
+            // }
+
+            for (let afr = 0; afr < filePRivateKey.length; afr++) {
+              ptyProcess.write("chmod 600 " + filePRivateKey[afr].identityFile + "\r");
+            }
+
+
+            let lastFilePRivateKey = filePRivateKey[filePRivateKey.length - 1];
+
+            let shellSSHForRsync = null;
+            if (lastFilePRivateKey.proxyCommand == null) {
+              shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile}`;
+            } else {
+              shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile} -o ProxyCommand="${lastFilePRivateKey.proxyCommand}"`;
             }
 
             var rsync = Rsync.build({
               /* Support multiple source too */
-              source: filePRivateKey.username + '@' + filePRivateKey.host + ':' + upath.normalize("/" + _data.asset_datas[r1].source_path),
+              source: lastFilePRivateKey.username + '@' + lastFilePRivateKey.host + ':' + upath.normalize("/" + _data.asset_datas[r1].source_path),
               // source : upath.normalize(_local_path+'/'),
               destination: "." + upath.normalize("/" + _data.asset_datas[r1].target_path),
               /* Include First */
@@ -218,7 +245,11 @@ const DownloadRequest = function (props: TaskTypeInterface) {
               // set : '--no-perms --no-owner --no-group',
               // set : '--chmod=D777,F777',
               // set : '--perms --chmod=u=rwx,g=rwx,o=,Dg+s',
-              shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+              // shell: 'ssh -i ' + filePRivateKey.identityFile + ' -p ' + filePRivateKey.port
+
+              // DONT USE SSH CONFIG NAME FOR FIRST RUN RSYNC
+              // You WILL GET BAD SEND COMMAND ON RSYNC SERVER
+              shell: shellSSHForRsync
             });
             ptyProcess.write(rsync.command() + '\r');
             ptyProcess.on('exit', (exitCode: any, signal: any) => {
