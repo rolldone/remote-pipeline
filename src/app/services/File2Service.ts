@@ -206,7 +206,7 @@ export default {
             type: "directory",
             size: '',
             status: props.status,
-            path: newPath,
+            path: upath.normalize(newPath),
             user_id: props.user_id,
           }, "")
         }
@@ -220,7 +220,7 @@ export default {
         type: props.type,
         size: props.size,
         status: props.status,
-        path: "/" + (upath.normalize(props.path) == "." ? "" : upath.normalize(props.path)),
+        path: upath.normalize("/" + (upath.normalize(props.path) == "." ? "" : upath.normalize(props.path))),
         user_id: props.user_id,
       }, "")
     } catch (ex) {

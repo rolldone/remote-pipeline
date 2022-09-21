@@ -98,7 +98,7 @@ const ConnectOnSShPromise = async function (props: {
       proxy_datas.push(sshconfig);
       ssh = new ssh2Promise(proxy_datas, true);
     } else {
-      ssh = new ssh2Promise(sshconfig);
+      ssh = new ssh2Promise(sshconfig, true);
     }
 
     await ssh.connect();
