@@ -96,9 +96,11 @@ const ConnectOnSShPromise = async function (props: {
         proxy_datas[a] = await initAuthType(host_id, proxy_datas[a]);
       }
       proxy_datas.push(sshconfig);
-      ssh = new ssh2Promise(proxy_datas, true);
+      // If you not cache it the connection will duplicate new ssh
+      ssh = new ssh2Promise(proxy_datas, false);
     } else {
-      ssh = new ssh2Promise(sshconfig, true);
+      // If you not cache it the connection will duplicate new ssh
+      ssh = new ssh2Promise(sshconfig, false);
     }
 
     await ssh.connect();
