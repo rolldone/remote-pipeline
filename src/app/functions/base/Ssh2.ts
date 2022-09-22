@@ -145,7 +145,7 @@ class Ssh2 {
               if (this.clients[conA1 + 1] != null) {
                 clientItem.forwardOut('127.0.0.1', freePort, this.connections[conA1 + 1].host, this.connections[conA1 + 1].port, (err, stream) => {
                   if (err) {
-                    console.log('FIRST :: forwardOut error: ' + err);
+                    reject(err);
                     return clientItem.end();
                   }
                   if (this.clients[conA1 + 1] != null) {
