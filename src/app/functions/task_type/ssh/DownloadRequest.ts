@@ -18,7 +18,6 @@ const DownloadRequest = function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     raw_variable,
@@ -102,7 +101,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 if (existsSync(_writeFileName) == false) {
                   mkdirSync(_writeFileName, { recursive: true });
                 }
-                await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName)
+                await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName);
               }
 
               RecordCommandToFileLog({

@@ -1,4 +1,4 @@
-import CreateUUID from "../functions/CreateUUID";
+import CreateUUID from "../functions/base/CreateUUID";
 
 export default function (req, res, next) {
   let sess = req.session;

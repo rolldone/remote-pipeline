@@ -1,7 +1,6 @@
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import AppConfig from "@root/config/AppConfig";
-import { debounce, DebouncedFunc } from "lodash";
-import SSH2Promise from "ssh2-promise";
+import { debounce, DebouncedFunc, reject } from "lodash";
 import ExecutionService from "../services/ExecutionService";
 import PagePublisherService from "../services/PagePublisherService";
 import PipelineItemService from "../services/PipelineItemService";
@@ -9,6 +8,7 @@ import PipelineTaskService from "../services/PipelineTaskService";
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "../services/QueueRecordDetailService";
 import QueueRecordService, { QueueRecordInterface, QueueRecordType } from "../services/QueueRecordService";
 import VariableService from "../services/VariableService";
+import Ssh2 from "./base/Ssh2";
 import ConnectToHost from "./ConnectOnSShPromise";
 import CryptoData from "./CryptoData";
 import DownloadRepo from "./DownloadRepo";
@@ -22,8 +22,7 @@ declare let masterData: MasterDataInterface;
 type FunctionREcur = {
   pipeline_item_id?: number
   parent?: any
-  sshPromise?: SSH2Promise
-  socket?: any
+  sshPromise?: Ssh2
   resolve?: Function
   rejected?: Function
 }
@@ -219,7 +218,6 @@ const PipelineSSHLoop = async function (props: {
             variable: _var_data,
             schema: _var_scheme,
             pipeline_task: _pipeline_task[a2],
-            socket: props.socket,
             execution: execution,
             resolve: props.resolve,
             rejected: props.rejected,
@@ -238,7 +236,6 @@ const PipelineSSHLoop = async function (props: {
             pipeline_item_id: props.pipeline_item_id,
             sshPromise: props.sshPromise,
             parent: _pipeline_task[a2].temp_id,
-            socket: props.socket,
             resolve: props.resolve,
             rejected: props.rejected,
           }, recursiveFunc);
@@ -266,7 +263,7 @@ const PipelineSSHLoop = async function (props: {
         default:
 
           // Try create connection ssh
-          sshPromise = await ConnectToHost({
+          let sshPromise = await ConnectToHost({
             host_data,
             host_id,
             job_id
@@ -285,7 +282,6 @@ const PipelineSSHLoop = async function (props: {
             throw ex;
           }
 
-          let socket = await sshPromise.shell();
           let who_parent = null;
           let pipeline_task_id = null;
           let command_history = "";
@@ -298,22 +294,21 @@ const PipelineSSHLoop = async function (props: {
             masterData.removeAllListener("data_pipeline_" + job_id);
             masterData.removeAllListener("data_pipeline_" + job_id + "_init");
             masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+            masterData.removeAllListener("data_pipeline_" + job_id + "_abort");
             masterData.removeAllListener("watch_prompt_datas_" + job_id);
           }
 
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
-
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
-
+            console.log("vadfvdfkvmakdmvk :: ", lastFileNameForClose);
             pipeline_task_id = props.pipeline_task_id;
-            socket.write("echo " + props.message + "\r");
-            socket.write("echo error-error\r");
-
+            sshPromise.write("echo " + props.message + "\r");
+            sshPromise.write("echo error-error\r");
             // Remove the listener
             removeAllListeners();
-
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
+
           masterData.setOnListener("data_pipeline_" + job_id + "_ignore", (props) => {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
             RecordCommandToFileLog({
@@ -321,7 +316,7 @@ const PipelineSSHLoop = async function (props: {
               commandString: props.message
             })
             who_parent = props.parent;
-            socket.write("\n");
+            sshPromise.write("\n");
             pipeline_task_id = props.pipeline_task_id;
             // Because event ignore nothing to do if this is last task return resolveDOne();
             // For condition if this task is last task
@@ -332,6 +327,21 @@ const PipelineSSHLoop = async function (props: {
               resolveDone();
             }
           });
+
+          masterData.setOnListener("data_pipeline_" + job_id + "_abort", (props) => {
+            if (resolveDone == null) {
+              return setTimeout(() => {
+                masterData.saveData("data_pipeline_" + job_id + "_abort", {});
+              }, 1000);
+            }
+            masterData.saveData("data_pipeline_" + job_id + "_error", {
+              pipeline_task_id: pipeline_task_id || _firstPipelineTask.id,
+              command: '',
+              parent: who_parent,
+              message: "Abort job queue :: " + job_id
+            })
+          })
+
           masterData.setOnListener("data_pipeline_" + job_id, (props) => {
             if (props.message != null) {
               lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
@@ -341,136 +351,38 @@ const PipelineSSHLoop = async function (props: {
               })
             }
             who_parent = props.parent;
-            socket.write(props.command);
+            // sshPromise.write(props.command);
             pipeline_task_id = props.pipeline_task_id;
+            // Call next pipeline task
+            masterData.saveData("write_pipeline_" + job_id, {
+              parent: who_parent,
+              data: props.command_history
+            });
+            if (lastStartParent == who_parent) {
+              console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
+              console.log("resolveDone::", resolveDone);
+
+              // Clear all 
+              removeAllListeners();
+
+              // Finish it
+              if (resolveDone == null) return;
+              resolveDone();
+            }
           });
-          socket.on("exit", async () => {
+
+          sshPromise.on("exit", async () => {
             console.log("Get call exit from command");
             if (resolveDone == null) return;
             resolveDone();
           })
-          socket.on("data", async (data) => {
-            /* Catch if get prompt datas */
-            let _watch_prompt_datas: Array<{
-              key: string
-              value: string
-            }> = await masterData.getData("watch_prompt_datas_" + job_id, []) as any;
-            for (var prIdx = 0; prIdx < _watch_prompt_datas.length; prIdx++) {
-              if (data.includes(_watch_prompt_datas[prIdx].key) == true) {
-                socket.write(_watch_prompt_datas[prIdx].value + '\r');
-                // _watch_prompt_datas.splice(prIdx, 1);
-                // await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
-                break;
-              }
-            }
-            let _split = data.toString().split(/\n/);
-            let _isDone = false;
-            let _isError = false;
-            for (let aes = 0; aes < _split.length; aes++) {
-              _split[aes] = _split[aes].replace(/\r/g, "");
-              switch (_split[aes]) {
-                case '':
-                case '\r':
-                case '\u001b[32m\r':
-                  break;
-                default:
-                  if (_split[aes].toString().replace(/ /g, '') == "done-done") {
-                    _isDone = true;
-                    break;
-                  }
-                  if (_split[aes].toString().replace(/ /g, '') == "error-error") {
-                    _isError = true;
-                    break;
-                  }
-                  break;
-              }
-              if (_isDone == true) {
-                break;
-              }
-              if (_isError == true) {
-                break;
-              }
-            }
-            console.log("Console :: ", data.toString());
-            switch (true) {
-              case data.toString().includes('done-done') == true:
-              case data.toString().includes('echo done-done') == true:
-                break;
-              default:
-                command_history += data.toString();
-                // console.log(data.toString());
-                if (pipeline_task_id != null) {
-                  if (data.toString() != "") {
-                    lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + pipeline_task_id;
-                    RecordCommandToFileLog({
-                      fileName: lastFileNameForClose,
-                      commandString: data.toString() + "\n"
-                    })
-                    // masterData.saveData("ws.commit", {
-                    //   user_id: user_id,
-                    //   pipeline_task_id,
-                    //   data: data.toString()
-                    // });
-                  }
-                }
-                break;
-            }
-            if (debounceee != null) {
-              debounceee.cancel();
-            }
-            if (_isError == true) {
-              await sshPromise.close();
-              masterData.saveData("data_pipeline_" + job_id + "_error", {
-                pipeline_task_id: pipeline_task_id,
-                command: '',
-                parent: who_parent,
-                message: "Your pipeline get force stop by some condition"
-              })
-              return;
-            }
-            if (_isDone == true) {
-              debounceee = debounce((_command_history: string, dataString: string) => {
 
-                // Clear the watch prompt Datas
-                masterData.removeAllListener("watch_prompt_datas_" + job_id);
-
-                // Call next pipeline task
-                masterData.saveData("write_pipeline_" + job_id, {
-                  parent: who_parent,
-                  data: _command_history
-                })
-
-                // Clear the command history
-                command_history = "";
-
-                // If same with the last close it
-                if (lastStartParent == who_parent) {
-                  console.log("lastStartParent :: ", lastStartParent, " and who_parent :: ", who_parent);
-                  console.log("resolveDone::", resolveDone);
-
-                  // Clear all 
-                  removeAllListeners();
-
-                  // Finish it
-                  if (resolveDone == null) return;
-                  resolveDone();
-                }
-              }, 2000);
-              debounceee(command_history, data.toString());
-            } else {
-              debounceee = debounce((_command_history: string, dataString: string) => {
-                socket.write('echo done-done\r');
-              }, 1000);
-              debounceee(command_history, data.toString());
-            }
-          });
           let resTask = () => {
             return new Promise(async (resolve: Function, rejected: Function) => {
               await _recursiveTasks({
                 parent: "NULL",
                 pipeline_item_id: _pipeline_item_ids[a],
                 sshPromise,
-                socket,
                 resolve,
                 rejected,
               }, _recursiveTasks);
@@ -478,10 +390,10 @@ const PipelineSSHLoop = async function (props: {
           }
           try {
             await resTask();
-            await sshPromise.close();
+            await sshPromise.disconect();
           } catch (ex) {
             try {
-              await sshPromise.close();
+              await sshPromise.disconect();
             } catch (ex) { }
             throw ex;
           }
@@ -497,6 +409,10 @@ const PipelineSSHLoop = async function (props: {
   } catch (ex) {
     console.log("PipelineLoop - ex  :: ", ex)
     await WaitingTimeout(3000);
+    RecordCommandToFileLog({
+      fileName: lastFileNameForClose,
+      commandString: ex.toString() + "\n"
+    });
     RecordCommandToFileLog({
       fileName: lastFileNameForClose,
       commandString: "error-error" + "\n"

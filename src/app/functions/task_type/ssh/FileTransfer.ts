@@ -22,7 +22,6 @@ export default async function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     raw_variable,
     execution,
     job_id,
@@ -49,6 +48,7 @@ export default async function (props: TaskTypeInterface) {
     let processWait = async () => {
       let _files = [];
       for (var au2 = 0; au2 < _data.asset_datas.length; au2++) {
+        console.log("_data.asset_datas :: ", _data.asset_datas);
         for (var b = 0; b < mergeVarScheme[_data.asset_datas[au2].name].length; b++) {
           let _ioir = mergeVarScheme[_data.asset_datas[au2].name][b];
           // if (_ioir.file[0].originalname != null) {
@@ -94,8 +94,28 @@ export default async function (props: TaskTypeInterface) {
 
                 // Check if contain mustache 
                 _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
+                let foldeRfile = _data.asset_datas[aq2].target_path + "/" + _files[amg2];
 
-                await sftp.fastPut(process.cwd() + '/storage/app/executions/' + execution.id + "/files/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2])
+                let arrayPath = foldeRfile.split("/");
+                let newPath = "";
+                let lastCreated = null;
+                for (let a = 0; a < arrayPath.length; a++) {
+                  newPath = newPath + (arrayPath[a - 1] || '') + "/";
+                  if (arrayPath[a] == "") { }
+                  else {
+                    if (upath.normalize(newPath) != "/") {
+                      try {
+                        await sftp.mkdir(upath.normalize(newPath));
+                      } catch (ex) {
+                        RecordCommandToFileLog({
+                          fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
+                          commandString: "Create folder :: " + upath.normalize(newPath) + " is exist.\n"
+                        })
+                      }
+                    }
+                  }
+                }
+                await sftp.fastPut(process.cwd() + '/storage/app/executions/' + execution.id + "/files/" + _files[amg2], _data.asset_datas[aq2].target_path + "/" + _files[amg2], {})
                 RecordCommandToFileLog({
                   fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
                   commandString: "Fash Put :: " + _data.asset_datas[aq2].target_path + "/" + _files[amg2] + "\n"

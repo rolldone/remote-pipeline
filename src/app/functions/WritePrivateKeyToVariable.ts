@@ -6,6 +6,7 @@ import os from 'os';
 import upath from 'upath';
 import SSHConfigFile, { SSHConfigInterface } from "@root/tool/ssh-config";
 import SSHConfig from "ssh2-promise/lib/sshConfig";
+import Ssh2 from "./base/Ssh2";
 
 const status = {
   CLEAR: 'clear'
@@ -65,7 +66,7 @@ const generateSSHConfig = (configFIle: string, identityFIlePath: string, sshCOnf
 }
 
 const writePrivateKey = async function (props: {
-  sshPromise: SSH2Promise
+  sshPromise: Ssh2
   execution: any
 }, action?: string) {
   try {
@@ -73,8 +74,8 @@ const writePrivateKey = async function (props: {
     switch (action) {
       case status.CLEAR:
         mkdirSync(process.cwd() + "/storage/app/executions/" + props.execution.id, { recursive: true });
-        for (var a = 0; a < props.sshPromise.config.length; a++) {
-          let _config = props.sshPromise.config[a];
+        for (var a = 0; a < props.sshPromise.connections.length; a++) {
+          let _config = props.sshPromise.connections[a];
           await unlinkSync(process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.username + "_" + _config.host + "_" + _config.port + "_" + "_key_" + a);
         }
         break;
@@ -82,9 +83,9 @@ const writePrivateKey = async function (props: {
         try {
           mkdirSync(process.cwd() + "/storage/app/executions/" + props.execution.id, { recursive: true });
         } catch (ex) { }
-        for (var a = 0; a < props.sshPromise.config.length; a++) {
-          let _configBefore = props.sshPromise.config[a - 1] || null;
-          let _config = props.sshPromise.config[a];
+        for (var a = 0; a < props.sshPromise.connections.length; a++) {
+          let _configBefore = props.sshPromise.connections[a - 1] || null;
+          let _config = props.sshPromise.connections[a];
           let filePrivatePath = process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.username + "_" + _config.host + "_" + _config.port + "_" + "_key_" + a;
 
           await writeFileSync(filePrivatePath, _config.privateKey);

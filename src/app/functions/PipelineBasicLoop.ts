@@ -208,7 +208,6 @@ const PipelineBasicLoop = async (props: {
             variable: _var_data,
             schema: _var_scheme,
             pipeline_task: _pipeline_task[a2],
-            socket: props.socket,
             execution: execution,
             resolve: props.resolve,
             rejected: props.rejected,
@@ -252,6 +251,7 @@ const PipelineBasicLoop = async (props: {
         masterData.removeAllListener("data_pipeline_" + job_id);
         masterData.removeAllListener("data_pipeline_" + job_id + "_init");
         masterData.removeAllListener("data_pipeline_" + job_id + "_error");
+        masterData.removeAllListener("data_pipeline_" + job_id + "_abort");
 
       }
 
@@ -299,6 +299,21 @@ const PipelineBasicLoop = async (props: {
             }, 2000);
             debounceee(command_history);
           }
+
+          masterData.setOnListener("data_pipeline_" + job_id + "_abort", (props) => {
+            if (resolveDone == null) {
+              return setTimeout(() => {
+                masterData.saveData("data_pipeline_" + job_id + "_abort", {});
+              }, 1000);
+            }
+            masterData.saveData("data_pipeline_" + job_id + "_error", {
+              pipeline_task_id: pipeline_task_id || _firstPipelineTask.id,
+              command: '',
+              parent: who_parent,
+              message: "Abort job queue :: " + job_id
+            })
+          })
+
 
           masterData.setOnListener("data_pipeline_" + job_id + "_ignore", (props) => {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;

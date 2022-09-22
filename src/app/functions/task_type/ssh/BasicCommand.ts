@@ -16,7 +16,6 @@ export default function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     extra_var,
@@ -35,7 +34,7 @@ export default function (props: TaskTypeInterface) {
     let processWait = async () => {
       try {
         let sftp = await sshPromise.sftp();
-        console.log("Basic command ::  Called ");
+        console.log("Basic command :::  Called ");
         let _script_data = null;
         if (_data.use_script == true) {
           _script_data = _data.script_data;
@@ -47,7 +46,7 @@ export default function (props: TaskTypeInterface) {
           } catch (ex) {
             console.log("MkdirReqursive :: ", ex);
           }
-          await sftp.writeFile(_write_to, _script_data.content, {});
+          await sftp.writeFile(_write_to, _script_data.content);
 
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
@@ -62,10 +61,34 @@ export default function (props: TaskTypeInterface) {
         for (var prmIdx = 0; prmIdx < prompt_datas.length; prmIdx++) {
           prompt_datas[prmIdx].value = MustacheRender(prompt_datas[prmIdx].value, mergeVarScheme);
         }
-        masterData.saveData("watch_prompt_datas_"+job_id, prompt_datas);
+        masterData.saveData("watch_prompt_datas_" + job_id, prompt_datas);
+        let callbackListen = async (data: Buffer) => {
+          let lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id;
+          RecordCommandToFileLog({
+            fileName: lastFileNameForClose,
+            commandString: data.toString() + "\n"
+          })
+          /* Catch if get prompt datas */
+          let _watch_prompt_datas: Array<{
+            key: string
+            value: string
+          }> = await masterData.getData("watch_prompt_datas_" + job_id, []) as any;
+          for (var prIdx = 0; prIdx < _watch_prompt_datas.length; prIdx++) {
+            if (data.includes(_watch_prompt_datas[prIdx].key) == true) {
+              await sshPromise.write(_watch_prompt_datas[prIdx].value + '\r');
+              // _watch_prompt_datas.splice(prIdx, 1);
+              // await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
+              break;
+            }
+          }
+        };
+        sshPromise.on("data", callbackListen);
+        let command_history = await sshPromise.write(command);
+        sshPromise.off('data', callbackListen);
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
+          command_history: command_history,
           parent: pipeline_task.temp_id
         })
 

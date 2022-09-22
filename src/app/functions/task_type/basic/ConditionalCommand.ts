@@ -2,6 +2,7 @@ import MergeVarScheme from "../../MergeVarScheme";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import { TaskTypeInterface } from "..";
 import MustacheRender from "../../MustacheRender";
+import RecordCommandToFileLog from "../../RecordCommandToFileLog";
 
 declare let masterData: MasterDataInterface
 
@@ -11,7 +12,8 @@ export default async function (props: TaskTypeInterface) {
     schema,
     pipeline_task,
     extra_var,
-    job_id
+    job_id,
+    sshPromise
   } = props;
 
   try {
@@ -32,7 +34,7 @@ export default async function (props: TaskTypeInterface) {
       command = `cd ${working_dir} && ${command}`;
     }
 
-    masterData.setOnMultiSameListener("write_pipeline_" + job_id, (props) => {
+    masterData.setOnMultiSameListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {
         if (_parent_order_temp_ids[a] == props.parent) {
           // console.log("Conditional command :: Called ");
@@ -91,6 +93,19 @@ export default async function (props: TaskTypeInterface) {
                   })
                   return;
               }
+
+              let callbackListen = async (data: Buffer) => {
+                let lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id;
+                RecordCommandToFileLog({
+                  fileName: lastFileNameForClose,
+                  commandString: data.toString() + "\n"
+                })
+              };
+
+              sshPromise.on("data", callbackListen);
+              let command_history = await sshPromise.write(command);
+              sshPromise.off('data', callbackListen);
+
               masterData.saveData("data_pipeline_" + job_id, {
                 pipeline_task_id: pipeline_task.id,
                 command: command,

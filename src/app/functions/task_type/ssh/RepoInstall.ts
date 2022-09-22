@@ -16,7 +16,6 @@ const RepoInstall = function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     execution,
     resolve,
     rejected,

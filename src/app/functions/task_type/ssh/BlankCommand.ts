@@ -12,7 +12,6 @@ export default function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     extra_var,

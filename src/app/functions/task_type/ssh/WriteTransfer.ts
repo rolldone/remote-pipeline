@@ -14,7 +14,6 @@ const WriteTransfer = function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     raw_variable,
@@ -55,7 +54,7 @@ const WriteTransfer = function (props: TaskTypeInterface) {
 
           await MkdirReqursive(sftp, path.dirname(_data.asset_datas[au2].target_path));
 
-          await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data, {});
+          await sftp.writeFile(_data.asset_datas[au2].target_path, _content_data);
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
             commandString: "Write File :: " + _data.asset_datas[au2].target_path + "\n"

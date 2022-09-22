@@ -1,13 +1,13 @@
 import path from "path"
-import SFTP from "ssh2-promise/lib/sftp"
 import upath from "upath";
+import Ssh2, { SftpSsh2 } from "../base/Ssh2";
 /**
  * Recursively create a remote directory if no such directory exists
  *
  * @param sftp SFTP connection
  * @param path Directory to create
  */
-const MkdirReqursive = async (sftp: SFTP, pathString: string): Promise<void> => {
+const MkdirReqursive = async (sftp: SftpSsh2, pathString: string): Promise<void> => {
   // https://stackoverflow.com/a/60922162/132319
   await pathString.split('/').reduce(async (promise, dir) => {
     return promise.then(async (parent) => {
@@ -15,7 +15,7 @@ const MkdirReqursive = async (sftp: SFTP, pathString: string): Promise<void> => 
       ret = upath.normalize("/" + ret);
       console.log("MkdirReqursive - stat ::: ", upath.normalize("/" + ret));
       try {
-        if(ret != "/"){
+        if (ret != "/") {
           await sftp.stat(ret)
         }
       } catch (e: any) {

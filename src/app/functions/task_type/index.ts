@@ -9,14 +9,14 @@ import FullRemoteSyncronise from "./ssh/remote/FullRemoteSyncronise";
 import RepoInstall from "./ssh/RepoInstall";
 import WriteScriptCode from "./ssh/WriteScriptCode";
 import WriteTransfer from "./ssh/WriteTransfer";
+import Ssh2 from "../base/Ssh2";
 
 export interface TaskTypeInterface {
   raw_variable: any,
-  sshPromise?: SSH2Promise,
+  sshPromise?: Ssh2,
   variable: any
   schema: any
   pipeline_task: any
-  socket: any
   execution: any
   resolve: Function
   rejected: Function

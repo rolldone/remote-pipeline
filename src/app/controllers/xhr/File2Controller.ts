@@ -59,6 +59,7 @@ const File2Controller = BaseController.extend<File2ControllerInterface>({
       let user = await GetAuthUser(req);
       let props = req.body;
       let file = req.files[0];
+      console.log("file ;: file ",file);
       props = {
         user_id: user.id,
         path: SafeValue(req.body.path, ""),

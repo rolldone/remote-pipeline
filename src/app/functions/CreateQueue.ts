@@ -15,7 +15,7 @@ import UserService, { UserServiceInterface } from "../services/UserService";
 import VariableService, { variableInterface } from "../services/VariableService";
 import upath from 'upath';
 import filendir from 'filendir';
-import CreateUUID from "./CreateUUID";
+import CreateUUID from "./base/CreateUUID";
 import PipelineService from "../services/PipelineService";
 
 declare let masterData: MasterDataInterface

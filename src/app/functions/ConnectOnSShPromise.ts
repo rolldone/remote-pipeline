@@ -1,7 +1,8 @@
 import HostService from "../services/HostService";
-import ssh2Promise from 'ssh2-promise';
+// import ssh2Promise from 'ssh2-promise';
 import CredentialService, { CredentialInterface, CredentialServiceInterface } from "../services/CredentialService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
+import Ssh2 from "./base/Ssh2";
 
 declare let masterData: MasterDataInterface;
 
@@ -74,7 +75,7 @@ const ConnectOnSShPromise = async function (props: {
   host_data: any
   host_id: any
   job_id: string
-}) {
+}): Promise<Ssh2> {
   let {
     host_data,
     host_id,
@@ -88,28 +89,36 @@ const ConnectOnSShPromise = async function (props: {
     sshconfig = await initAuthType(host_id, host_data);
 
     let proxy_datas: Array<any> = Object.assign([], host_data.proxy_datas) || [];
-    proxy_datas.reverse();
+    // proxy_datas.reverse();
 
-    let ssh = null;
+    let ssh: Ssh2 = null;
     if (proxy_datas.length > 0) {
       for (var a = 0; a < proxy_datas.length; a++) {
         proxy_datas[a] = await initAuthType(host_id, proxy_datas[a]);
       }
-      proxy_datas.push(sshconfig);
+      proxy_datas.push({
+        ...sshconfig,
+      });
       // If you not cache it the connection will duplicate new ssh
-      ssh = new ssh2Promise(proxy_datas, false);
+      // ssh = new ssh2Promise(proxy_datas, false);
+      ssh = new Ssh2(proxy_datas);
     } else {
       // If you not cache it the connection will duplicate new ssh
-      ssh = new ssh2Promise(sshconfig, false);
+      // let ssh = new ssh2.Client();
+      console.log("sshconfig :: ", sshconfig);
+      ssh = new Ssh2(sshconfig);
+      ssh.on("ready", () => {
+        console.log("Connection establishedddd");
+      })
     }
 
     await ssh.connect();
 
-    console.log("Connection established");
 
     masterData.saveData("data_pipeline_" + job_id + "_init", {
       message: "Connect to host :: Connection established \n"
     });
+    ssh.write("\r");
     return ssh;
   } catch (ex: any) {
     masterData.saveData("data_pipeline_" + job_id + "_init", {

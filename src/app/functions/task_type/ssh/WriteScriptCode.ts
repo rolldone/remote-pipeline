@@ -16,7 +16,6 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     raw_variable,
@@ -65,7 +64,7 @@ const WriteScriptCode = (props: TaskTypeInterface) => {
             console.log("MkdirReqursive :: ", ex);
           }
           console.log("_write_to ::: ", _write_to);
-          await sftp.writeFile(_write_to, _content_data, {});
+          await sftp.writeFile(_write_to, _content_data);
           RecordCommandToFileLog({
             fileName: "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id,
             commandString: "Write File :: " + _write_to + "\n"

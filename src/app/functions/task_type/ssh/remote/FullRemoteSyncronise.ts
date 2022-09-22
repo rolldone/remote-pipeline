@@ -18,7 +18,6 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
     variable,
     schema,
     pipeline_task,
-    socket,
     resolve,
     rejected,
     raw_variable,
@@ -43,18 +42,17 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
     // console.log("_pipeline_task :: ", pipeline_task);
 
     let processWait = async () => {
-      let socket = await sshPromise.shell();
       let sftp = await sshPromise.sftp();
 
       let hostport = (_data.host + "_" + _data.port).toString().replace(/\./g, "_");
       let privateKeyPathName = _data.private_key_path + "/" + hostport;
       if (_data.auth_type == "private_key") {
         let resultRender = MustacheRender(_data.private_key, mergeVarScheme);
-        await sftp.writeFile(privateKeyPathName, resultRender, {});
+        await sftp.writeFile(privateKeyPathName, resultRender);
         await sftp.chmod(privateKeyPathName, "600");
       }
 
-      socket.on('data', (data) => {
+      sshPromise.on('data', (data) => {
         if (data.includes('failed: Not a directory')) {
           // _is_file = true;
         }
@@ -65,17 +63,17 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
         console.log("Full Remote Command :: ", data.toString());
         switch (true) {
           case data.includes('Are you sure you want to continue connecting'):
-            socket.write('yes\r')
+            sshPromise.write('yes\r')
             break;
           case data.includes('Enter passphrase for key'):
-            socket.write(_data.passphrase + '\r');
+            sshPromise.write(_data.passphrase + '\r');
             break;
           case data.includes('password:'):
-            socket.write(_data.password + '\r')
+            sshPromise.write(_data.password + '\r')
             break;
           case data.includes('total size'):
             // socket.write('exit' + '\r')
-            socket.write("rm " + privateKeyPathName)
+            sshPromise.write("rm " + privateKeyPathName)
             masterData.saveData("data_pipeline_" + job_id, {
               pipeline_task_id: pipeline_task.id,
               command: command,
@@ -128,9 +126,9 @@ const FullRemoteSyncronise = function (props: TaskTypeInterface) {
         })()
       });
       // Its important cd to working directory
-      socket.write("cd " + _data.working_dir + "\r");
+      sshPromise.write("cd " + _data.working_dir + "\r");
       console.log('rsync.command() :: ', rsync.command())
-      socket.write(rsync.command() + '\r');
+      sshPromise.write(rsync.command() + '\r');
     }
     masterData.setOnListener("write_pipeline_" + job_id, async (props) => {
       for (var a = 0; a < _parent_order_temp_ids.length; a++) {

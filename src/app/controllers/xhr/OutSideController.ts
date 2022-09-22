@@ -5,13 +5,14 @@ import QueueRecordDetailService from "@root/app/services/QueueRecordDetailServic
 import QueueRecordService, { QueueRecordInterface } from "@root/app/services/QueueRecordService";
 import BaseController from "@root/base/BaseController"
 
-export interface HostControllerInterface extends BaseControllerInterface {
+export interface OutsideControllerInterface extends BaseControllerInterface {
   createQueue: { (req: any, res: any): void }
+  deleteQueue: { (req: any, res: any): void }
   queueDisplayProcess: { (req: any, res: any): void }
   addResultQueueDetailData: { (req: any, res: any): void }
 }
 
-export default BaseController.extend<HostControllerInterface>({
+export default BaseController.extend<OutsideControllerInterface>({
   async createQueue(req, res) {
     try {
       let props = req.body;
@@ -32,6 +33,9 @@ export default BaseController.extend<HostControllerInterface>({
     } catch (ex) {
       return res.status(400).send(ex);
     }
+  },
+  async deleteQueue(req, res) {
+    
   },
   async queueDisplayProcess(req, res) {
 

@@ -39,6 +39,7 @@ export default BaseController.extend<QueueControllerInterface>({
         queue_record_status: QueueRecordService.STATUS.STAND_BY,
         queue_record_detail_status: QueueRecordDetailService.STATUS.STOPPED
       });
+      masterData.saveData("data_pipeline_" + res_data_record_detail.job_id + "_abort", {});
       if (res_data_record_detail == null) {
         return res.status(200).send("Ignore it!");
       }
