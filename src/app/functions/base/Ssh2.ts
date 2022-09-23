@@ -128,8 +128,6 @@ class Ssh2 {
     return new Promise((resolve: Function, reject: Function) => {
       try {
         console.log('Client :: Connecting');
-        console.log('this.connection :: ', this.connection);
-        console.log('this.connections :: ', this.connections)
         if (this.connections.length > 0) {
           for (let conA1 = 0; conA1 < this.connections.length; conA1++) {
             let clientItem = new ssh.Client();
@@ -145,7 +143,7 @@ class Ssh2 {
               if (this.clients[conA1 + 1] != null) {
                 clientItem.forwardOut('127.0.0.1', freePort, this.connections[conA1 + 1].host, this.connections[conA1 + 1].port, (err, stream) => {
                   if (err) {
-                    reject(err);
+                    console.log('FIRST :: forwardOut error: ' + err);
                     return clientItem.end();
                   }
                   if (this.clients[conA1 + 1] != null) {
@@ -245,7 +243,11 @@ class Ssh2 {
     return new Promise((resolve: Function) => {
       let whatListenerFunc = (data) => {
         let stringCollection = data.toString().split('\r');
+        stringCollection.reverse();
         for (var a = 0; a < stringCollection.length; a++) {
+          if(a > 1){
+            break;
+          }
           let getUserAtHOstString = stringCollection[a].split('@');
           if (getUserAtHOstString.length == 2) {
             this.stream.off("data", whatListenerFunc);
