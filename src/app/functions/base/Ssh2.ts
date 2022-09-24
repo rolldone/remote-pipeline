@@ -254,7 +254,7 @@ class Ssh2 {
               break;
             }
             let getUserAtHOstString = stringCollection[a].split('@');
-            if (getUserAtHOstString.length == 2) {
+            if (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true) {
               this.stream.off("data", whatListenerFunc);
               resolve(hisString)
               return;
