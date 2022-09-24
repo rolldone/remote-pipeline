@@ -300,7 +300,6 @@ const PipelineSSHLoop = async function (props: {
 
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
-            console.log("vadfvdfkvmakdmvk :: ", lastFileNameForClose);
             pipeline_task_id = props.pipeline_task_id;
             sshPromise.write("echo " + props.message + "\r");
             sshPromise.write("echo error-error\r");

@@ -240,21 +240,28 @@ class Ssh2 {
   }
   write(data: string) {
     let hisString = "";
+    let pendingResolve: DebouncedFunc<any> = null;
     return new Promise((resolve: Function) => {
-      let whatListenerFunc = (data) => {
-        let stringCollection = data.toString().split('\r');
-        stringCollection.reverse();
-        for (var a = 0; a < stringCollection.length; a++) {
-          if(a > 1){
-            break;
-          }
-          let getUserAtHOstString = stringCollection[a].split('@');
-          if (getUserAtHOstString.length == 2) {
-            this.stream.off("data", whatListenerFunc);
-            resolve(hisString)
-            return;
-          }
+      let whatListenerFunc = (data: Buffer) => {
+        if (pendingResolve != null) {
+          pendingResolve.cancel();
         }
+        pendingResolve = debounce((data: Buffer) => {
+          let stringCollection = data.toString().split('\r');
+          stringCollection.reverse();
+          for (var a = 0; a < stringCollection.length; a++) {
+            if (a > 1) {
+              break;
+            }
+            let getUserAtHOstString = stringCollection[a].split('@');
+            if (getUserAtHOstString.length == 2) {
+              this.stream.off("data", whatListenerFunc);
+              resolve(hisString)
+              return;
+            }
+          }
+        }, 2000);
+        pendingResolve(data);
         hisString += data.toString();
       }
       this.stream.on('data', whatListenerFunc);
