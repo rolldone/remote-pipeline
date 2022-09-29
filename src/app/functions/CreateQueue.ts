@@ -17,6 +17,7 @@ import upath from 'upath';
 import filendir from 'filendir';
 import CreateUUID from "./base/CreateUUID";
 import PipelineService from "../services/PipelineService";
+import TokenDataService, { TOPIC } from "../services/TokenDataService";
 
 declare let masterData: MasterDataInterface
 
@@ -137,7 +138,9 @@ const CreateQueue = function (props: {
           }
 
           if (resQueueRecord == null) {
-            resolve(resQueueRecord);
+            resolve({
+              queue_record: resQueueRecord
+            });
             return
           }
 
@@ -145,9 +148,6 @@ const CreateQueue = function (props: {
             id: resQueueRecord.id,
             status: QueueRecordService.STATUS.READY
           });
-
-          // Give callback for caller
-          resolve(resQueueRecord);
 
           // Get the host datas
           let _hosts_datas: Array<any> = await HostService.getHosts({
@@ -210,6 +210,7 @@ const CreateQueue = function (props: {
             return el;
           })
 
+          let queue_record_detail_datas = [];
           let _processQueue: Queue = null;
           let indexHostItem = 0;
           let idJOb = null;
@@ -255,6 +256,8 @@ const CreateQueue = function (props: {
                         variable_extra
                       });
 
+                      queue_record_detail_datas.push(resDataInsert);
+
                       indexHostItem += 1;
                     }
                   }
@@ -290,6 +293,8 @@ const CreateQueue = function (props: {
                     execution,
                     variable_extra
                   });
+
+                  queue_record_detail_datas.push(resDataInsert);
 
                   break;
               }
@@ -372,6 +377,9 @@ const CreateQueue = function (props: {
                         variable_extra
                       });
 
+
+                      queue_record_detail_datas.push(resDataInsert);
+
                       indexHostItem += 1;
                     }
                   }
@@ -407,10 +415,36 @@ const CreateQueue = function (props: {
                     execution,
                     variable_extra
                   });
+
+                  queue_record_detail_datas.push(resDataInsert);
+
                   break;
               }
               break;
           }
+          // Give callback for caller
+          for (let oko = 0; oko < queue_record_detail_datas.length; oko++) {
+
+            // Inser to token datas
+            let resTokenData = await TokenDataService.addOrUpdate({
+              // token: idJOb,
+              topic: TOPIC.QUEUE_ITEM_PROCESS,
+              data: JSON.stringify({
+                id: queue_record_detail_datas[oko].id,
+                user_id: resQueueRecord.exe_user_id,
+                pipeline_id: queue_record_detail_datas[oko].exe_pipeline_id,
+                pipeline_item_ids: queue_record_detail_datas[oko].exe_pipeline_item_ids
+              })
+            });
+
+            // This is for guest permission access
+            queue_record_detail_datas[oko].token_guest = resTokenData.token;
+            // queue_record_detail_datas[oko] = await QueueRecordDetailService.updateQueueRecordDetail(queue_record_detail_datas[oko]);
+          }
+          resolve({
+            queue_record: resQueueRecord,
+            queue_record_details: queue_record_detail_datas,
+          });
         }
       })
     } catch (ex) {

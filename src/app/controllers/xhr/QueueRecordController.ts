@@ -11,6 +11,7 @@ export interface QueueRecordControllerInterface extends BaseControllerInterface 
   deleteQueueRecord: { (req: any, res: any): void }
   getQueueRecords: { (req: any, res: any): void }
   getQueueRecord: { (req: any, res: any): void }
+  getQueueRecordByKey: { (req: any, res: any): void }
   getQueueIdsstatus: { (req: any, res: any): void }
 }
 
@@ -91,9 +92,23 @@ const QueueRecordController = BaseController.extend<QueueRecordControllerInterfa
       return res.status(400).send(ex);
     }
   },
+  async getQueueRecordByKey(req, res) {
+    try {
+      let id = req.params.id;
+      let props = req.query;
+      let resData = await QueueRecordService.getQueueRecordByKey(id);
+      return res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
   async getQueueIdsstatus(req, res) {
     try {
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       props.ids = JSON.parse(props.ids || '[]');
       props.user_id = user.id;

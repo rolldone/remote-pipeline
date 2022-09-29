@@ -37,6 +37,7 @@ import File2Controller from "@root/app/controllers/xhr/File2Controller";
 import { FlydriveStorageEngine, MulterFlydriveOptionsFunction } from 'multer-flydrive-engine';
 import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
+import TokenDataAuth from "@root/app/middlewares/TokenDataGuestAuth";
 
 declare let storage: StorageManager;
 
@@ -115,8 +116,34 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/display/:id", "api.file2.display", [], File2Controller.binding().display);
     });
 
+    self.use('/queue', [OutSideAuth], function (route: BaseRouteInterface) {
+      route.post("/delete-item", "api.queue.delete_item", [upload.any()], QueueController.binding().deleteQueueItem);
+      route.post("/create-item", "api.queue.create_item", [upload.any()], QueueController.binding().createQueueItem);
+      route.post("/create/:queue_key", "api.queue.create_by_queue_key", [upload.any()], OutSideController.binding().createQueue);
+      route.post("/create", "api.queue.create", [upload.any()], QueueController.binding().createQueue);
+      route.post("/update", "api.queue.update", [upload.any()], QueueController.binding().updateQueue);
+      route.post("/delete", "api.queue.delete", [upload.any()], QueueController.binding().deleteQueue);
+      route.post("/stop-worker", "api.queue.stop_worker", [upload.any()], QueueController.binding().stopWorker);
+      route.post("/delete-scheduler", "api.queue.delete_scheduler", [upload.any()], QueueController.binding().deleteQueueScheduler);
+      route.get("/queues", "api.queue.queues", [], QueueController.binding().getQueues);
+      route.get("/:id/view", "api.queue.queue", [], QueueController.binding().getQueue);
+    });
+
+    self.use('/queue-record', [OutSideAuth], function (route: BaseRouteInterface) {
+      route.get("/key/:id/view", "api.queue_record.queue_record", [], QueueRecordController.binding().getQueueRecordByKey);
+    });
+
+    self.use("/variable-item", [OutSideAuth], function (route: BaseRouteInterface) {
+      route.post("/render", "api.variable_item.render", [upload.any()], VariableItemController.binding().renderVarScheme);
+    });
+
     self.use("/configuration", [], function (route: BaseRouteInterface) {
       route.get("/", "api.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
+    });
+
+    self.use("/guest", [TokenDataAuth], function (route: BaseRouteInterface) {
+      route.get("/pipeline-task/pipeline-tasks", "api.guest.pipeline_task.pipeline_tasks", [], PipelineTaskController.binding().getPipelineTasks);
+      route.get("/queue-record-detail/display-process", "api.guest.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
     });
   }
 });

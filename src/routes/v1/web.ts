@@ -102,11 +102,23 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
 
-    self.use("/xhr/outside", [OutSideAuth], function (route: BaseRouteInterface) {
-      route.post("/queue/:queue_key", "xhr.outside.queue", [upload.any()], OutSideController.binding().createQueue);
-      route.get("/queue-display-process", "xhr.outside.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
-      route.post("/queue-detail/result/add", "xhr.outside.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
+    // For client only
+    self.use("/client", [OutSideAuth], function (route: BaseRouteInterface) {
+      // Queue
+      route.post("/queue/add", "client.queue.add", [upload.any()], OutSideController.binding().createQueue);
+      route.post("/queue/item/result/add", "client.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
+      route.get("/queue/:queue_key/stop", "client.queue.stop", [], OutSideController.binding().deleteQueue);
+      route.get("/queue/:job_id", "client.queue.queue", [], OutSideController.binding().deleteQueue);
+
     });
+
+    // For short token after generate queue
+    self.use("/guest", [/* shortTokenAuth */], function (route: BaseRouteInterface) {
+      route.get("/queue/:job_id/stop", "guest.queue.stop", [], OutSideController.binding().deleteQueue);
+      route.get("/queue/item/display/:queue_key/process", "guest.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
+      // Ws
+      route.get("/ws", "guest.ws", [], WSocketController.binding().connect);
+    })
 
     // Will deprecated
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
@@ -228,7 +240,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/user", "xhr.auth.user", [], AuthController.binding().getAuth);
       route.get("/register-expired-check", 'xhr.auth.register_expired_check', [], AuthController.binding().registerExpiredCheck);
     })
-    
+
     self.use('/xhr/oauth-user', [DashboardAuth], function (route: BaseRouteInterface) {
       route.get('/oauth-users', 'xhr.oauth-user.oauth-users', [], OAuthUserController.binding().getOAuthUsers);
       route.get('/:id/view', 'xhr.oauth-user.oauth-user', [], OAuthUserController.binding().getOAuthUser);

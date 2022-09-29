@@ -10,6 +10,7 @@ import upath from 'upath'
 import filendir from 'filendir';
 import AppConfig from "@root/config/AppConfig";
 import readdirp from 'readdirp';
+import TokenDataService from "./TokenDataService";
 
 declare let db: Knex;
 
@@ -47,6 +48,7 @@ export interface QueueRecordDetailInterface {
   variable?: any
   variable_extra?: any
   execution?: any
+  token_data_id?: number
 
   // aditional
   job_data?: any
@@ -62,6 +64,12 @@ export interface QueueRecordDetailInterface {
   exe_process_mode?: string
   exe_process_limit?: number
   exe_delay?: number
+  // Pipeline
+  exe_pipeline_id?: number
+  exe_pipeline_item_ids?: Array<number>
+
+  // Non persisten
+  token_guest?: string
 
 }
 
@@ -86,6 +94,7 @@ const preSelectQuery = () => {
     'qrec': "queue_records",
     'qrec_sch': "queue_schedules",
     'exe': "executions",
+    "td": "token_datas"
   });
   let query_record_detail = SqlBricks.select(
     'qrec_detail.id as id',
@@ -100,6 +109,7 @@ const preSelectQuery = () => {
     'qrec_detail.created_at as created_at',
     'qrec_detail.updated_at as updated_at',
     'qrec_detail.deleted_at as deleted_at',
+    'qrec_detail.token_data_id as token_data_id',
     'qrec.id as qrec_id',
     'qrec.queue_key as qrec_queue_key',
     'qrec.execution_id as qrec_execution_id',
@@ -123,7 +133,8 @@ const preSelectQuery = () => {
     'exe.pipeline_item_ids as exe_pipeline_item_ids',
     'exe.host_ids as exe_host_ids',
     'exe.description as exe_description',
-    'exe.delay as exe_delay'
+    'exe.delay as exe_delay',
+    "td.token as td_token"
   ).from("qrec_detail");
   return query_record_detail;
 }
@@ -143,6 +154,9 @@ export default {
         })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
+        })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
         })
       if (props.queue_record_id != null) {
         query_record_detail.where("qrec.id", props.queue_record_id);
@@ -184,6 +198,9 @@ export default {
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
         })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
+        })
       query_record_detail.where({
         "qrec_detail.job_id": job_id,
       });
@@ -211,6 +228,9 @@ export default {
         })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
+        })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
         })
       query_record_detail.where({
         "qrec_detail.job_id": job_id,
@@ -241,6 +261,9 @@ export default {
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
         })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
+        })
       query_record_detail.where({
         "qrec_detail.job_id": job_id,
         "exe.user_id": user_id
@@ -270,6 +293,9 @@ export default {
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
         })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
+        })
       query_record_detail.where({
         "qrec_detail.id": props.id
       });
@@ -296,13 +322,15 @@ export default {
         status: props.status,
         variable: JSON.stringify(props.variable),
         variable_extra: JSON.stringify(props.variable_extra),
-        execution: JSON.stringify(props.execution)
+        execution: JSON.stringify(props.execution),
+        token_data_id: props.token_data_id || null
       }));
       let _query = queryInsert.toString();
       let resDataId = await db.raw(_query);
       let resData = await this.getQueueRecordDetail({
         id: resDataId.lastInsertRowid
       });
+
       console.log("addQueueRecordDetail :: ", resData);
       return resData;
     } catch (ex) {
@@ -324,7 +352,8 @@ export default {
         job_id: SafeValue(props.job_id, queueData.job_id),
         data: JSON.stringify(SafeValue(props.job_data, queueData.data)),
         status: SafeValue(props.status, queueData.status),
-        created_at: SafeValue(queueData.created_at, null)
+        created_at: SafeValue(queueData.created_at, null),
+        token_data_id: SafeValue(props.token_data_id, queueData.token_data_id)
       }));
       queryUpdate.where({
         "id": props.id
@@ -362,6 +391,9 @@ export default {
         })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
+        })
+        .leftJoin("td").on({
+          "td.id": "qrec_detail.token_data_id"
         })
       for (var key in propsCondition) {
         switch (key) {
@@ -473,7 +505,7 @@ export default {
         })
         .leftJoin("exe").on({
           "exe.id": "qrec.execution_id"
-        });
+        })
       if (user_id != null) {
         query_record_detail.where("exe.user_id", user_id);
       }
