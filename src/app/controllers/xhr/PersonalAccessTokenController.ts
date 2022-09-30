@@ -8,6 +8,7 @@ export interface PersonalAccessTokenControllerInterface extends BaseControllerIn
   deletePersonalAccessToken: { (req: any, res: any): void }
   getPersonalAccessTokens: { (req: any, res: any): void }
   getPersonalAccessToken: { (req: any, res: any): void }
+  checkPersonalAccessToken: { (req: any, res: any): void }
 }
 
 export default BaseController.extend<PersonalAccessTokenControllerInterface>({
@@ -17,7 +18,7 @@ export default BaseController.extend<PersonalAccessTokenControllerInterface>({
       // name: string
       // description: string
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       let resData = await PersonalAccessTokenService.addPersonalAccessToken(props);
@@ -37,7 +38,7 @@ export default BaseController.extend<PersonalAccessTokenControllerInterface>({
       // name: string
       // description: text
       // hosts: JSON [{ host : xxx.xxx.xxx.xxx, private_key : ...xxx, password : xxxxxx }, { ...xxx }]
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.body;
       props.user_id = user.id;
       let resData = await PersonalAccessTokenService.updatePersonalAccessToken(props);
@@ -71,7 +72,7 @@ export default BaseController.extend<PersonalAccessTokenControllerInterface>({
       // where_by: string
       // page: int
       // limit: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       props.user_id = user.id;
       let resData = await PersonalAccessTokenService.getPersonalAccessTokens({
@@ -89,7 +90,7 @@ export default BaseController.extend<PersonalAccessTokenControllerInterface>({
   async getPersonalAccessToken(req, res) {
     try {
       // id: int
-      let user = await  GetAuthUser(req);
+      let user = await GetAuthUser(req);
       let props = req.query;
       let id = req.params.id;
       props.user_id = user.id;
@@ -97,6 +98,22 @@ export default BaseController.extend<PersonalAccessTokenControllerInterface>({
         ...props,
         id
       });
+      res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      })
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async checkPersonalAccessToken(req, res) {
+    try {
+      let token = req.params.token;
+      token = token.split(';');
+      let key = token[0];
+      let passKey = token[1];
+      let resData = await PersonalAccessTokenService.getPersonalAccessTokenByApiKey(key,passKey);
       res.send({
         status: 'success',
         status_code: 200,

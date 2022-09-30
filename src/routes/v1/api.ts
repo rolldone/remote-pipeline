@@ -90,6 +90,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard*", "api.front.dashboard", [OutSideAuth], DashboardController.binding().displayView);
       route.get("/ws", "api.ws", [], WSocketController.binding().connect);
       route.get("/route", "api.display.route", [], route.displayRoute.bind(self));
+      route.get("/personal-token/check/:token","api.token.check",[],PersonalAccessTokenController.binding().checkPersonalAccessToken);
     });
 
     self.use("/file2", [OutSideAuth], function (route: BaseRouteInterface) {
