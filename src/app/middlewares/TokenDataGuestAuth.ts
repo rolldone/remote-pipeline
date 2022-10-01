@@ -78,7 +78,7 @@ export const TOKEN_DATA_GUEST_MODE = {
   /* Other option mode maybe? */
 }
 
-const TokenDataGuestAuth = function (req, res, next, flowMode: number) {
+const TokenDataGuestAuth = function (flowMode: number, req, res, next) {
   let asyncFUn = async () => {
     try {
       let token = req.query.token || req.query.share_key || null;
@@ -99,7 +99,7 @@ const TokenDataGuestAuth = function (req, res, next, flowMode: number) {
         return next();
       }
       let validTokenDataAuth = await CheckTokenDataAuth(data.page_name, data.table_id, userData.id || data.identity_value);
-      
+
       if (validTokenDataAuth == STATUS_RESPONSE.IS_PRIVATE) {
         if (req.headers["x-requested-with"] == 'XMLHttpRequest') {
           //is ajax request
