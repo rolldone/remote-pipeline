@@ -41,6 +41,7 @@ import PagePublisherController from "@root/app/controllers/xhr/PagePublisherCont
 import PagePublisherUserController from "@root/app/controllers/xhr/PagePublisherUserController";
 import PagePublisherAuth from "@root/app/middlewares/PagePublisherAuth";
 import GenerateSessionIdentity from "@root/app/middlewares/GenerateSessionIdentity";
+import TokenDataGuestAuth from "@root/app/middlewares/TokenDataGuestAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -96,29 +97,29 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
       route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
       route.get("/dashboard/login/oauth2/code*", "front.dashboard.oauth_redirect", [DashboardAuth], DashboardController.binding().oauthRedirect)
-      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [PagePublisherAuth], DashboardController.binding().displayView);
+      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [TokenDataGuestAuth/* PagePublisherAuth */], DashboardController.binding().displayView);
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
 
     // For client only
-    self.use("/client", [OutSideAuth], function (route: BaseRouteInterface) {
-      // Queue
-      route.post("/queue/add", "client.queue.add", [upload.any()], OutSideController.binding().createQueue);
-      route.post("/queue/item/result/add", "client.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
-      route.get("/queue/:queue_key/stop", "client.queue.stop", [], OutSideController.binding().deleteQueue);
-      route.get("/queue/:job_id", "client.queue.queue", [], OutSideController.binding().deleteQueue);
+    // self.use("/client", [OutSideAuth], function (route: BaseRouteInterface) {
+    //   // Queue
+    //   route.post("/queue/add", "client.queue.add", [upload.any()], OutSideController.binding().createQueue);
+    //   route.post("/queue/item/result/add", "client.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
+    //   route.get("/queue/:queue_key/stop", "client.queue.stop", [], OutSideController.binding().deleteQueue);
+    //   route.get("/queue/:job_id", "client.queue.queue", [], OutSideController.binding().deleteQueue);
 
-    });
+    // });
 
     // For short token after generate queue
-    self.use("/guest", [/* shortTokenAuth */], function (route: BaseRouteInterface) {
-      route.get("/queue/:job_id/stop", "guest.queue.stop", [], OutSideController.binding().deleteQueue);
-      route.get("/queue/item/display/:queue_key/process", "guest.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
-      // Ws
-      route.get("/ws", "guest.ws", [], WSocketController.binding().connect);
-    })
+    // self.use("/guest", [/* shortTokenAuth */], function (route: BaseRouteInterface) {
+    //   route.get("/queue/:job_id/stop", "guest.queue.stop", [], OutSideController.binding().deleteQueue);
+    //   route.get("/queue/item/display/:queue_key/process", "guest.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
+    //   // Ws
+    //   route.get("/ws", "guest.ws", [], WSocketController.binding().connect);
+    // })
 
     // Will deprecated
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
@@ -209,8 +210,8 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
 
     self.use('/xhr/queue-record-detail', [], function (route: BaseRouteInterface) {
-      route.get("/display-data/file", "xhr.queue_record_detail.file", [], QueueRecordDetailController.binding().getFile);
-      route.get("/display-data/directories", "xhr.queue_record_detail.directories", [], QueueRecordDetailController.binding().getDirectories);
+      route.get("/display-data/file", "xhr.queue_record_detail.file", [TokenDataGuestAuth], QueueRecordDetailController.binding().getFile);
+      route.get("/display-data/directories", "xhr.queue_record_detail.directories", [TokenDataGuestAuth], QueueRecordDetailController.binding().getDirectories);
     });
 
     self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {
@@ -219,6 +220,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/:id/view", "xhr.queue_record_detail.queue_record_detail", [], QueueRecordDetailController.binding().getQueueRecordDetail);
       route.get("/:id/display-process", "xhr.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
       route.post("/deletes", "xhr.queue_record_detail.deletes", [upload.any()], QueueRecordDetailController.binding().deleteQueueRecordDetails);
+      route.post("/generate-url-display", "xhr.queue_record_detail.generate_url_display", [upload.any()], QueueRecordDetailController.binding().generateUrlDisplay)
     });
 
     self.use('/xhr/queue-record-schedule', [DashboardAuth], function (route: BaseRouteInterface) {

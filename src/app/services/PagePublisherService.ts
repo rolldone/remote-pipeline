@@ -104,7 +104,7 @@ const PagePublisherService = {
       querySelect.where("pagepub.table_id", table_id);
       let resData = await SqlService.selectOne(querySelect.toString());
       if (resData == null) {
-        return;
+        return null;
       }
       resData = await returnFactoryColumn(resData);
       return resData;
@@ -118,7 +118,23 @@ const PagePublisherService = {
       querySelect.where("pagepub.id", id);
       let resData = await SqlService.selectOne(querySelect.toString());
       if (resData == null) {
-        return;
+        return null;
+      }
+      resData = await returnFactoryColumn(resData);
+      return resData;
+    } catch (ex) {
+      throw ex;
+    }
+  },
+  async getPagePublisherByPageName_TableId_UserId(page_name: string, table_id: number, user_id: number) {
+    try {
+      let querySelect = preSelectQuery();
+      querySelect.where("pagepub.page_name", page_name);
+      querySelect.where("pagepub.table_id", table_id);
+      querySelect.where("pagepub.user_id", user_id);
+      let resData = await SqlService.selectOne(querySelect.toString());
+      if (resData == null) {
+        return null;
       }
       resData = await returnFactoryColumn(resData);
       return resData;
@@ -132,6 +148,10 @@ const PagePublisherService = {
       querySelect.where("pagepub.id", id);
       querySelect.where("pagepub.user_id", user_id);
       let resData = await SqlService.selectOne(querySelect.toString());
+      if (resData == null) {
+        return null;
+      }
+      resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
       throw ex;
@@ -142,44 +162,6 @@ const PagePublisherService = {
   },
   deletesPagePublishersByIds_UserId(ids: Array<number>, user_id: number) {
 
-  },
-  async generateShareKeys(datas: Array<any>, props: {
-    page_name_field: string
-    table_id_field: string
-    value: string,
-    identity_value: any
-  }) {
-    try {
-      for (var a = 0; a < datas.length; a++) {
-        datas[a].share_key = await CryptoData.encryptData(JSON.stringify({
-          page_name: props.page_name_field,
-          table_id: datas[a][props.table_id_field],
-          value: datas[a][props.value],
-          identity_value: props.identity_value,
-        }));
-      }
-      return datas;
-    } catch (ex) {
-      throw ex;
-    }
-  },
-  async generateShareKey(data : any, props: {
-    page_name_field: string
-    table_id_field: string
-    value: string,
-    identity_value: any
-  }) {
-    try {
-      data.share_key = await CryptoData.encryptData(JSON.stringify({
-        page_name: props.page_name_field,
-        table_id: data[props.table_id_field],
-        value: data[props.value],
-        identity_value: props.identity_value,
-      }));
-      return data;
-    } catch (ex) {
-      throw ex;
-    }
   }
 }
 

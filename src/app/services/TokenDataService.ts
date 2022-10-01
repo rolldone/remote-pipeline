@@ -11,7 +11,13 @@ export const TOPIC = {
 export interface TokenDataInterface {
   id?: number
   token?: string
-  data?: any
+  data?: {
+    page_name?: string
+    table_id?: number
+    identity_value?: any
+    user_id?: number
+    [key: string]: any
+  }
   topic?: string
   created_at?: string
   updated_at?: string
@@ -41,11 +47,12 @@ const preSelect = () => {
 const returnFactoryColumn = (props: TokenDataInterface) => {
   if (props == null) return;
   let resData = props;
-  resData.data = JSON.parse(resData.data || '{}');
+  resData.data = JSON.parse(resData.data as any || '{}');
   return resData;
 }
 
 const TokenDataService = {
+  TOPIC,
   async getByToken(token: string) {
     try {
       let query = preSelect();
@@ -61,7 +68,7 @@ const TokenDataService = {
     try {
       let tokenDat = await this.getByToken(props.token);
       if (tokenDat != null) {
-        return this.updateByToken(props.token, props);
+        return this.updateByToken(props.token, props.data);
       }
       props.token = props.token || CreateUUID();
       let query = SqlBricks.insert("token_datas", CreateDate({
@@ -79,7 +86,7 @@ const TokenDataService = {
   async updateByToken(token: string, data: any) {
     try {
       let query = SqlBricks.update("token_datas", CreateDate({
-        data: data
+        data: JSON.stringify(data)
       }))
       query.where("token", token);
       let resData = await SqlService.insert(query.toString());

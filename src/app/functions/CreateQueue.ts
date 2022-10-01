@@ -429,12 +429,18 @@ const CreateQueue = function (props: {
             let resTokenData = await TokenDataService.addOrUpdate({
               // token: idJOb,
               topic: TOPIC.QUEUE_ITEM_PROCESS,
-              data: JSON.stringify({
-                id: queue_record_detail_datas[oko].id,
+              data: {
+                // Mandatory data
+                identity_value: null,
+                page_name: "queue_record_details",
+                table_id: queue_record_detail_datas[oko].id,
                 user_id: resQueueRecord.exe_user_id,
+                auth_required: false,
+                // Your business data
+                id: queue_record_detail_datas[oko].id,
                 pipeline_id: queue_record_detail_datas[oko].exe_pipeline_id,
                 pipeline_item_ids: queue_record_detail_datas[oko].exe_pipeline_item_ids
-              })
+              }
             });
 
             // This is for guest permission access

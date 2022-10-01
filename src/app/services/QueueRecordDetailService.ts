@@ -67,7 +67,11 @@ export interface QueueRecordDetailInterface {
   // Pipeline
   exe_pipeline_id?: number
   exe_pipeline_item_ids?: Array<number>
+  exe_user_id?: number
 
+  // Token data
+  td_token?: string
+  
   // Non persisten
   token_guest?: string
 

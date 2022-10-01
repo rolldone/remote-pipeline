@@ -6,6 +6,7 @@ export interface HomeControllerInterface extends BaseControllerInterface {
 
 export default BaseController.extend<HomeControllerInterface>({
   displayIndex(req, res) {
-    res.send("Hello world");
+    // res.send("Hello world");
+    res.render("demo_client.html", {});
   }
 });

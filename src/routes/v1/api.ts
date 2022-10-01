@@ -37,7 +37,7 @@ import File2Controller from "@root/app/controllers/xhr/File2Controller";
 import { FlydriveStorageEngine, MulterFlydriveOptionsFunction } from 'multer-flydrive-engine';
 import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
-import TokenDataAuth from "@root/app/middlewares/TokenDataGuestAuth";
+import TokenDataAuth, { TOKEN_DATA_GUEST_MODE } from "@root/app/middlewares/TokenDataGuestAuth";
 
 declare let storage: StorageManager;
 
@@ -90,7 +90,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard*", "api.front.dashboard", [OutSideAuth], DashboardController.binding().displayView);
       route.get("/ws", "api.ws", [], WSocketController.binding().connect);
       route.get("/route", "api.display.route", [], route.displayRoute.bind(self));
-      route.get("/personal-token/check/:token","api.token.check",[],PersonalAccessTokenController.binding().checkPersonalAccessToken);
+      route.get("/personal-token/check/:token", "api.token.check", [], PersonalAccessTokenController.binding().checkPersonalAccessToken);
     });
 
     self.use("/file2", [OutSideAuth], function (route: BaseRouteInterface) {
@@ -142,7 +142,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/", "api.configuration.configuration", [], ConfigurationController.binding().getConfiguration);
     });
 
-    self.use("/guest", [TokenDataAuth], function (route: BaseRouteInterface) {
+    self.use("/guest", [TokenDataAuth.bind(TokenDataAuth, TOKEN_DATA_GUEST_MODE.WITHOUT_AUTHENTICATION)], function (route: BaseRouteInterface) {
       route.get("/pipeline-task/pipeline-tasks", "api.guest.pipeline_task.pipeline_tasks", [], PipelineTaskController.binding().getPipelineTasks);
       route.get("/queue-record-detail/display-process", "api.guest.queue_record_detail.display_process", [], QueueRecordDetailController.binding().getDisplayProcess);
     });

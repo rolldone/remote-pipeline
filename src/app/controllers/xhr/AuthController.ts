@@ -7,6 +7,7 @@ import PagePublisherService from "@root/app/services/PagePublisherService"
 import PagePublisherUserService from "@root/app/services/PagePublisherUserService"
 import QueueRecordDetailService, { QueueRecordDetailInterface } from "@root/app/services/QueueRecordDetailService"
 import QueueRecordService from "@root/app/services/QueueRecordService"
+import TokenDataService, { TokenDataInterface } from "@root/app/services/TokenDataService"
 import BaseController from "@root/base/BaseController"
 import AppConfig from "@root/config/AppConfig"
 import OAuth from "@root/config/OAuth"
@@ -38,31 +39,6 @@ function sha256(buffer) {
 }
 
 export default BaseController.extend<AuthControllerInterface>({
-  async requestPin(req, res) {
-    try {
-      let props = req.body;
-      let email = props.email;
-      let resData = null;
-      let pinCode = null;
-      let redirectString = props.redirect;
-      let share_key = props.share_key;
-      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
-      let table_id = dataParse.table_id;
-      let page_name = dataParse.page_name;
-      resData = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
-      pinCode = await PagePublisherUserService.requestPin();
-      await PagePublisherUserService.registerSecretCodeByPublisherId_ByEmail(resData.id, email, pinCode.secret_code);
-      // Ini Seharusnya kirim lewat email tapi nanti dulu 
-      // return disini aja dulu
-      return res.send({
-        status: "success",
-        status_code: 200,
-        return: pinCode.pin_code
-      });
-    } catch (ex) {
-      return res.status(400).send(ex);
-    }
-  },
   oAuthGenerate(req, res) {
     let from_provider = req.body.from_provider || null;
     let call_query: any = {
@@ -114,6 +90,32 @@ export default BaseController.extend<AuthControllerInterface>({
       return res.status(400).send(ex);
     }
   },
+  async requestPin(req, res) {
+    try {
+      let props = req.body;
+      let email = props.email;
+      let resData = null;
+      let pinCode = null;
+      let redirectString = props.redirect;
+      let share_key = props.share_key;
+      let dataParse = await TokenDataService.getByToken(share_key);
+      dataParse = dataParse.data;
+      let table_id = dataParse.table_id;
+      let page_name = dataParse.page_name;
+      resData = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
+      pinCode = await PagePublisherUserService.requestPin();
+      let resInser = await PagePublisherUserService.registerSecretCodeByPublisherId_ByEmail(resData.id, email, pinCode.secret_code);
+      // Ini Seharusnya kirim lewat email tapi nanti dulu 
+      // return disini aja dulu
+      return res.send({
+        status: "success",
+        status_code: 200,
+        return: pinCode.pin_code
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
   async loginPagePublisher(req, res) {
     try {
       let props = req.body;
@@ -122,21 +124,27 @@ export default BaseController.extend<AuthControllerInterface>({
       let resData = null;
       let job_id = null;
       let share_key = props.share_key;
-      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
+      let dataParse = await TokenDataService.getByToken(share_key);
+      dataParse = dataParse.data;
       let table_id = dataParse.table_id;
       let page_name = dataParse.page_name;
       resData = await PagePublisherService.getPagePublisherByPageNameTableID(page_name, table_id);
       resData = await PagePublisherUserService.validatePin(resData.id, email, pin_code);
 
-      let newCryuptData = await CryptoData.encryptData(JSON.stringify({
-        ...dataParse,
-        identity_value: email
-      }))
+      let addNewToken: TokenDataInterface = await TokenDataService.addOrUpdate({
+        data: {
+          ...dataParse,
+          identity_value: email
+        },
+        topic: TokenDataService.TOPIC.QUEUE_DISPLAY_RESULT_SHARE,
+      })
+
       return res.send({
         status: "success",
         status_code: 200,
-        return: newCryuptData
+        return: addNewToken.token
       });
+
     } catch (ex) {
       return res.status(400).send(ex);
     }

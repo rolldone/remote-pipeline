@@ -117,15 +117,26 @@ const PagePublisherUserService = {
       // Dont let email is null
       querySelect.where(Sqlbricks.isNotNull("pagepub_user.email"));
       let resData = await SqlService.selectOne(querySelect.toString());
-      if (resData == null) return;
+      if (resData == null) return null;
       resData = await returnFactoryColumn(resData);
       return resData;
     } catch (ex) {
       throw ex;
     }
   },
-  getPagePublisherUserById_UserId(id: number, user_id: number) {
-
+  async getPagePublisherUserById_UserId(page_publisher_id: number, user_id: number) {
+    try {
+      let querySelect = preSelectQuery();
+      querySelect.where("pagepub_user.page_publisher_id", page_publisher_id);
+      querySelect.where("pagepub_user.user_id", user_id);
+      // Dont let user_id is null
+      querySelect.where(Sqlbricks.isNotNull("pagepub_user.user_id"));
+      let resData = await SqlService.selectOne(querySelect.toString());
+      if (resData == null) return null;
+      resData = await returnFactoryColumn(resData);
+    } catch (ex) {
+      throw ex;
+    }
   },
   async getPagePublisherUsersByPagePublisherId(page_publisher_id: number) {
     try {

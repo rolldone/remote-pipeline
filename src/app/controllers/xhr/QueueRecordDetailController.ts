@@ -6,7 +6,8 @@ import { ReadRecordCOmmandFileLog, TailRecordCommandFileLog } from "@root/app/fu
 import ExecutionService from "@root/app/services/ExecutionService";
 import PagePublisherService from "@root/app/services/PagePublisherService";
 import PipelineTaskService from "@root/app/services/PipelineTaskService";
-import QueueRecordDetailService, { QueueRecordDetailServiceInterface } from "@root/app/services/QueueRecordDetailService";
+import QueueRecordDetailService, { QueueRecordDetailInterface, QueueRecordDetailServiceInterface } from "@root/app/services/QueueRecordDetailService";
+import TokenDataService, { TokenDataInterface, TOPIC } from "@root/app/services/TokenDataService";
 import { MasterDataInterface } from "@root/bootstrap/StartMasterData";
 import Sqlbricks from "@root/tool/SqlBricks";
 import BaseController from "base/BaseController";
@@ -25,6 +26,7 @@ export interface QueueRecordDetailControllerInterface extends BaseControllerInte
   getDirectories: { (req: any, res: any): void }
   getFile: { (req: any, res: any): void }
   deleteQueueRecordDetails: { (req: any, res: any): void }
+  generateUrlDisplay: { (req: any, res: any): void }
 }
 
 const QueueRecordDetailController = BaseController.extend<QueueRecordDetailControllerInterface>({
@@ -33,12 +35,6 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       let user = await GetAuthUser(req);
       let props = req.query;
       let resData = await QueueRecordDetailService.getQueueRecordDetails(props);
-      resData = await PagePublisherService.generateShareKeys(resData, {
-        page_name_field: "queue_records",
-        table_id_field: "queue_record_id",
-        value: "job_id",
-        identity_value: null
-      });
       return res.send({
         status: 'success',
         status_code: 200,
@@ -201,9 +197,7 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getDirectories(req, res) {
     try {
-      let share_key = req.query.share_key;
-      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
-      let job_id = dataParse.value;
+      let job_id = req.query.job_id;
       let resData = await QueueRecordDetailService.getDirectories(job_id);
       return res.send({
         status: 'success',
@@ -217,10 +211,8 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
   },
   async getFile(req, res) {
     try {
-      let share_key = req.query.share_key;
-      let dataParse = JSON.parse(SafeValue(await CryptoData.descryptData(share_key), '{}'));
       let path = req.query.path;
-      let job_id = dataParse.value;
+      let job_id = req.query.job_id;
       let resData = await QueueRecordDetailService.getFile(path, job_id);
       if (resData.mime != false) {
         res.contentType(resData.mime);
@@ -249,6 +241,39 @@ const QueueRecordDetailController = BaseController.extend<QueueRecordDetailContr
       let user = await GetAuthUser(req);
       let ids = JSON.parse(req.body.ids || '[]');
       let resData = await QueueRecordDetailService.deleteQueueFromIds_UserId(ids, user.id);
+      return res.send({
+        status: 'success',
+        status_code: 200,
+        return: resData
+      });
+    } catch (ex) {
+      return res.status(400).send(ex);
+    }
+  },
+  async generateUrlDisplay(req, res) {
+    try {
+      let user = await GetAuthUser(req);
+      let id = req.body.queue_record_detail_id || null;
+      let queueRecordDetailData: QueueRecordDetailInterface = await QueueRecordDetailService.getQueueRecordDetail({
+        id
+      });
+      // Inser to token datas
+      let resTokenData: TokenDataInterface = await TokenDataService.addOrUpdate({
+        token: queueRecordDetailData.td_token,
+        topic: TOPIC.QUEUE_DISPLAY_RESULT_SHARE,
+        data: {
+          // Important data for page auth
+          page_name: "queue_records",
+          table_id: queueRecordDetailData.queue_record_id,
+          identity_value: null,
+          user_id: queueRecordDetailData.exe_user_id,
+          // Your business data
+          id: queueRecordDetailData.id,
+          job_id: queueRecordDetailData.job_id
+        }
+      });
+      queueRecordDetailData.token_data_id = resTokenData.id;
+      let resData = await QueueRecordDetailService.updateQueueRecordDetail(queueRecordDetailData);
       return res.send({
         status: 'success',
         status_code: 200,
