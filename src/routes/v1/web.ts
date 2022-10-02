@@ -40,7 +40,7 @@ import upath from 'upath';
 import PagePublisherController from "@root/app/controllers/xhr/PagePublisherController";
 import PagePublisherUserController from "@root/app/controllers/xhr/PagePublisherUserController";
 import GenerateSessionIdentity from "@root/app/middlewares/GenerateSessionIdentity";
-import TokenDataGuestAuth from "@root/app/middlewares/TokenDataGuestAuth";
+import TokenDataGuestAuth, { TOKEN_DATA_GUEST_MODE } from "@root/app/middlewares/TokenDataGuestAuth";
 
 const storageTemp = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -96,7 +96,7 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
       route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
       route.get("/dashboard/login/oauth2/code*", "front.dashboard.oauth_redirect", [DashboardAuth], DashboardController.binding().oauthRedirect)
-      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [TokenDataGuestAuth], DashboardController.binding().displayView);
+      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [TokenDataGuestAuth.bind(TokenDataGuestAuth, TOKEN_DATA_GUEST_MODE.WITH_AUTHENTICATION)], DashboardController.binding().displayView);
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
@@ -191,8 +191,8 @@ export default BaseRoute.extend<BaseRouteInterface>({
     });
 
     self.use('/xhr/queue-record-detail', [], function (route: BaseRouteInterface) {
-      route.get("/display-data/file", "xhr.queue_record_detail.file", [TokenDataGuestAuth], QueueRecordDetailController.binding().getFile);
-      route.get("/display-data/directories", "xhr.queue_record_detail.directories", [TokenDataGuestAuth], QueueRecordDetailController.binding().getDirectories);
+      route.get("/display-data/file", "xhr.queue_record_detail.file", [TokenDataGuestAuth.bind(TokenDataGuestAuth, TOKEN_DATA_GUEST_MODE.WITH_AUTHENTICATION)], QueueRecordDetailController.binding().getFile);
+      route.get("/display-data/directories", "xhr.queue_record_detail.directories", [TokenDataGuestAuth.bind(TokenDataGuestAuth, TOKEN_DATA_GUEST_MODE.WITH_AUTHENTICATION)], QueueRecordDetailController.binding().getDirectories);
     });
 
     self.use('/xhr/queue-record-detail', [DashboardAuth], function (route: BaseRouteInterface) {

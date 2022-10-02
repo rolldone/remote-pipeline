@@ -81,6 +81,9 @@ export const TOKEN_DATA_GUEST_MODE = {
 const TokenDataGuestAuth = function (flowMode: number, req, res, next) {
   let asyncFUn = async () => {
     try {
+      if(flowMode == null){
+        throw new Error("flowMode is null, Check your TokenDataGuestAuth and make sure is filled");
+      }
       let token = req.query.token || req.query.share_key || null;
       let resData: TokenDataInterface = await TokenDataService.getByToken(token);
       let data = resData.data; // JSON.parse(resData.data || '{}');
