@@ -190,6 +190,8 @@ const PipelineBasicLoop = async (props: {
           }
 
           let resTokenData: TokenDataInterface = await TokenDataService.addOrUpdate({
+            token: queue_record_detail.job_id,
+            topic: TokenDataService.TOPIC.QUEUE_DISPLAY_RESULT_SHARE,
             data: {
               // Mandatory data
               page_name: "queue_records",
