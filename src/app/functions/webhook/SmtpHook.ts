@@ -57,6 +57,11 @@ const SmtpHook = async function (props: SmtpHookInterface) {
       }
     });
     let _message = null;
+    try{
+      message = JSON.parse(message);
+    }catch(ex){
+      console.log("Not json format.");
+    }
     // console.log("message_html :: ", message_html);
     switch (true) {
       case (typeof message === 'object'):
@@ -74,6 +79,10 @@ const SmtpHook = async function (props: SmtpHookInterface) {
         break;
     }
 
+    if(to_datas.length == 0){
+      throw new Error("The email receiver is empty. Please fill on webhook smtp");
+    }
+    
     // send mail with defined transport object
     let info = await transporter.sendMail({
       from: `"${from_name} " <${from_email}>`, // sender address
