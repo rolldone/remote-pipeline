@@ -39,7 +39,6 @@ import { StorageManager } from "@slynova/flydrive";
 import upath from 'upath';
 import PagePublisherController from "@root/app/controllers/xhr/PagePublisherController";
 import PagePublisherUserController from "@root/app/controllers/xhr/PagePublisherUserController";
-import PagePublisherAuth from "@root/app/middlewares/PagePublisherAuth";
 import GenerateSessionIdentity from "@root/app/middlewares/GenerateSessionIdentity";
 import TokenDataGuestAuth from "@root/app/middlewares/TokenDataGuestAuth";
 
@@ -97,29 +96,11 @@ export default BaseRoute.extend<BaseRouteInterface>({
       route.get("/dashboard/login", "front.dashboard.login", [], DashboardController.binding().displayView);
       route.get("/dashboard/register", "front.dashboard.register", [], DashboardController.binding().displayView);
       route.get("/dashboard/login/oauth2/code*", "front.dashboard.oauth_redirect", [DashboardAuth], DashboardController.binding().oauthRedirect)
-      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [TokenDataGuestAuth/* PagePublisherAuth */], DashboardController.binding().displayView);
+      route.get("/dashboard/queue-record/job", "front.dashboard.queue_record.job.display_result", [TokenDataGuestAuth], DashboardController.binding().displayView);
       route.get("/dashboard*", "front.dashboard", [DashboardAuth], DashboardController.binding().displayView);
       route.get("/ws", "ws", [], WSocketController.binding().connect);
       route.get("/route", "display.route", [], route.displayRoute.bind(self));
     });
-
-    // For client only
-    // self.use("/client", [OutSideAuth], function (route: BaseRouteInterface) {
-    //   // Queue
-    //   route.post("/queue/add", "client.queue.add", [upload.any()], OutSideController.binding().createQueue);
-    //   route.post("/queue/item/result/add", "client.result.add", [upload.any()], OutSideController.binding().addResultQueueDetailData);
-    //   route.get("/queue/:queue_key/stop", "client.queue.stop", [], OutSideController.binding().deleteQueue);
-    //   route.get("/queue/:job_id", "client.queue.queue", [], OutSideController.binding().deleteQueue);
-
-    // });
-
-    // For short token after generate queue
-    // self.use("/guest", [/* shortTokenAuth */], function (route: BaseRouteInterface) {
-    //   route.get("/queue/:job_id/stop", "guest.queue.stop", [], OutSideController.binding().deleteQueue);
-    //   route.get("/queue/item/display/:queue_key/process", "guest.queue_display_process", [], OutSideController.binding().queueDisplayProcess);
-    //   // Ws
-    //   route.get("/ws", "guest.ws", [], WSocketController.binding().connect);
-    // })
 
     // Will deprecated
     self.use('/xhr/file', [], function (route: BaseRouteInterface) {
