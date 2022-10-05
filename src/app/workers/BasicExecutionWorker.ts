@@ -78,7 +78,7 @@ const BasicExecutionWorker = function (props: BasicExecutionWorkerInterface) {
     } = job.data;
 
     console.log(`${job_id} alias from ${job.id} has completed and returned ${job.returnvalue}`);
-    await job.remove();
+    // await job.remove();
     onComplete({ job });
   });
 

@@ -423,7 +423,10 @@ const CreateQueue = function (props: {
               break;
           }
 
-          masterData.saveData("create-bull-board",_processQueue);
+          masterData.saveData("create-bull-board",{
+            action : "add",
+            queue: _processQueue
+          });
 
           // Give callback for caller
           for (let oko = 0; oko < queue_record_detail_datas.length; oko++) {

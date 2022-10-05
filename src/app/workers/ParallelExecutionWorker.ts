@@ -76,7 +76,7 @@ const ParallelExecutionWorker = function (props: ParallelExecutionWorkerInterfac
     } = job.data;
 
     console.log(`${job_id} alias from ${job.id} has completed and returned ${job.returnvalue}`);
-    job.remove();
+    // job.remove();
     onComplete({ job });
   });
 

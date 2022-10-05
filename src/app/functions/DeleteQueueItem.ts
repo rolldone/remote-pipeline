@@ -142,6 +142,11 @@ const DeleteQueueItem = async function (props: {
         break;
     }
 
+    masterData.saveData("create-bull-board",{
+      action : "remove",
+      queue: _processQueue
+    });
+
     // res.send(res_data_record_detail.queue_name + " with Job id : " + res_data_record_detail.job_id + " :: deleted!")
     return res_data_record_detail;
   } catch (ex) {

@@ -16,7 +16,7 @@ var upload = multer();
 var BodyParser = require("body-parser");
 var redis = require("redis");
 
-declare let masterData : MasterDataInterface;
+declare let masterData: MasterDataInterface;
 
 var fileStoreOptions = {
   reapInterval: -1,
@@ -43,7 +43,7 @@ export default function (next: Function) {
         store: new FileStore(fileStoreOptions),
         resave: false,
         saveUninitialized: false,
-        cookie  : {
+        cookie: {
           expires: (1000 * 60) * 60
         }
         // cookie: {
@@ -59,12 +59,21 @@ export default function (next: Function) {
 
     const serverAdapter = new ExpressAdapter();
     serverAdapter.setBasePath('/dashboard/bull-monitoring');
-    masterData.setOnListener("create-bull-board",(processQq)=>{
 
-      const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
-        queues: [new BullMQAdapter(processQq)],
-        serverAdapter: serverAdapter,
-      });
+    let queueTGemp = {};
+    const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
+      queues: [],
+      serverAdapter: serverAdapter,
+    });
+    masterData.setOnListener("create-bull-board", (props) => {
+      switch (props.action) {
+        case 'add':
+          addQueue(new BullMQAdapter(props.queue));
+          break;
+        case 'remove':
+          removeQueue(new BullMQAdapter(props.queue));
+          break;
+      }
     })
     app.use("/dashboard/bull-monitoring", serverAdapter.getRouter());
 
@@ -79,13 +88,13 @@ export default function (next: Function) {
     global.Server.listen(AppConfig.PORT, () => {
       console.log(`Example app listening}`)
     });
-    
+
     nunjucks.configure('src/views', {
       autoescape: true,
       express: app
     });
 
-    
+
     return next(null);
   } catch (ex) {
     throw ex;

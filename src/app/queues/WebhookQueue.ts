@@ -18,7 +18,7 @@ export default function (props) {
       connection: global.redis_bullmq,
       // prefix: "bullmq_",
       defaultJobOptions: {
-        removeOnComplete: true, removeOnFail: true,
+        removeOnComplete: true, removeOnFail: false,
         timeout: 60000
       }
     })

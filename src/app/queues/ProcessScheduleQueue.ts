@@ -20,7 +20,7 @@ const ProcessScheduleQueue = function (props) {
       // prefix: "bullmq_",
       defaultJobOptions: {
         // removeOnComplete: true, removeOnFail: 1000
-        removeOnComplete: true, removeOnFail: true,
+        removeOnComplete: true, removeOnFail: false,
       }
     });
     processQueStore[props.queue_name] = {

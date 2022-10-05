@@ -19,7 +19,7 @@ const ProcessQueue = function (props: BasicExecutionWorkerInterface) {
       connection: global.redis_bullmq,
       // prefix: "bullmq_",
       defaultJobOptions: {
-        removeOnComplete: true, removeOnFail: true, // 1000
+        removeOnComplete: true, removeOnFail: false, // 1000
       }
     })
     processQueStore[props.queue_name] = {
