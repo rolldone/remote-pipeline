@@ -1,6 +1,11 @@
 import AppConfig from "config/AppConfig";
 import Express from "tool/Express";
 import http from 'http';
+import { ExpressAdapter } from '@bull-board/express';
+import { createBullBoard } from '@bull-board/api';
+import { BullAdapter } from '@bull-board/api/bullAdapter';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { MasterDataInterface } from "./StartMasterData";
 
 var session = require("express-session");
 var FileStore = require('session-file-store')(session);
@@ -11,6 +16,7 @@ var upload = multer();
 var BodyParser = require("body-parser");
 var redis = require("redis");
 
+declare let masterData : MasterDataInterface;
 
 var fileStoreOptions = {
   reapInterval: -1,
@@ -50,6 +56,18 @@ export default function (next: Function) {
     });
     app.use("/public", Express.static('dist/public'));
     app.use("/public/dashboard", Express.static('dashboard/dist'));
+
+    const serverAdapter = new ExpressAdapter();
+    serverAdapter.setBasePath('/dashboard/bull-monitoring');
+    masterData.setOnListener("create-bull-board",(processQq)=>{
+
+      const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
+        queues: [new BullMQAdapter(processQq)],
+        serverAdapter: serverAdapter,
+      });
+    })
+    app.use("/dashboard/bull-monitoring", serverAdapter.getRouter());
+
     /* Multipart/form-data */
     // app.use(upload.any());
     global.app = app;
@@ -61,10 +79,13 @@ export default function (next: Function) {
     global.Server.listen(AppConfig.PORT, () => {
       console.log(`Example app listening}`)
     });
+    
     nunjucks.configure('src/views', {
       autoescape: true,
       express: app
     });
+
+    
     return next(null);
   } catch (ex) {
     throw ex;
