@@ -41,11 +41,11 @@ function sha256(buffer) {
 export default BaseController.extend<AuthControllerInterface>({
   oAuthGenerate(req, res) {
     let from_provider = req.body.from_provider || null;
-    let call_query: any = {
+    let call_query = {
       forward_to: encodeURI(req.body.forward_to),
       from_provider: from_provider
     }
-    call_query = new URLSearchParams(call_query);
+    // call_query = new URLSearchParams(call_query);
     if (from_provider == null) {
       return res.send("There is no provider page here");
     }
@@ -57,16 +57,15 @@ export default BaseController.extend<AuthControllerInterface>({
     var state = base64URLEncode(randomBytes(5));
     // StoreValue.set(req, "pkce_verifier", verifier);
     // StoreValue.set(req, "pkce_challenge", challenge)
-    StoreValue.set(req, "state", state);
+    StoreValue.set(req, state, JSON.stringify(call_query));
 
     url = OAuthService.generateOAuthUrl({
-      call_query,
       from_provider,
       // code_challenge: challenge,
       // code_challenge_method: "S256",
       state: state
     })
-
+    // console.log("URL :: ", url);
     return res.send({
       status: "success",
       status_code: 200,

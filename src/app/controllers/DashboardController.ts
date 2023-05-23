@@ -27,7 +27,12 @@ export default BaseController.extend<DashboardControllerInterface>({
         pkce_verifier = StoreValue.get(req, "pkce_verifier", null);
         pkce_challenge = StoreValue.get(req, "pkce_challenge", null);
       }
-      
+
+      let call_query = JSON.parse(StoreValue.get(req, props.state, '{}'));
+      props = {
+        ...props,
+        ...call_query
+      }
       let resData = await OAuthService.getOAuthToken({
         code: props.code,
         forward_to: props.forward_to,
@@ -86,9 +91,10 @@ export default BaseController.extend<DashboardControllerInterface>({
           break;
         case 'gitlab':
           // STILL TESTING GET TOKEN FIRST
-          res.send(resData);
-          return;
-          return res.send(resData);
+          // res.send(resData);
+          // return;
+          // return res.send(resData);
+          // console.log("resData :: ",resData);
           oauthUserData = await GitlabService.getCurrentUser({
             access_token: resData.access_token,
           })
@@ -111,6 +117,7 @@ export default BaseController.extend<DashboardControllerInterface>({
       }
       res.render("oauth_response/oauth_callback.html", resData);
     } catch (ex) {
+      console.log("oauthRedirect - err :: ", ex);
       return res.status(400).send(ex);
     }
   },

@@ -6,6 +6,7 @@ import Sqlbricks from "@root/tool/SqlBricks";
 import SqlService from "./SqlService";
 import { randomBytes } from "crypto";
 import CreateDate from "../functions/base/CreateDate";
+import qs from 'qs';
 
 export interface OauthInterface {
   id?: number
@@ -23,7 +24,6 @@ export interface OauthInterface {
 
 export default {
   generateOAuthUrl(props: {
-    call_query: string
     from_provider: "github" | "gitlab" | "bitbucket",
     code_challenge?: string
     code_challenge_method?: string | "S256"
@@ -36,7 +36,7 @@ export default {
       let url = null;
       switch (props.from_provider) {
         case 'bitbucket':
-          redirect_uri = OAuth.BITBUCKET_REDIRECT_URI + '?' + props.call_query
+          redirect_uri = OAuth.BITBUCKET_REDIRECT_URI;
           queryProps = {
             client_id: OAuth.BITBUCKET_CLIENT_ID,
             redirect_uri: redirect_uri,
@@ -47,23 +47,24 @@ export default {
           url = 'https://bitbucket.org/site/oauth2/authorize?' + queryUrl;
           return url;
         case 'github':
-          redirect_uri = OAuth.GITHUB_REDIRECT_URI + '?' + props.call_query
+          redirect_uri = OAuth.GITHUB_REDIRECT_URI;
           queryProps = {
             client_id: OAuth.GITHUB_CLIENT_ID,
             redirect_uri: redirect_uri,
             scope: 'user,email,repo',
+            state: props.state
           }
           queryUrl = new URLSearchParams(queryProps);
           url = 'https://github.com/login/oauth/authorize?' + queryUrl;
           return url;
         case 'gitlab':
-          redirect_uri = OAuth.GITLAB_REDIRECT_URI + '?' + props.call_query
+          redirect_uri = OAuth.GITLAB_REDIRECT_URI
           queryProps = {
             client_id: OAuth.GITLAB_CLIENT_ID,
             redirect_uri: redirect_uri,
             scope: 'api',
             response_type: 'code',
-            state: props.state,
+            state: props.state
             // code_challenge_method: props.code_challenge_method || "S256",
             // code_challenge: props.code_challenge
           }
@@ -81,7 +82,7 @@ export default {
     forward_to: string
     from_provider: "github" | "gitlab" | "bitbucket"
     code_challenge?: string,
-    code_verifier?: string
+    code_verifier?: string,
   }) {
     let code = props.code;
     let forward_to = props.forward_to;
@@ -109,7 +110,8 @@ export default {
           forward_to,
           from_provider
         };
-        console.log("parseQuery :: ", parseQuery);
+        // console.log("resData.data :: ", resData.data);
+        // console.log("parseQuery :: ", parseQuery);
         return parseQuery as any;
       case 'gitlab':
         console.log("oauth :: ", OAuth);
@@ -119,20 +121,21 @@ export default {
         formDataJSON["code"] = code;
         formDataJSON["grant_type"] = "authorization_code";
         formDataJSON["redirect_uri"] = OAuth.GITLAB_REDIRECT_URI;
-        let jsonString = JSON.stringify(formDataJSON);
-        resData = await axios.post('https://gitlab.com/oauth/token', jsonString, {
+        let requestDataEncoded = qs.stringify(formDataJSON);
+        resData = await axios.post('https://gitlab.com/oauth/token', requestDataEncoded, {
           headers: {
             // Overwrite Axios's automatically set Content-Type
-            'Content-Type': 'application/json'
+            'Content-Type': `application/x-www-form-urlencoded`,
           }
         });
-        parseQuery = querystring.parse(resData.data);
+        parseQuery = resData.data;
         parseQuery = {
           ...parseQuery,
           forward_to,
           from_provider
         };
-        console.log("parseQuery :: ", parseQuery);
+        // console.log("resData.data :: ", resData.data);
+        // console.log("parseQuery :: ", parseQuery);
         return parseQuery as any;
       case 'bitbucket':
         formData.append("client_id", OAuth.BITBUCKET_CLIENT_ID);
