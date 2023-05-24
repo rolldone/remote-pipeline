@@ -1,9 +1,9 @@
-import { Queue, QueueScheduler } from "bullmq";
+import { Queue, /* QueueScheduler */ } from "bullmq";
 
 const processQueStore: {
   [key: string]: {
     queue: Queue,
-    schedule: QueueScheduler
+    // schedule: QueueScheduler
   }
 } = {};
 
@@ -11,10 +11,10 @@ const ProcessScheduleQueue = function (props) {
   let _queue: Queue = null;
   if (processQueStore[props.queue_name] == null) {
     console.log("new ProcessScheduleQueue queue")
-    const myQueueScheduler = new QueueScheduler(props.queue_name, {
-      connection: global.redis_bullmq,
-      // prefix: "bullmq_",
-    });
+    // const myQueueScheduler = new QueueScheduler(props.queue_name, {
+    //   connection: global.redis_bullmq,
+    //   // prefix: "bullmq_",
+    // });
     _queue = new Queue(props.queue_name, {
       connection: global.redis_bullmq,
       // prefix: "bullmq_",
@@ -25,7 +25,7 @@ const ProcessScheduleQueue = function (props) {
     });
     processQueStore[props.queue_name] = {
       queue: _queue,
-      schedule: myQueueScheduler
+      // schedule: myQueueScheduler
     };
   } else {
     console.log("exist ProcessScheduleQueue queue")
@@ -44,7 +44,7 @@ export const deleteProcessScheduleQueue = async (queueName: string) => {
     // await queue.clean(0, 'completed');
     // await queue.clean(0, 'failed');
     await processQueStore[queueName].queue.close();
-    await processQueStore[queueName].schedule.close();
+    // await processQueStore[queueName].schedule.close();
     delete processQueStore[queueName];
   }
 }

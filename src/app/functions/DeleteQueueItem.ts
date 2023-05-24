@@ -40,19 +40,23 @@ const DeleteQueueItem = async function (props: {
       })
     }
 
+    // console.log("res_data_record_detail_vmdfkvm ::",res_data_record_detail);
     if (res_data_record_detail == null) {
       return;
     }
-
-    if (res_data_record_detail.status != QueueRecordDetailService.STATUS.RUNNING) {
-      if (res_data_record_detail.status != QueueRecordDetailService.STATUS.FAILED) {
-        return;
+    
+    if(res_data_record_detail.status == QueueRecordDetailService.STATUS.COMPLETED){
+      // Delete it
+    }else{
+      if (res_data_record_detail.status != QueueRecordDetailService.STATUS.RUNNING) {
+        if (res_data_record_detail.status != QueueRecordDetailService.STATUS.FAILED) {
+          return;
+        }
       }
     }
 
     let _processQueue: Queue = null;
     let resDataUpdate = null;
-    console.log("DeleteQueueItem - queue_record_details data :: ", res_data_record_detail.qrec_type)
 
     switch (res_data_record_detail.qrec_type) {
       case QueueRecordService.TYPE.INSTANT:
@@ -87,6 +91,7 @@ const DeleteQueueItem = async function (props: {
 
         break;
       case QueueRecordService.TYPE.SCHEDULE:
+        console.log("res_data_record_detail :: ",res_data_record_detail);
         switch (res_data_record_detail.qrec_sch_schedule_type) {
           case QueueSceduleService.schedule_type.ONE_TIME_SCHEDULE:
             _processQueue = ProcessQueue({
@@ -115,10 +120,12 @@ const DeleteQueueItem = async function (props: {
             _processQueue = ProcessScheduleQueue({
               queue_name: res_data_record_detail.queue_name
             })
+            
             let re_jobs_re = await _processQueue.getRepeatableJobs();
             for (let i = 0; i < re_jobs_re.length; i++) {
               const job = re_jobs_re[i];
               await _processQueue.removeRepeatableByKey(job.key);
+              await _processQueue.remove(job.key);
             }
 
             re_jobs_re = await _processQueue.getRepeatableJobs();

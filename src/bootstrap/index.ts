@@ -2,6 +2,7 @@ import { AsyncJs } from "../tool";
 import StartBullMQ from "./StartBullMQ";
 import StartCheckHost from "./StartCheckHost";
 import StartConfig from "./StartConfig";
+import StartCronJob from "./StartCronJob";
 import StartExpress from "./StartExpress";
 import StartFlyDrive from "./StartFlyDrive";
 import StartMasterData from "./StartMasterData";
@@ -27,7 +28,8 @@ const task: Array<any> = [
   StartQueueWorker,
   StartWebSocket,
   StartFlyDrive,
-  StartCheckHost
+  StartCheckHost,
+  StartCronJob
 ];
 
 export default function (asyncDone: Function) {

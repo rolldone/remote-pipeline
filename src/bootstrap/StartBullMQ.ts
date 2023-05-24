@@ -1,7 +1,7 @@
 
-import { QueueEvents } from 'bullmq';
+import { ConnectionOptions, QueueEvents } from 'bullmq';
 import RedisConfig from "@root/config/RedisConfig";
-import IORedis from 'ioredis';
+import IORedis, { Redis } from 'ioredis';
 
 export const redisConfig = {
   port: RedisConfig.port,
@@ -21,7 +21,6 @@ export default function (next: Function) {
     db: redisConfig.db,
     // keyPrefix: redisConfig.prefix
   });
-
   redisConnect.on('connect', () => {
     // this will throw all errors nohm encounters - not recommended
     // global.redis_bullmq = redisConnect;
@@ -29,7 +28,7 @@ export default function (next: Function) {
   })
   global.redis_bullmq = redisConnect;
   const queueEvents = new QueueEvents("*", {
-    connection: redisConnect
+    connection: redisConnect as ConnectionOptions
   });
 
   queueEvents.on('waiting', ({ jobId }) => {

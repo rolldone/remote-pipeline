@@ -102,9 +102,11 @@ export default async function (props: TaskTypeInterface) {
                 })
               };
 
-              sshPromise.on("data", callbackListen);
-              let command_history = await sshPromise.write(command);
-              sshPromise.off('data', callbackListen);
+              if(sshPromise != null){
+                sshPromise.on("data", callbackListen);
+                let command_history = await sshPromise.write(command);
+                sshPromise.off('data', callbackListen);
+              }
 
               masterData.saveData("data_pipeline_" + job_id, {
                 pipeline_task_id: pipeline_task.id,

@@ -1,30 +1,30 @@
-import { Queue, QueueScheduler } from "bullmq";
+import { Queue, /* QueueScheduler */ } from "bullmq";
 
 const processQueue: {
   [key: string]: {
     queue: Queue,
-    schedule: QueueScheduler
+    // schedule: QueueScheduler
   }
 } = {};
 export default function (props) {
   let _queue: Queue = null;
   if (processQueue[props.queue_name] == null) {
     console.log("new webhhook queue")
-    const myQueueScheduler = new QueueScheduler(props.queue_name, {
-      connection: global.redis_bullmq,
-      // prefix: "bullmq_",
-    });
+    // const myQueueScheduler = new QueueScheduler(props.queue_name, {
+    //   connection: global.redis_bullmq,
+    //   // prefix: "bullmq_",
+    // });
     _queue = new Queue(props.queue_name, {
       connection: global.redis_bullmq,
       // prefix: "bullmq_",
       defaultJobOptions: {
         removeOnComplete: true, removeOnFail: false,
-        timeout: 60000
+        // timeout: 60000
       }
     })
     processQueue[props.queue_name] = {
       queue: _queue,
-      schedule: myQueueScheduler
+      // schedule: myQueueScheduler
     };
   } else {
     _queue = processQueue[props.queue_name].queue;
