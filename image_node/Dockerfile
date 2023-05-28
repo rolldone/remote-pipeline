@@ -1,10 +1,11 @@
-FROM node:14.16.1
+FROM node:14.21.3-bullseye
 # Create app directory
 RUN npm install nodemon -g
 RUN npm install sequelize-cli -g
 RUN npm install pm2 -g
 RUN npm install gm -g
-RUN apt-get update
+
+RUN apt-get update --fix-missing
 
 RUN apt-get -y install cmake protobuf-compiler
 
@@ -19,6 +20,8 @@ RUN apt-get install -y iputils-ping
 # install net-tools
 RUN apt-get install -y net-tools
 
+# Install python
+RUN apt-get install -y python
 
 # Install rsync
 RUN apt-get install -y rsync

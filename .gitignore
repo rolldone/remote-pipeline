@@ -1,6 +1,5 @@
 node_modules/
 dist/
-dashboard/
 .sync_temp/
 sync-config.yaml
 .sync_ignore

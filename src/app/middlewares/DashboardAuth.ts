@@ -4,14 +4,16 @@ import GetAuthUser from "../functions/GetAuthUser";
 export default function (req, res, next) {
   let promise = async () => {
     try {
-      console.log("req.originalUrl :: ",req.get("host"));
+      console.log("req.originalUrl :: ", req.get("host"));
       let sess = req.session;
       if (sess.user == null) {
-        res.redirect("/dashboard/login?redirect=" + (AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+        let encodeRedirect = encodeURIComponent((AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+        res.redirect("/dashboard/login?redirect=" + encodeRedirect);
         return;
       }
       let user = await GetAuthUser(req);
-      if (user.id == null) return res.redirect("/dashboard/login?redirect=" + (AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+      let encodeRedirect = encodeURIComponent(AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl);
+      if (user.id == null) return res.redirect("/dashboard/login?redirect=" + encodeRedirect);
       next();
     } catch (ex) {
       res.status(400).send(ex);

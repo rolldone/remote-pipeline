@@ -13,6 +13,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsc -w",
+    "migrate": "npx knex migrate:latest",
     "build": "npx tsc",
     "build-webpack": "npx webpack --config webpack.config.js"
   },
@@ -54,7 +55,7 @@
     "@vscode/sqlite3": "^5.0.8",
     "async": "^3.2.4",
     "axios": "^0.27.2",
-    "bcrypt": "^5.0.1",
+    "bcrypt": "^5.1.0",
     "better-sqlite3": "^7.5.3",
     "bullmq": "^3.14.0",
     "chalk": "^4.1.1",

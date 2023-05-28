@@ -108,7 +108,8 @@ const TokenDataGuestAuth = function (flowMode: number, req, res, next) {
           //is ajax request
           return res.status(400).send("This page is private :(");
         } else {
-          return res.redirect("/dashboard/login?redirect=" + (AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+          let encodeRedirect = encodeURIComponent((AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+          return res.redirect("/dashboard/login?redirect=" + encodeRedirect);
         }
       }
       if (validTokenDataAuth == STATUS_RESPONSE.NOT_ALLOWED) {
@@ -116,7 +117,8 @@ const TokenDataGuestAuth = function (flowMode: number, req, res, next) {
           //is ajax request
           return res.status(400).send("You are not allowed access this data :(");
         } else {
-          return res.redirect("/dashboard/login-page-publisher?redirect=" + (AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+          let encodeRedirect = encodeURIComponent((AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl));
+          return res.redirect("/dashboard/login-page-publisher?redirect=" + encodeRedirect);
         }
       }
       convertToReqData(req, data);
