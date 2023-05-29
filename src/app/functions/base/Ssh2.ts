@@ -7,6 +7,8 @@ import ssh2Stream from 'ssh2-streams';
 
 export type SftpSsh2 = {
   stat: { (path: string): Promise<ssh2Stream.Stats> }
+  rmdir: { (path: string): Promise<ssh2Stream.Stats> }
+  unlink: { (path: string): Promise<ssh2Stream.Stats> }
   mkdir: { (path: string, attributes?: ssh2Stream.InputAttributes): Promise<string> }
   readdir: { (path: string): Promise<ssh2Stream.FileEntry[]> }
   readFile: { (path: string): Promise<Buffer> }
@@ -39,6 +41,26 @@ class Ssh2 {
           mkdir: (path: string, attributes) => {
             return new Promise((resolve: Function, reject: Function) => {
               sftp.mkdir(path, attributes, (err) => {
+                if (err) {
+                  return reject(err);
+                }
+                resolve(path);
+              })
+            });
+          },
+          rmdir: (path: string, attributes) => {
+            return new Promise((resolve: Function, reject: Function) => {
+              sftp.rmdir(path, (err) => {
+                if (err) {
+                  return reject(err);
+                }
+                resolve(path);
+              })
+            });
+          },
+          unlink: (path: string, attributes) => {
+            return new Promise((resolve: Function, reject: Function) => {
+              sftp.unlink(path, (err) => {
                 if (err) {
                   return reject(err);
                 }

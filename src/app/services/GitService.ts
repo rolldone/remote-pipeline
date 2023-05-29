@@ -64,7 +64,8 @@ export default {
                     // you can explicitly include them when executing commands with `shelljs`.
                     // Construct the command including the environment variable
                     const sshCommand = `ssh -i "$(pwd)/${privateKeyPath.replace("./", "")}" -o StrictHostKeyChecking=no`;
-                    const gitCloneCommand = `GIT_SSH_COMMAND="${sshCommand}" git clone --recursive -b ${props.branch} ${gitRepositoryUrl} ${destinationDirectory}`;
+                    const gitCloneCommand = `GIT_SSH_COMMAND="${sshCommand}" git clone --depth=1 --recursive -b ${props.branch} ${gitRepositoryUrl} ${destinationDirectory}`;
+                    console.log("gitCloneCommand :: ",gitCloneCommand);
                     shelljs.exec(gitCloneCommand);
 
                     resolve(destinationDirectory);
