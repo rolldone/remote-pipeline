@@ -88,7 +88,7 @@ const writePrivateKey = async function (props: {
           let _config = props.sshPromise.connections[a];
           let filePrivatePath = process.cwd() + "/storage/app/executions/" + props.execution.id + '/' + _config.username + "_" + _config.host + "_" + _config.port + "_" + "_key_" + a;
 
-          await writeFileSync(filePrivatePath, _config.privateKey);
+          await writeFileSync(filePrivatePath, _config.privateKey || '');
 
           let fileSSHCOnfigPath = process.cwd() + "/storage/app/executions/" + props.execution.id + '/ssh_config';
 
