@@ -5,6 +5,8 @@ import GitlabService from "../services/GitlabService";
 import OAuthService, { OauthInterface } from "../services/OAuthService";
 import PipelineService, { PipelineServiceInterface } from "../services/PipelineService";
 import WaitingTimeout from "./WaitingTimeout";
+import CredentialService from "../services/CredentialService";
+import GitService from "../services/GitService";
 
 declare let masterData: MasterDataInterface;
 
@@ -75,7 +77,23 @@ const DownloadRepo = (props: {
         case 'bitbucket':
           break;
         case 'git':
-
+          let credentialData = await CredentialService.getCredential({
+            id: pipeline_data.repo_data.credential_id
+          });
+          let _certitficateFile = credentialData.data.certificate;
+          let _passPhere = credentialData.data.passphrase;
+          response = await GitService.downloadRepo({
+            id: pipeline_data.repo_data.repo_id,
+            private_key: _certitficateFile,
+            passphrase: _passPhere,
+            git_url: pipeline_data.repo_data.git_url,
+            branch: execution_data.branch,
+            repo_name: pipeline_data.repo_data.repo_name,
+            download_path: "./storage/app/executions/" + execution_data.id + '/repo' //"./storage/app/jobs/" + job_id + '/repo' // 
+          });
+          // console.log("pipeline_data.repo_data :: ", pipeline_data.repo_data);
+          // console.log("credentialData :: ", credentialData);
+          // console.log("execution_data ::: ", execution_data);
           break;
       }
       masterData.saveData("repo_execution_" + execution_id, false);

@@ -27,9 +27,13 @@ const RepoInstall = function (props: TaskTypeInterface) {
     let mergeVarScheme = MergeVarScheme(variable, schema, extra_var);
     let _data = pipeline_task.data;
     let _parent_order_temp_ids = pipeline_task.parent_order_temp_ids;
-
     // NOTE YOU MUST ADD  \r for get trigger next task
-    let command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+    let command = "";
+    try {
+      command = MustacheRender(_data.command.toString() + "\r", mergeVarScheme);
+    } catch (error) {
+      command = "\r";
+    }
 
     let processWait = async () => {
 
@@ -65,6 +69,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
             }
           }
         }
+
         if (data.includes('failed: Not a directory')) {
           // _is_file = true;
         }
@@ -130,16 +135,21 @@ const RepoInstall = function (props: TaskTypeInterface) {
       } else {
         shellSSHForRsync = `ssh -v -F ${lastFilePRivateKey.sshConfigPath} -p ${lastFilePRivateKey.port} -i ${lastFilePRivateKey.identityFile} -o ProxyCommand="${lastFilePRivateKey.proxyCommand}"`;
       }
-      
+      let str = _data.include;
+      const _include = str == "" ? [] : str.split('\n');
+
+      str = _data.exclude;
+      const _exclude = str == "" ? [] : str.split('\n');
+
       var rsync = Rsync.build({
         /* Support multiple source too */
         source: "./",
         // source : upath.normalize(_local_path+'/'),
         destination: lastFilePRivateKey.username + '@' + lastFilePRivateKey.host + ':' + _data.target_path,
         /* Include First */
-        include: [],
+        include: _include,
         /* Exclude after include */
-        exclude: [],//extraWatchs[index].ignores,
+        exclude: _exclude,//extraWatchs[index].ignores,
         // flags : '-vt',
         flags: '-avzLm',
         set: '--size-only --checksum ' + (_delete_mode_active == false ? '' : '--delete'),

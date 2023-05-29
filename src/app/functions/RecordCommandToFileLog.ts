@@ -1,6 +1,7 @@
 import { appendFile, createReadStream, existsSync, mkdirSync, readFile, writeFile, writeFileSync } from "fs";
 import Tail from 'tail';
 import readline from 'readline';
+import { stripAnsi } from "@root/tool/Helpers";
 
 const RecordCommandToFileLog = function (props: {
   fileName: string,
@@ -13,7 +14,7 @@ const RecordCommandToFileLog = function (props: {
   } catch (ex) {
     console.log("mkdirSync - ex :: ", ex);
   }
-  appendFile(process.cwd() + "/storage/app/command/log/" + props.fileName + ".log", props.commandString, function (err) {
+  appendFile(process.cwd() + "/storage/app/command/log/" + props.fileName + ".log", stripAnsi(props.commandString), function (err) {
     if (err) throw err;
     // console.log('Saved!');
   });
