@@ -269,6 +269,7 @@ const PipelineSSHLoop = async function (props: {
       let _firstPipelineTask = await PipelineTaskService.getPipelineTaskFirsOrderNumberByPipelineId(_pipeline_item.id);
       console.log("_firstPipelineTask ::: ", _firstPipelineTask);
       putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _firstPipelineTask.id
+      lastFileNameForClose = putInitToFirstLog;
 
       // Filter processing by type
       switch (_pipeline_item.type) {
@@ -429,6 +430,7 @@ const PipelineSSHLoop = async function (props: {
   } catch (ex) {
     console.log("PipelineLoop - ex  :: ", ex)
     await WaitingTimeout(3000);
+    console.log("lastFileNameForClose :: ",lastFileNameForClose);
     RecordCommandToFileLog({
       fileName: lastFileNameForClose,
       commandString: ex.toString() + "\n"

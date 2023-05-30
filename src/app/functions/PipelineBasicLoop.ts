@@ -176,6 +176,7 @@ const PipelineBasicLoop = async (props: {
         // Just catch if first _pipeline_item
         if (putInitToFirstLog == null) {
           putInitToFirstLog = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + _pipeline_task[0].id;
+          lastFileNameForClose = putInitToFirstLog;
         }
 
         for (var a2 = 0; a2 < _pipeline_task.length; a2++) {
