@@ -124,7 +124,7 @@ export default {
         } catch (ex) {
           infoJSON = null;
         }
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", props);
+        // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", props);
         let commitData = null;
         try {
           commitData = await this.getCommit(props);

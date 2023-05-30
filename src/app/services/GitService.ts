@@ -27,7 +27,7 @@ export default {
                 } catch (ex) {
                     infoJSON = null;
                 }
-                console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", props);
+                // console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaa", props);
                 let commitData = null;
                 // Set the custom private key path
                 const privateKeyString = props.private_key;
