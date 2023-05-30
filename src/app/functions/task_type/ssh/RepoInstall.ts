@@ -217,6 +217,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
               await new Promise((resolve, reject) => {
                 mapLimit(files, concurent_limit, async (file, callback) => {
                   const filePath = path.join(localPath, file);
+                  // console.log("Process :: ",filePath);
                   const _stat = await promisify(stat)(filePath);
                   if (_stat.isDirectory()) {
                     const shouldExclude = excludePatterns.some((pattern) => {
@@ -314,7 +315,7 @@ const RepoInstall = function (props: TaskTypeInterface) {
           }
           // Run sftp
           try {
-            await _transferFolderWithFilters(_local_path, _data.target_path, _include, _exclude, 5);
+            await _transferFolderWithFilters(_local_path, _data.target_path, _include, _exclude, 2);
           } catch (error) {
             console.log("error ::: ", error);
             ptyProcess.write('exit' + '\r')
