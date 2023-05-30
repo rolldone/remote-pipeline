@@ -278,11 +278,17 @@ const PipelineSSHLoop = async function (props: {
         default:
 
           // Try create connection ssh
-          let sshPromise = await ConnectToHost({
-            host_data,
-            host_id,
-            job_id
-          })
+          let ssh2Promise = null;
+          try {
+            sshPromise = await ConnectToHost({
+              host_data,
+              host_id,
+              job_id
+            })
+          } catch (error) {
+            console.log("sshPromise - ex :: ", error);
+            throw error;
+          }
 
           // Download repository from pipeline and branch on execution
           // If there is no repo on pipeline return null

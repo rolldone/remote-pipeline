@@ -157,6 +157,15 @@ class Ssh2 {
           }
           for (let conA1 = 0; conA1 < this.connections.length; conA1++) {
             let clientItem = this.clients[conA1];
+            clientItem.on("error", (err) => {
+              if (err.level === "client-timeout") {
+                // Reject the promise with a timeout error
+                reject(new Error("SSH client timed out"));
+              } else {
+                // Reject the promise with the actual error
+                reject(err);
+              }
+            });
             clientItem.on("ready", async () => {
               console.log('Connection :: ' + (conA1) + ' :: connection ready');
               // Alternatively, you could use something like netcat or socat with exec()
@@ -190,6 +199,15 @@ class Ssh2 {
           return;
         }
         this.client = new ssh.Client();
+        this.client .on("error", (err) => {
+          if (err.level === "client-timeout") {
+            // Reject the promise with a timeout error
+            reject(new Error("SSH client timed out"));
+          } else {
+            // Reject the promise with the actual error
+            reject(err);
+          }
+        });
         this.client.on("ready", async () => {
           this.getOnReadyListener();
           console.log('Client :: ready');
@@ -276,7 +294,14 @@ class Ssh2 {
               break;
             }
             let getUserAtHOstString = stringCollection[a].split('@');
-            if (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true) {
+            // console.log("getUserAtHOstString :: ", getUserAtHOstString);
+            // if (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true) {
+            //   this.stream.off("data", whatListenerFunc);
+            //   resolve(hisString)
+            //   return;
+            // }
+            // console.log('getUserAtHOstString.length :: ', getUserAtHOstString.length);
+            if (getUserAtHOstString.length == 2 || (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true)) {
               this.stream.off("data", whatListenerFunc);
               resolve(hisString)
               return;
