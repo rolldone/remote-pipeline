@@ -51,14 +51,20 @@ export default {
                 // To ensure that environment variables are correctly propagated to subprocesses,
                 // you can explicitly include them when executing commands with `shelljs`.
                 // Construct the command including the environment variable
+                // Set the Git repository URL
+                const gitRepositoryUrl = props.git_url;
                 const sshCommand = `ssh -i "${_pwd}/${privateKeyPath.replace("./", "")}" -o StrictHostKeyChecking=no`;
-                console.log(`cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git rev-parse HEAD`);
                 // Run the Git command to get the latest commit SHA
-                const { stdout, stderr, code } = shelljs.exec(`cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git rev-parse HEAD`, { silent: true });
+                let _git_pull = `cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git pull ${gitRepositoryUrl} ${props.branch}`;
+                shelljs.exec(_git_pull, { silent: true });
+                console.log(`GIT FETCH`,_git_pull);
+                let _git_head = `cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git rev-parse ${props.branch}`
+                const { stdout, stderr, code } = shelljs.exec(_git_head, { silent: true });
+                console.log(`GIT HEAD`,_git_head);
                 shelljs.exec(`cd ${_pwd}`);
                 // Check for errors
                 if (code !== 0) {
-                    console.error('Failed to get commit SHA:', stderr);
+                    console.error('Failed to get last new commit SHA:', stderr);
                     // Handle the error accordingly
                     return;
                 }
@@ -117,7 +123,7 @@ export default {
                     // Set the appropriate file permissions for the private key
                     chmodSync(privateKeyPath, '600');
 
-                    shelljs.exec(`rm -R ${destinationDirectory} || true`);
+                    // shelljs.exec(`rm -R ${destinationDirectory} || true`);
                     shelljs.exec(`mkdir ${destinationDirectory} || true`);
                     shelljs.exec(`ls -a -l ${props.download_path} || true`);
 
@@ -138,10 +144,9 @@ export default {
                     // you can explicitly include them when executing commands with `shelljs`.
                     // Construct the command including the environment variable
                     const sshCommand = `ssh -i "${_pwd}/${privateKeyPath.replace("./", "")}" -o StrictHostKeyChecking=no`;
-                    const gitCloneCommand = `GIT_SSH_COMMAND="${sshCommand}" git clone --depth=1 --recursive -b ${props.branch} ${gitRepositoryUrl} ${destinationDirectory}`;
+                    const gitCloneCommand = `GIT_SSH_COMMAND="${sshCommand}" git clone --depth=1 --recursive -b ${props.branch} ${gitRepositoryUrl} ${_pwd}/${destinationDirectory.replace("./", "")}`;
                     console.log("gitCloneCommand :: ", gitCloneCommand);
                     shelljs.exec(gitCloneCommand);
-
                     try {
                         commitData = await this.getCommit(props);
                     } catch (ex) {
