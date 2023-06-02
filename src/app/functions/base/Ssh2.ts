@@ -199,7 +199,7 @@ class Ssh2 {
           return;
         }
         this.client = new ssh.Client();
-        this.client .on("error", (err) => {
+        this.client.on("error", (err) => {
           if (err.level === "client-timeout") {
             // Reject the promise with a timeout error
             reject(new Error("SSH client timed out"));
@@ -239,6 +239,10 @@ class Ssh2 {
         if (err) {
           return reject(err);
         }
+        stream.stderr.on('data', (data) => {
+          console.error(`Error output: ${data.toString()}`);
+          return reject(`Error output: ${data.toString()}`);
+        });
         stream.on("data", (data) => {
           console.log("global :: ", data.toString());
         })
@@ -246,7 +250,7 @@ class Ssh2 {
       });
     })
   }
-  off(whatListen: 'ready' | 'data' | 'close' | 'exit', listener: { (...args: any[]): void }) {
+  off(whatListen: 'ready' | 'data' | 'close' | 'exit' | 'exit-status' | 'extended', listener: { (...args: any[]): void }) {
     switch (whatListen) {
       case 'ready':
         this.client.off("ready", listener);
@@ -260,9 +264,15 @@ class Ssh2 {
       case 'exit':
         this.stream.off("exit", listener);
         break;
+      case 'exit-status':
+        this.stream.off("exit", listener);
+        break;
+      case 'extended':
+        this.stream.off("extended", listener);
+        break;
     }
   }
-  on(whatListen: 'ready' | 'data' | 'close' | 'exit', callbac: Function) {
+  on(whatListen: 'ready' | 'data' | 'close' | 'exit' | 'error-command' | 'extended', callbac: Function) {
     switch (whatListen) {
       case 'ready':
         this.getOnReadyListener = callbac;
@@ -276,12 +286,21 @@ class Ssh2 {
       case 'exit':
         this.stream.on("exit", callbac);
         break;
+      // case 'error-command':
+      //   this.client.shell((err, stream) => {
+      //     if (err) throw err;
+      //     stream.stderr.on('data', callbac as any);
+      //   });
+      //   break;
+      // case 'extended':
+      //   this.stream.on("extended", callbac);
+      //   break;
     }
   }
   write(data: string) {
     let hisString = "";
     let pendingResolve: DebouncedFunc<any> = null;
-    return new Promise((resolve: Function) => {
+    return new Promise((resolve: Function,reject:Function) => {
       let whatListenerFunc = (data: Buffer) => {
         if (pendingResolve != null) {
           pendingResolve.cancel();
@@ -311,6 +330,10 @@ class Ssh2 {
         pendingResolve(data);
         hisString += data.toString();
       }
+      this.stream.on('close', ()=>{
+        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
+        reject("cCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+      });
       this.stream.on('data', whatListenerFunc);
       this.stream.write(data);
     })

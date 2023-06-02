@@ -108,7 +108,7 @@ const ConnectOnSShPromise = async function (props: {
       console.log("sshconfig :: ", sshconfig);
       ssh = new Ssh2(sshconfig);
       ssh.on("ready", () => {
-        console.log("Connection establishedddd");
+        console.log("Connection established");
       })
     }
 
