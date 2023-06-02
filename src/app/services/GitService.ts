@@ -4,7 +4,7 @@ import { pipeline } from "stream"
 import shelljs from 'shelljs';
 import StaticType from "base/StaticType";
 
-export interface GitlabServiceInterface {
+export interface GitService {
     id?: number
     private_key?: string,
     passphrase?: string
@@ -17,7 +17,7 @@ export interface GitlabServiceInterface {
 
 export default {
 
-    async getCommit(props: GitlabServiceInterface) {
+    async getCommit(props: GitService) {
         console.log("props :::: ", props);
         StaticType(props.branch, [String]);
         try {
@@ -81,7 +81,7 @@ export default {
             throw ex;
         }
     },
-    async downloadRepo(props: GitlabServiceInterface) {
+    async downloadRepo(props: GitService) {
         try {
             mkdirSync(props.download_path, { recursive: true });
             return new Promise(async (resolve: Function, reject: Function) => {

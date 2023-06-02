@@ -65,6 +65,9 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 // Check if path have variable rendered
                 _data.asset_datas[aq2].source_path = MustacheRender(_data.asset_datas[aq2].source_path, mergeVarScheme);
 
+                // Check if path have variable rendered
+                _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
+
                 // console.log("listFiles :: ", listFiles);
                 function removeNonDuplicatePath(path1, path2) {
                   let newPath1 = path1.replace(path2, "");
@@ -132,6 +135,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
           console.log("_data.asset_datas :: ", _data.asset_datas.length);
           console.log("_count_time_transfer :: ", _count_time_transfer);
           for (var r1 = 0; r1 < _data.asset_datas.length; r1++) {
+            
             let ptyProcess = InitPtyProcess({
               commands: [],
               working_dir: base_working_dir
@@ -192,6 +196,9 @@ const DownloadRequest = function (props: TaskTypeInterface) {
 
             // Check if path have variable rendered
             _data.asset_datas[r1].source_path = MustacheRender(_data.asset_datas[r1].source_path, mergeVarScheme)
+
+            // Check if path have variable rendered
+            _data.asset_datas[r1].target_path = MustacheRender(_data.asset_datas[r1].target_path, mergeVarScheme);
 
             if (SafeValue(_data.asset_datas[r1].is_folder, false) == true) {
               try {
