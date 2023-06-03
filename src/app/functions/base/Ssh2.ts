@@ -239,10 +239,6 @@ class Ssh2 {
         if (err) {
           return reject(err);
         }
-        stream.stderr.on('data', (data) => {
-          console.error(`Error output: ${data.toString()}`);
-          return reject(`Error output: ${data.toString()}`);
-        });
         stream.on("data", (data) => {
           console.log("global :: ", data.toString());
         })
@@ -297,10 +293,10 @@ class Ssh2 {
       //   break;
     }
   }
-  write(data: string) {
+  write(data: string, callback?: { (stream: ssh.ClientChannel, done: Function, data: Buffer): Promise<void> }) {
     let hisString = "";
     let pendingResolve: DebouncedFunc<any> = null;
-    return new Promise((resolve: Function,reject:Function) => {
+    return new Promise((resolve: Function, reject: Function) => {
       let whatListenerFunc = (data: Buffer) => {
         if (pendingResolve != null) {
           pendingResolve.cancel();
@@ -319,23 +315,76 @@ class Ssh2 {
             //   resolve(hisString)
             //   return;
             // }
-            // console.log('getUserAtHOstString.length :: ', getUserAtHOstString.length);
+            console.log('getUserAtHOstString.length :: ', getUserAtHOstString.length);
             if (getUserAtHOstString.length == 2 || (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true)) {
               this.stream.off("data", whatListenerFunc);
               resolve(hisString)
               return;
             }
           }
+          this.stream.off("data", whatListenerFunc);
+          resolve(hisString.toString())
         }, 2000);
         pendingResolve(data);
         hisString += data.toString();
       }
-      this.stream.on('close', ()=>{
-        console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv');
-        reject("cCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+
+      let whatListenerFuncExec = (data: Buffer) => {
+        if (pendingResolve != null) {
+          pendingResolve.cancel();
+        }
+        pendingResolve = debounce((data: Buffer) => {
+          let stringCollection = data.toString().split('\r');
+          stringCollection.reverse();
+          this.stream.off("data", whatListenerFuncExec);
+          resolve(hisString.toString())
+        }, 2000);
+        pendingResolve(data);
+        hisString += data.toString();
+      }
+
+      data = data.replace("\r", "");
+
+      let dataArr = data.split("&&");
+      dataArr = dataArr.map((val) => val.replace(/\s/g, ''));
+
+      this.client.exec(data, { pty: true }, (err, stream) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        if (callback != null) {
+          stream.on('data', callback.bind(null, stream, resolve));
+        } else {
+          stream.on('data', whatListenerFuncExec);
+        }
+
+        stream.stderr.on('data', (data) => {
+          // Handle error output, if any
+          console.error(`Error output: ${data.toString()}`);
+          stream.off('data', whatListenerFunc);
+
+          let error = new Error(`Error output: ${data.toString()}`);
+          reject(error);
+        });
+
+        stream.on('close', (code, signal) => {
+          // Handle command completion or termination
+          // console.log(`Command completed with exit code ${code}`);
+          console.log('clooose :: ', code, signal);
+          dataArr.forEach((val,i)=>{
+            if (val == "exit") {
+              console.log('Command includes a standalone "exit" statement');
+              if (code == 0) {
+                let error = new Error(code);
+                reject(error);
+              }
+            } 
+          })
+        });
+
+        stream.on('exit', function (code) {});
       });
-      this.stream.on('data', whatListenerFunc);
-      this.stream.write(data);
     })
   }
 }

@@ -323,10 +323,17 @@ const PipelineSSHLoop = async function (props: {
           masterData.setOnListener("data_pipeline_" + job_id + "_error", (props) => {
             lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + _pipeline_item.id + "_task_id_" + props.pipeline_task_id;
             pipeline_task_id = props.pipeline_task_id;
-            sshPromise.write("echo " + props.message + "\r");
-            sshPromise.write("echo error-error\r");
+            // sshPromise.write("echo " + props.message + "\r");
+            // sshPromise.write("echo error-error\r");
             // Remove the listener
             removeAllListeners();
+            if(props.message == 0){
+              RecordCommandToFileLog({
+                fileName: lastFileNameForClose,
+                commandString: "You drop the pipeline task manualy by exit command; \n"
+              })
+              return resolveDone();
+            }
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
 

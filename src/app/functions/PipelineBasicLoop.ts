@@ -291,7 +291,13 @@ const PipelineBasicLoop = async (props: {
 
             // Remove the listener
             removeAllListeners();
-
+            if(props.message == 0){
+              RecordCommandToFileLog({
+                fileName: lastFileNameForClose,
+                commandString: "You drop the pipeline task manualy by exit command; \n"
+              })
+              return resolveDone();
+            }
             resolveReject(props.message || "Ups!, You need define a message for error pileine process");
           });
 

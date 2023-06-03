@@ -7,6 +7,7 @@ import upath from 'upath';
 import path from "path";
 import MkdirReqursive from "../../sftp/Mkdir";
 import RecordCommandToFileLog from "../../RecordCommandToFileLog";
+import { ClientChannel } from "ssh2";
 
 declare let masterData: MasterDataInterface;
 
@@ -57,16 +58,16 @@ export default function (props: TaskTypeInterface) {
         if (working_dir != null) {
           command = `cd ${working_dir} && ${command}`;
         }
-        let prompt_datas = _data.prompt_datas || [];
+        let prompt_datas = _data.prompt_datas as Array<any> || [];
         for (var prmIdx = 0; prmIdx < prompt_datas.length; prmIdx++) {
           prompt_datas[prmIdx].value = MustacheRender(prompt_datas[prmIdx].value, mergeVarScheme);
         }
         masterData.saveData("watch_prompt_datas_" + job_id, prompt_datas);
-        let callbackListen = async (data: Buffer) => {
-          let lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id;
+        let lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id;
+        let callbackListen = async (stream: ClientChannel, done: Function, data: Buffer) => {
           RecordCommandToFileLog({
             fileName: lastFileNameForClose,
-            commandString: data.toString() + "\n"
+            commandString: data.toString()
           })
           /* Catch if get prompt datas */
           let _watch_prompt_datas: Array<{
@@ -75,16 +76,26 @@ export default function (props: TaskTypeInterface) {
           }> = await masterData.getData("watch_prompt_datas_" + job_id, []) as any;
           for (var prIdx = 0; prIdx < _watch_prompt_datas.length; prIdx++) {
             if (data.includes(_watch_prompt_datas[prIdx].key) == true) {
-              await sshPromise.write(_watch_prompt_datas[prIdx].value + '\r');
+              let itemCommand = await stream.write(_watch_prompt_datas[prIdx].value + '\r');
+              // RecordCommandToFileLog({
+              //   fileName: lastFileNameForClose,
+              //   commandString: _watch_prompt_datas[prIdx].value
+              // })
               // _watch_prompt_datas.splice(prIdx, 1);
               // await masterData.saveData("watch_prompt_datas_" + job_id, _watch_prompt_datas);
               break;
             }
           }
+          done("");
         };
-        sshPromise.on("data", callbackListen);
-        let command_history = await sshPromise.write(command);
-        sshPromise.off('data', callbackListen);
+        // sshPromise.on("data", callbackListen);
+        let command_history = await sshPromise.write(command, prompt_datas.length > 0 ? callbackListen : null);
+        RecordCommandToFileLog({
+          fileName: lastFileNameForClose,
+          commandString: command_history.toString() + "\n"
+        })
+        // await callbackListen(command_history as any);
+        // sshPromise.off('data', callbackListen);
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
@@ -92,11 +103,11 @@ export default function (props: TaskTypeInterface) {
           parent: pipeline_task.temp_id
         })
 
-      } catch (ex) {
+      } catch (ex: any) {
         console.log("sftp - ex :: ", ex);
         masterData.saveData("data_pipeline_" + job_id + "_error", {
           pipeline_task_id: pipeline_task.id,
-          command: command,
+          message: ex.message,
           parent: pipeline_task.temp_id
         })
       }
