@@ -63,8 +63,10 @@ export default function (props: TaskTypeInterface) {
           prompt_datas[prmIdx].value = MustacheRender(prompt_datas[prmIdx].value, mergeVarScheme);
         }
         masterData.saveData("watch_prompt_datas_" + job_id, prompt_datas);
+        let _collect_command = "";
         let lastFileNameForClose = "job_id_" + job_id + "_pipeline_id_" + pipeline_task.pipeline_item_id + "_task_id_" + pipeline_task.id;
         let callbackListen = async (stream: ClientChannel, done: Function, data: Buffer) => {
+          _collect_command += data.toString();
           RecordCommandToFileLog({
             fileName: lastFileNameForClose,
             commandString: data.toString()
@@ -103,7 +105,7 @@ export default function (props: TaskTypeInterface) {
         masterData.saveData("data_pipeline_" + job_id, {
           pipeline_task_id: pipeline_task.id,
           command: command,
-          command_history: command_history,
+          command_history: _collect_command + command_history.toString() + "\n",
           parent: pipeline_task.temp_id
         })
 
