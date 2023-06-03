@@ -86,10 +86,14 @@ export default function (props: TaskTypeInterface) {
               break;
             }
           }
-          done("");
+          // done("");
         };
         // sshPromise.on("data", callbackListen);
-        let command_history = await sshPromise.write(command, prompt_datas.length > 0 ? callbackListen : null);
+        RecordCommandToFileLog({
+          fileName: lastFileNameForClose,
+          commandString: command
+        })
+        let command_history = await sshPromise.write(command, callbackListen);
         RecordCommandToFileLog({
           fileName: lastFileNameForClose,
           commandString: command_history.toString() + "\n"

@@ -282,52 +282,12 @@ class Ssh2 {
       case 'exit':
         this.stream.on("exit", callbac);
         break;
-      // case 'error-command':
-      //   this.client.shell((err, stream) => {
-      //     if (err) throw err;
-      //     stream.stderr.on('data', callbac as any);
-      //   });
-      //   break;
-      // case 'extended':
-      //   this.stream.on("extended", callbac);
-      //   break;
     }
   }
   write(data: string, callback?: { (stream: ssh.ClientChannel, done: Function, data: Buffer): Promise<void> }) {
     let hisString = "";
     let pendingResolve: DebouncedFunc<any> = null;
     return new Promise((resolve: Function, reject: Function) => {
-      let whatListenerFunc = (data: Buffer) => {
-        if (pendingResolve != null) {
-          pendingResolve.cancel();
-        }
-        pendingResolve = debounce((data: Buffer) => {
-          let stringCollection = data.toString().split('\r');
-          stringCollection.reverse();
-          for (var a = 0; a < stringCollection.length; a++) {
-            if (a > 1) {
-              break;
-            }
-            let getUserAtHOstString = stringCollection[a].split('@');
-            // console.log("getUserAtHOstString :: ", getUserAtHOstString);
-            // if (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true) {
-            //   this.stream.off("data", whatListenerFunc);
-            //   resolve(hisString)
-            //   return;
-            // }
-            console.log('getUserAtHOstString.length :: ', getUserAtHOstString.length);
-            if (getUserAtHOstString.length == 2 || (getUserAtHOstString.length == 2 && getUserAtHOstString[1].includes(":") == true)) {
-              this.stream.off("data", whatListenerFunc);
-              resolve(hisString)
-              return;
-            }
-          }
-          this.stream.off("data", whatListenerFunc);
-          resolve(hisString.toString())
-        }, 2000);
-        pendingResolve(data);
-        hisString += data.toString();
-      }
 
       let whatListenerFuncExec = (data: Buffer) => {
         if (pendingResolve != null) {
@@ -337,7 +297,6 @@ class Ssh2 {
           let stringCollection = data.toString().split('\r');
           stringCollection.reverse();
           this.stream.off("data", whatListenerFuncExec);
-          resolve(hisString.toString())
         }, 2000);
         pendingResolve(data);
         hisString += data.toString();
@@ -350,19 +309,22 @@ class Ssh2 {
 
       this.client.exec(data, { pty: true }, (err, stream) => {
         if (err) {
-          console.log(err);
+          console.log('this.client.exec :: ', err);
           return;
         }
         if (callback != null) {
-          stream.on('data', callback.bind(null, stream, resolve));
+          stream.on('data', (data) => {
+            hisString += data.toString();
+            callback.call(null, stream, resolve, data);
+          });
         } else {
           stream.on('data', whatListenerFuncExec);
         }
 
         stream.stderr.on('data', (data) => {
           // Handle error output, if any
-          console.error(`Error output: ${data.toString()}`);
-          stream.off('data', whatListenerFunc);
+          // console.error(`Error output: ${data.toString()}`);
+          stream.off('data', whatListenerFuncExec);
 
           let error = new Error(`Error output: ${data.toString()}`);
           reject(error);
@@ -371,26 +333,28 @@ class Ssh2 {
         stream.on('close', (code, signal) => {
           // Handle command completion or termination
           // console.log(`Command completed with exit code ${code}`);
-          
-          console.log('cloooses :: ', code, signal);
-          if (code == 1) {
-            let error = new Error(hisString);
+
+          console.log('stream.on(close) :: ', code, signal);
+
+          if (code > 0) {
+            let error = new Error("Error code :: " + code);
             reject(error);
             return;
           }
 
-          dataArr.forEach((val,i)=>{
+          dataArr.forEach((val, i) => {
             if (val == "exit") {
-              console.log('Command includes a standalone "exit" statement');
               if (code == 0) {
                 let error = new Error(code);
-                reject(error);
+                return reject(error);
               }
-            } 
+            }
           })
+
+          resolve("")
         });
 
-        stream.on('exit', function (code) {});
+        stream.on('exit', function (code) { });
       });
     })
   }
