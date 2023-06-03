@@ -371,7 +371,14 @@ class Ssh2 {
         stream.on('close', (code, signal) => {
           // Handle command completion or termination
           // console.log(`Command completed with exit code ${code}`);
-          console.log('clooose :: ', code, signal);
+          
+          console.log('cloooses :: ', code, signal);
+          if (code == 1) {
+            let error = new Error(hisString);
+            reject(error);
+            return;
+          }
+
           dataArr.forEach((val,i)=>{
             if (val == "exit") {
               console.log('Command includes a standalone "exit" statement');
