@@ -141,7 +141,7 @@ Task :
 
 	- Docker Host Certificate Authentication credentials.
 
-- [Pipeline] : Can attach git repo just only git url and fill which branch
+- [Pipeline] : Can attach git repo just only git url and fill which branch [Alpha]
 
 - [Host] : Change all auth information is get from table Credentials with filter [Alpha]
 
