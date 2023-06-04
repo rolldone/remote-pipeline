@@ -41,8 +41,8 @@ export default function (next: Function) {
       let sess = session({
         secret: 'ssshhhhh',
         store: new FileStore(fileStoreOptions),
-        resave: false,
-        saveUninitialized: false,
+        resave: true,
+        saveUninitialized: true,
         cookie: {
           expires: (1000 * 60) * 60
         }
@@ -54,6 +54,7 @@ export default function (next: Function) {
       })
       return sess(req, res, next);
     });
+
     app.use("/public", Express.static('dist/public'));
     app.use("/public/dashboard", Express.static('dashboard/dist'));
 

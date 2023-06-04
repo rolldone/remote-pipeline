@@ -14,6 +14,8 @@ export default function (req, res, next) {
       let user = await GetAuthUser(req);
       let encodeRedirect = encodeURIComponent(AppConfig.APP_PROTOCOL + '://' + req.get('host') + req.originalUrl);
       if (user.id == null) return res.redirect("/dashboard/login?redirect=" + encodeRedirect);
+      // User is authenticated, so update session expiration
+      req.session.touch()
       next();
     } catch (ex) {
       res.status(400).send(ex);
