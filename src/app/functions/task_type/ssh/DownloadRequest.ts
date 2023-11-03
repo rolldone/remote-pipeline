@@ -58,15 +58,17 @@ const DownloadRequest = function (props: TaskTypeInterface) {
           try {
             let sftp = await sshPromise.sftp();
             for (var aq2 = 0; aq2 < _data.asset_datas.length; aq2++) {
+
+              // Check if path have variable rendered
+              _data.asset_datas[aq2].source_path = MustacheRender(_data.asset_datas[aq2].source_path, mergeVarScheme);
+
+              // Check if path have variable rendered
+              _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
+
               if (SafeValue(_data.asset_datas[aq2].is_folder, false) == true) {
                 if (existsSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path)) == false) {
                   mkdirSync(upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path), { recursive: true });
                 }
-                // Check if path have variable rendered
-                _data.asset_datas[aq2].source_path = MustacheRender(_data.asset_datas[aq2].source_path, mergeVarScheme);
-
-                // Check if path have variable rendered
-                _data.asset_datas[aq2].target_path = MustacheRender(_data.asset_datas[aq2].target_path, mergeVarScheme);
 
                 // console.log("listFiles :: ", listFiles);
                 function removeNonDuplicatePath(path1, path2) {
@@ -101,8 +103,10 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                 await downloadsRecurd(_data.asset_datas[aq2].source_path, "");
               } else {
                 let _writeFileName = upath.normalize(base_working_dir + "/" + _data.asset_datas[aq2].target_path);
-                if (existsSync(_writeFileName) == false) {
-                  mkdirSync(_writeFileName, { recursive: true });
+                const parentDir = upath.dirname(_writeFileName);
+                console.log("parentDir --> ", parentDir);
+                if (existsSync(parentDir) == false) {
+                  mkdirSync(parentDir, { recursive: true });
                 }
                 await sftp.fastGet(_data.asset_datas[aq2].source_path, _writeFileName);
               }
@@ -135,7 +139,7 @@ const DownloadRequest = function (props: TaskTypeInterface) {
           console.log("_data.asset_datas :: ", _data.asset_datas.length);
           console.log("_count_time_transfer :: ", _count_time_transfer);
           for (var r1 = 0; r1 < _data.asset_datas.length; r1++) {
-            
+
             let ptyProcess = InitPtyProcess({
               commands: [],
               working_dir: base_working_dir
@@ -214,6 +218,13 @@ const DownloadRequest = function (props: TaskTypeInterface) {
                   message: "Catch the error : " + ex.message
                 })
                 return;
+              }
+            } else {
+              let _writeFileName = upath.normalize(base_working_dir + "/" + _data.asset_datas[r1].target_path);
+              const parentDir = upath.dirname(_writeFileName);
+              console.log("parentDir --> ", parentDir);
+              if (existsSync(parentDir) == false) {
+                mkdirSync(parentDir, { recursive: true });
               }
             }
             // Set privatekey permission to valid for auth ssh
