@@ -57,10 +57,10 @@ export default {
                 // Run the Git command to get the latest commit SHA
                 let _git_pull = `cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git pull ${gitRepositoryUrl} ${props.branch}`;
                 shelljs.exec(_git_pull, { silent: true });
-                console.log(`GIT FETCH`,_git_pull);
+                console.log(`GIT FETCH`, _git_pull);
                 let _git_head = `cd ${_pwd}/${destinationDirectory.replace("./", "")} && GIT_SSH_COMMAND="${sshCommand}" git rev-parse ${props.branch}`
                 const { stdout, stderr, code } = shelljs.exec(_git_head, { silent: true });
-                console.log(`GIT HEAD`,_git_head);
+                console.log(`GIT HEAD`, _git_head);
                 shelljs.exec(`cd ${_pwd}`);
                 // Check for errors
                 if (code !== 0) {
@@ -146,7 +146,18 @@ export default {
                     const sshCommand = `ssh -i "${_pwd}/${privateKeyPath.replace("./", "")}" -o StrictHostKeyChecking=no`;
                     const gitCloneCommand = `GIT_SSH_COMMAND="${sshCommand}" git clone --depth=1 --recursive -b ${props.branch} ${gitRepositoryUrl} ${_pwd}/${destinationDirectory.replace("./", "")}`;
                     console.log("gitCloneCommand :: ", gitCloneCommand);
-                    shelljs.exec(gitCloneCommand);
+                    let _gitCloneCOmmandResult = shelljs.exec(gitCloneCommand);
+
+                    // Check the result
+                    if (_gitCloneCOmmandResult.code !== 0) {
+                        console.error('Error: Git clone command failed');
+                        console.error(_gitCloneCOmmandResult.stderr);
+                        return reject(_gitCloneCOmmandResult.stderr);
+                    } else {
+                        console.log('Git clone command successful');
+                        console.log(_gitCloneCOmmandResult.stdout);
+                    }
+
                     try {
                         commitData = await this.getCommit(props);
                     } catch (ex) {
