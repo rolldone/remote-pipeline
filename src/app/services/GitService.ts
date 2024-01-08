@@ -152,7 +152,7 @@ export default {
                     if (_gitCloneCOmmandResult.code !== 0) {
                         console.error('Error: Git clone command failed');
                         console.error(_gitCloneCOmmandResult.stderr);
-                        return reject(_gitCloneCOmmandResult.stderr);
+                        // return reject(_gitCloneCOmmandResult.stderr);
                     } else {
                         console.log('Git clone command successful');
                         console.log(_gitCloneCOmmandResult.stdout);
